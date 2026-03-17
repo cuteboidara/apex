@@ -5,6 +5,7 @@ import { ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
 
 export async function GET() {
   type TradePlanRecord = Awaited<ReturnType<typeof prisma.tradePlan.findFirst>>;
+  type SignalRunIdRecord = { id: string };
 
   const latestRuns = await prisma.signalRun.findMany({
     where: { status: "COMPLETED" },
@@ -13,7 +14,7 @@ export async function GET() {
     select: { id: true },
   });
 
-  await ensureTradePlansForRuns(latestRuns.map(run => run.id));
+  await ensureTradePlansForRuns(latestRuns.map((run: SignalRunIdRecord) => run.id));
 
   const grouped = await Promise.all(
     SUPPORTED_ASSETS.flatMap(asset =>
