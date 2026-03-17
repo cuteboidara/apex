@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
-import { enqueueSignalCycle } from "@/lib/queue";
+import { enqueueSignalCycle, isQueueConfigured } from "@/lib/queue";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
 
 export async function POST() {
+  if (!isQueueConfigured()) {
+    return NextResponse.json(
+      {
+        success: false,
+        degraded: true,
+        error: "Queue unavailable: REDIS_URL is not configured.",
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     const { job, runId } = await enqueueSignalCycle(undefined, {
       actor: "OPERATOR",

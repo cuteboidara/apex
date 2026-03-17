@@ -3,12 +3,25 @@ import { prisma } from "@/lib/prisma";
 import { recordAuditEvent } from "@/lib/audit";
 import { ENGINE_VERSION, FEATURE_VERSION, PROMPT_VERSION } from "@/lib/runConfig";
 
-const REDIS_URL = process.env.REDIS_URL ?? "redis://127.0.0.1:6379";
-
 export const SIGNAL_CYCLE_QUEUE = "signal-cycle";
 
+let queueInstance: Queue | null = null;
+
+function getRedisUrl(): string {
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) {
+    throw new Error("Redis configuration missing. Set REDIS_URL for queue-backed routes and workers.");
+  }
+  return redisUrl;
+}
+
+export function isQueueConfigured(): boolean {
+  return Boolean(process.env.REDIS_URL);
+}
+
 export function createRedisConnection(): ConnectionOptions {
-  const url = new URL(REDIS_URL);
+  const redisUrl = getRedisUrl();
+  const url = new URL(redisUrl);
   const tls = url.protocol === "rediss:" ? {} : undefined;
 
   return {
@@ -21,11 +34,14 @@ export function createRedisConnection(): ConnectionOptions {
   };
 }
 
-const queueConnection = createRedisConnection();
-
-export const signalCycleQueue = new Queue(SIGNAL_CYCLE_QUEUE, {
-  connection: queueConnection,
-});
+export function getSignalCycleQueue(): Queue {
+  if (!queueInstance) {
+    queueInstance = new Queue(SIGNAL_CYCLE_QUEUE, {
+      connection: createRedisConnection(),
+    });
+  }
+  return queueInstance;
+}
 
 export async function enqueueSignalCycle(
   jobId?: string,
@@ -52,7 +68,7 @@ export async function enqueueSignalCycle(
     removeOnFail: 100,
   };
 
-  const job = await signalCycleQueue.add(
+  const job = await getSignalCycleQueue().add(
     "run",
     {
       requestedAt: new Date().toISOString(),

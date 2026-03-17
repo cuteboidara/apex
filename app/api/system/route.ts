@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
-import { signalCycleQueue } from "@/lib/queue";
+import { getSignalCycleQueue, isQueueConfigured } from "@/lib/queue";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 
@@ -34,42 +34,54 @@ export async function GET() {
     newsApi: Boolean(process.env.NEWS_API_KEY),
     fred: Boolean(process.env.FRED_API_KEY),
     finnhub: Boolean(process.env.FINNHUB_API_KEY),
-    database: Boolean(process.env.DIRECT_DATABASE_URL),
+    database: Boolean(process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL),
     telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
     redis: Boolean(process.env.REDIS_URL),
   };
 
   let queue: QueueStatus;
-  try {
-    const counts = await signalCycleQueue.getJobCounts("waiting", "active", "completed", "failed", "delayed");
-    await recordProviderHealth({
-      provider: "Redis",
-      status: "OK",
-      errorRate: 0,
-    });
+  if (!isQueueConfigured()) {
     queue = {
-      status: "online",
-      waiting: counts.waiting ?? 0,
-      active: counts.active ?? 0,
-      completed: counts.completed ?? 0,
-      failed: counts.failed ?? 0,
-      delayed: counts.delayed ?? 0,
-    };
-  } catch (error) {
-    await recordProviderHealth({
-      provider: "Redis",
-      status: "ERROR",
-      errorRate: 1,
-    });
-    queue = {
-      status: "offline",
+      status: "degraded",
       waiting: 0,
       active: 0,
       completed: 0,
       failed: 0,
       delayed: 0,
-      failureReason: String(error),
+      failureReason: "REDIS_URL is not configured.",
     };
+  } else {
+    try {
+      const counts = await getSignalCycleQueue().getJobCounts("waiting", "active", "completed", "failed", "delayed");
+      await recordProviderHealth({
+        provider: "Redis",
+        status: "OK",
+        errorRate: 0,
+      });
+      queue = {
+        status: "online",
+        waiting: counts.waiting ?? 0,
+        active: counts.active ?? 0,
+        completed: counts.completed ?? 0,
+        failed: counts.failed ?? 0,
+        delayed: counts.delayed ?? 0,
+      };
+    } catch (error) {
+      await recordProviderHealth({
+        provider: "Redis",
+        status: "ERROR",
+        errorRate: 1,
+      });
+      queue = {
+        status: "offline",
+        waiting: 0,
+        active: 0,
+        completed: 0,
+        failed: 0,
+        delayed: 0,
+        failureReason: String(error),
+      };
+    }
   }
 
   const providers: ProviderConfigRow[] = [
@@ -80,7 +92,7 @@ export async function GET() {
     { provider: "FRED", fallbackStatus: envFlags.fred ? "configured" : "missing", detail: "Macro data" },
     { provider: "Finnhub", fallbackStatus: envFlags.finnhub ? "configured" : "missing", detail: "Market news and calendar" },
     { provider: "Telegram", fallbackStatus: envFlags.telegram ? "configured" : "missing", detail: "Alert delivery" },
-    { provider: "Redis", fallbackStatus: queue.status === "online" ? "online" : "offline", detail: "Signal cycle queue" },
+    { provider: "Redis", fallbackStatus: queue.status === "online" ? "online" : queue.status, detail: "Signal cycle queue" },
     { provider: "Postgres", fallbackStatus: envFlags.database ? "configured" : "missing", detail: "Primary persistence" },
   ];
 

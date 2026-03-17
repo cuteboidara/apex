@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enqueueSignalCycle, signalCycleQueue } from "@/lib/queue";
+import { enqueueSignalCycle, getSignalCycleQueue, isQueueConfigured } from "@/lib/queue";
 import { recordAuditEvent } from "@/lib/audit";
 import { requeueAlerts, setAlertSendingPaused } from "@/lib/telegramService";
 import { prisma } from "@/lib/prisma";
@@ -9,28 +9,50 @@ export async function GET() {
   type TelegramSettingsRecord = Awaited<ReturnType<typeof prisma.telegramSettings.findFirst>>;
 
   await reconcileStaleRuns();
-  const jobs = await signalCycleQueue.getJobs(["failed", "waiting", "active", "delayed"], 0, 20, true);
-  const paused = await signalCycleQueue.isPaused().catch(() => false);
   const settings = await prisma.telegramSettings.findFirst().catch(() => null as TelegramSettingsRecord);
+  if (!isQueueConfigured()) {
+    return NextResponse.json({
+      paused: true,
+      degraded: true,
+      alertSendingPaused: settings ? !settings.enabled : false,
+      jobs: [],
+      reason: "Queue unavailable: REDIS_URL is not configured.",
+    });
+  }
 
-  return NextResponse.json({
-    paused,
-    alertSendingPaused: settings ? !settings.enabled : false,
-    jobs: jobs.map(job => ({
-      id: job.id,
-      name: job.name,
-      state: job.finishedOn ? "completed" : undefined,
-      failedReason: job.failedReason,
-      attemptsMade: job.attemptsMade,
-      timestamp: job.timestamp,
-      processedOn: job.processedOn,
-      finishedOn: job.finishedOn,
-      delay: job.delay,
-      queueName: job.queueName,
-      status: job.failedReason ? "failed" : job.processedOn ? "active" : job.delay ? "delayed" : "waiting",
-      runId: typeof job.data?.runId === "string" ? job.data.runId : null,
-    })),
-  });
+  try {
+    const queue = getSignalCycleQueue();
+    const jobs = await queue.getJobs(["failed", "waiting", "active", "delayed"], 0, 20, true);
+    const paused = await queue.isPaused().catch(() => false);
+
+    return NextResponse.json({
+      paused,
+      degraded: false,
+      alertSendingPaused: settings ? !settings.enabled : false,
+      jobs: jobs.map(job => ({
+        id: job.id,
+        name: job.name,
+        state: job.finishedOn ? "completed" : undefined,
+        failedReason: job.failedReason,
+        attemptsMade: job.attemptsMade,
+        timestamp: job.timestamp,
+        processedOn: job.processedOn,
+        finishedOn: job.finishedOn,
+        delay: job.delay,
+        queueName: job.queueName,
+        status: job.failedReason ? "failed" : job.processedOn ? "active" : job.delay ? "delayed" : "waiting",
+        runId: typeof job.data?.runId === "string" ? job.data.runId : null,
+      })),
+    });
+  } catch (error) {
+    return NextResponse.json({
+      paused: true,
+      degraded: true,
+      alertSendingPaused: settings ? !settings.enabled : false,
+      jobs: [],
+      reason: `Queue unavailable: ${String(error)}`,
+    });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -41,7 +63,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "retry_job" && body.jobId) {
-    const job = await signalCycleQueue.getJob(body.jobId);
+    if (!isQueueConfigured()) {
+      return NextResponse.json({ error: "Queue unavailable: REDIS_URL is not configured." }, { status: 503 });
+    }
+    const job = await getSignalCycleQueue().getJob(body.jobId);
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
