@@ -1,10 +1,33 @@
 import { NextResponse } from "next/server";
+import type { ProviderHealth } from "@prisma/client";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { signalCycleQueue } from "@/lib/queue";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 
 export async function GET() {
+  type QueueStatus = {
+    status: string;
+    waiting: number;
+    active: number;
+    completed: number;
+    failed: number;
+    delayed: number;
+    failureReason?: string;
+  };
+  type ProviderConfigRow = { provider: string; fallbackStatus: string; detail: string };
+  type ProviderResponseRow = {
+    provider: string;
+    assetClass: string | null;
+    status: string;
+    detail: string;
+    latencyMs: number | null;
+    recordedAt: string | null;
+    score: number | null;
+    healthState: string | null;
+    circuitState: string | null;
+  };
+
   const envFlags = {
     anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
     alphaVantage: Boolean(process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== "PASTE_YOUR_KEY_HERE"),
@@ -16,7 +39,7 @@ export async function GET() {
     redis: Boolean(process.env.REDIS_URL),
   };
 
-  let queue;
+  let queue: QueueStatus;
   try {
     const counts = await signalCycleQueue.getJobCounts("waiting", "active", "completed", "failed", "delayed");
     await recordProviderHealth({
@@ -26,7 +49,11 @@ export async function GET() {
     });
     queue = {
       status: "online",
-      ...counts,
+      waiting: counts.waiting ?? 0,
+      active: counts.active ?? 0,
+      completed: counts.completed ?? 0,
+      failed: counts.failed ?? 0,
+      delayed: counts.delayed ?? 0,
     };
   } catch (error) {
     await recordProviderHealth({
@@ -45,7 +72,7 @@ export async function GET() {
     };
   }
 
-  const providers = [
+  const providers: ProviderConfigRow[] = [
     { provider: "Anthropic", fallbackStatus: envFlags.anthropic ? "configured" : "missing", detail: "Explanation model" },
     { provider: "Alpha Vantage", fallbackStatus: envFlags.alphaVantage ? "configured" : "missing", detail: "FX and metals market data" },
     { provider: "Twelve Data", fallbackStatus: Boolean(process.env.TWELVE_DATA_API_KEY) ? "configured" : "missing", detail: "Fallback FX, metals, and crypto market data" },
@@ -59,21 +86,21 @@ export async function GET() {
 
   const providerSummaries = await getProviderSummaries();
 
-  const systemProviders = await prisma.providerHealth.findMany({
+  const systemProviders: ProviderHealth[] = await prisma.providerHealth.findMany({
     where: { provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "NewsAPI", "FRED", "Finnhub"] } },
     orderBy: { recordedAt: "desc" },
     take: 50,
-  }).catch(() => []);
+  }).catch(() => [] as ProviderHealth[]);
 
-  const latestSystemProvider = new Map<string, (typeof systemProviders)[number]>();
-  for (const row of systemProviders) {
+  const latestSystemProvider = new Map<string, ProviderHealth>();
+  for (const row of systemProviders as ProviderHealth[]) {
     if (!latestSystemProvider.has(row.provider)) latestSystemProvider.set(row.provider, row);
   }
 
-  const providerRows = [
+  const providerRows: ProviderResponseRow[] = [
     ...providers
-      .filter(item => !["Alpha Vantage", "Twelve Data"].includes(item.provider))
-      .map(item => {
+      .filter((item: ProviderConfigRow) => !["Alpha Vantage", "Twelve Data"].includes(item.provider))
+      .map((item: ProviderConfigRow): ProviderResponseRow => {
         const latest = latestSystemProvider.get(item.provider);
         return {
           provider: item.provider,

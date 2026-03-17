@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { providerRegistry } from "@/lib/marketData/providerRegistry";
 import { getProviderHealthScore } from "@/lib/marketData/providerHealthEngine";
 import type { AssetClass } from "@/lib/marketData/types";
+import type { ProviderHealth } from "@prisma/client";
 
 type ProviderSummary = {
   provider: string;
@@ -32,7 +33,7 @@ export async function getProviderSummaries(): Promise<ProviderSummary[]> {
       prisma.providerHealth.findFirst({
         where: { provider },
         orderBy: { recordedAt: "desc" },
-      }).catch(() => null),
+      }).catch(() => null as ProviderHealth | null),
     ]);
 
     return {

@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
+import type { TradeLog, Setup } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const DIMS = ["macro", "structure", "zones", "technical", "timing"] as const;
 
 export async function GET() {
-  const logs = await prisma.tradeLog.findMany({
+  type TradeLogWithSetup = TradeLog & { setup: Setup };
+
+  const logs: TradeLogWithSetup[] = await prisma.tradeLog.findMany({
     include: { setup: true },
     where: { outcome: { not: null } },
   });
 
   const total = logs.length;
-  const wins  = logs.filter(l => l.outcome === "WIN").length;
+  const wins  = logs.filter((l: TradeLogWithSetup) => l.outcome === "WIN").length;
   const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
   const avgPnl  = total > 0
-    ? Math.round(logs.reduce((s, l) => s + (l.pnl ?? 0), 0) / total * 10) / 10
+    ? Math.round(logs.reduce((s: number, l: TradeLogWithSetup) => s + (l.pnl ?? 0), 0) / total * 10) / 10
     : 0;
 
   // ── By rank ────────────────────────────────────────────────────────────────
@@ -36,14 +39,14 @@ export async function GET() {
   }
 
   // ── Dimension correlation ──────────────────────────────────────────────────
-  const winLogs  = logs.filter(l => l.outcome === "WIN");
-  const lossLogs = logs.filter(l => l.outcome === "LOSS");
+  const winLogs  = logs.filter((l: TradeLogWithSetup) => l.outcome === "WIN");
+  const lossLogs = logs.filter((l: TradeLogWithSetup) => l.outcome === "LOSS");
 
   const dimCorrelation: Record<string, { avgWin: number; avgLoss: number; diff: number }> = {};
   for (const dim of DIMS) {
-    const avg = (arr: typeof logs) =>
+    const avg = (arr: TradeLogWithSetup[]) =>
       arr.length > 0
-        ? Math.round(arr.reduce((s, l) => s + ((l.setup[dim] as number) ?? 0), 0) / arr.length * 10) / 10
+        ? Math.round(arr.reduce((s: number, l: TradeLogWithSetup) => s + ((l.setup[dim] as number) ?? 0), 0) / arr.length * 10) / 10
         : 0;
     const avgWin  = avg(winLogs);
     const avgLoss = avg(lossLogs);

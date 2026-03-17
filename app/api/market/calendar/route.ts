@@ -31,16 +31,16 @@ export async function GET() {
   const seven = now + 7 * 24 * 60 * 60 * 1000;
 
   const filtered = events
-    .filter(ev => {
+    .filter((ev: CalendarEvent) => {
       if (!ev.time) return false;
       const impact = (ev.impact ?? "").toLowerCase();
       if (impact !== "high") return false;
       const ts = new Date(ev.time).getTime();
       return ts >= now && ts <= seven;
     })
-    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+    .sort((a: CalendarEvent, b: CalendarEvent) => new Date(a.time).getTime() - new Date(b.time).getTime())
     .slice(0, 30)
-    .map(ev => {
+    .map((ev: CalendarEvent) => {
       const ts      = new Date(ev.time).getTime();
       const evDate  = ev.time.split(" ")[0];
       const evTime  = ev.time.split(" ")[1] ?? "";
@@ -67,3 +67,13 @@ export async function GET() {
 
   return NextResponse.json(filtered);
 }
+type CalendarEvent = {
+  event: string;
+  country: string;
+  time: string;
+  impact: string | null;
+  actual: number | null;
+  estimate: number | null;
+  prev: number | null;
+  unit: string | null;
+};

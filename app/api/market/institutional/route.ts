@@ -83,7 +83,7 @@ export async function GET() {
   const sourceId = (name: string) =>
     name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
-  const output = merged.slice(0, 15).map(a => ({
+  const output = merged.slice(0, 15).map((a: Article) => ({
     title:          a.title,
     url:            a.url,
     publishedAt:    a.publishedAt,

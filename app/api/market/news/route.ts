@@ -67,16 +67,16 @@ export async function GET() {
 
   // Merge + deduplicate by id
   const seen = new Set<number>();
-  const merged = [...forex, ...crypto].filter(item => {
+  const merged = [...forex, ...crypto].filter((item: MarketNewsItem) => {
     if (seen.has(item.id)) return false;
     seen.add(item.id);
     return matchesFilter(item.headline);
   });
 
   // Sort by datetime descending
-  merged.sort((a, b) => b.datetime - a.datetime);
+  merged.sort((a: MarketNewsItem, b: MarketNewsItem) => b.datetime - a.datetime);
 
-  const output = merged.slice(0, 20).map(item => ({
+  const output = merged.slice(0, 20).map((item: MarketNewsItem) => ({
     id:             item.id,
     headline:       item.headline,
     source:         item.source,
@@ -88,3 +88,11 @@ export async function GET() {
 
   return NextResponse.json(output);
 }
+type MarketNewsItem = {
+  id: number;
+  headline: string;
+  source: string;
+  url: string;
+  datetime: number;
+  summary: string;
+};

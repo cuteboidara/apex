@@ -15,7 +15,7 @@ export async function GET() {
 
   // Return as a map: { BTCUSDT: signal, EURUSD: signal, ... }
   const map: Record<string, unknown> = {};
-  ASSETS.forEach((a, i) => {
+  ASSETS.forEach((a, i: number) => {
     if (results[i]) map[a.symbol] = results[i];
   });
 
