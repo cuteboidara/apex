@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   // Build rank filter — supports comma-separated e.g. "A,S"
   const rankFilter = rank
-    ? { in: rank.split(",").map(r => r.trim()) }
+    ? { in: rank.split(",").map((r: string) => r.trim()) }
     : undefined;
 
   const signals = await prisma.signal.findMany({

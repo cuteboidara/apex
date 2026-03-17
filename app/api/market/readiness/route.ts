@@ -4,7 +4,7 @@ import { fetchLiveMarketPrices } from "@/lib/liveMarket";
 export async function GET() {
   const prices = await fetchLiveMarketPrices();
   return NextResponse.json({
-    assets: prices.map(price => ({
+    assets: prices.map((price: (typeof prices)[number]) => ({
       symbol: price.symbol,
       assetClass: price.assetClass,
       marketStatus: price.marketStatus,

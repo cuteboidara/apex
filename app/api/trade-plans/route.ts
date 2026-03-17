@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureTradePlansForRun, ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
 
 export async function GET(req: NextRequest) {
+  type SignalRunIdRecord = { id: string };
   const { searchParams } = new URL(req.url);
   const symbol = searchParams.get("symbol") ?? undefined;
   const runId = searchParams.get("runId") ?? undefined;
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
       take: 5,
       select: { id: true },
     });
-    await ensureTradePlansForRuns(latestRuns.map(run => run.id));
+    await ensureTradePlansForRuns(latestRuns.map((run: SignalRunIdRecord) => run.id));
   }
 
   const tradePlans = await prisma.tradePlan.findMany({

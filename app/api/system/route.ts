@@ -116,7 +116,7 @@ export async function GET() {
           circuitState: null,
         };
       }),
-    ...providerSummaries.map(summary => ({
+    ...providerSummaries.map((summary: (typeof providerSummaries)[number]) => ({
       provider: summary.provider,
       assetClass: summary.assetClass,
       status: summary.status,
