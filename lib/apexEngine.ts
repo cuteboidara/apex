@@ -28,6 +28,10 @@ export const ASSETS = [
 ] as const;
 
 export type Asset = typeof ASSETS[number];
+type PersistenceTransaction = {
+  signal: typeof prisma.signal;
+  tradePlan: typeof prisma.tradePlan;
+};
 
 // ── Rank ─────────────────────────────────────────────────────────────────────
 
@@ -493,10 +497,10 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
   };
 
   const persistenceStartedAt = Date.now();
-  const signal = await prisma.$transaction(async tx => {
+  const signal = await prisma.$transaction(async (tx: PersistenceTransaction) => {
     const createdSignal = await tx.signal.create({ data: signalData });
     await tx.tradePlan.createMany({
-      data: tradePlans.map(plan => ({
+      data: tradePlans.map((plan: (typeof tradePlans)[number]) => ({
         runId,
         signalId: createdSignal.id,
         symbol: plan.symbol,
