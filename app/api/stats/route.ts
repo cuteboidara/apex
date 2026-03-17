@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import type { TradeLog, Setup } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const DIMS = ["macro", "structure", "zones", "technical", "timing"] as const;
 
 export async function GET() {
-  type TradeLogWithSetup = TradeLog & { setup: Setup };
+  type TradeLogWithSetup = {
+    id: string;
+    setupId: string;
+    entry: number | null;
+    exit: number | null;
+    pnl: number | null;
+    notes: string | null;
+    outcome: string | null;
+    setup: Record<(typeof DIMS)[number] | "rank", number | string>;
+  };
 
   const logs: TradeLogWithSetup[] = await prisma.tradeLog.findMany({
     include: { setup: true },

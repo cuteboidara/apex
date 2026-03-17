@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import type { Signal } from "@prisma/client";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
 
@@ -16,6 +15,22 @@ function rankMeetsMinimum(rank: string, minRank: string): boolean {
 
 const WEEKEND_CRYPTO = new Set(["BTCUSDT", "ETHUSDT"]);
 
+type SignalRecord = {
+  id: string;
+  runId: string;
+  asset: string;
+  direction: string;
+  rank: string;
+  total: number;
+  entry: number | null;
+  stopLoss: number | null;
+  tp1: number | null;
+  tp2: number | null;
+  tp3: number | null;
+  brief: string;
+  createdAt: Date;
+};
+
 // ── Format message ────────────────────────────────────────────────────────────
 
 function fmt(n: number | null | undefined, decimals = 4): string {
@@ -23,7 +38,7 @@ function fmt(n: number | null | undefined, decimals = 4): string {
   return n.toFixed(decimals);
 }
 
-function formatSignalMessage(signal: Signal): string {
+function formatSignalMessage(signal: SignalRecord): string {
   const ts = new Date(signal.createdAt).toUTCString();
   const dir = signal.direction === "LONG" ? "📈 LONG" : "📉 SHORT";
 
@@ -73,7 +88,7 @@ async function getOrCreateSettings() {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export async function sendSignal(signal: Signal): Promise<void> {
+export async function sendSignal(signal: SignalRecord): Promise<void> {
   const settings = await getOrCreateSettings();
 
   const queuedAlert = await prisma.alert.create({

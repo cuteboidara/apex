@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import type { ProviderHealth } from "@prisma/client";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { signalCycleQueue } from "@/lib/queue";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 
 export async function GET() {
+  type ProviderHealthRecord = Awaited<ReturnType<typeof prisma.providerHealth.findMany>>[number];
   type QueueStatus = {
     status: string;
     waiting: number;
@@ -86,14 +86,14 @@ export async function GET() {
 
   const providerSummaries = await getProviderSummaries();
 
-  const systemProviders: ProviderHealth[] = await prisma.providerHealth.findMany({
+  const systemProviders: ProviderHealthRecord[] = await prisma.providerHealth.findMany({
     where: { provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "NewsAPI", "FRED", "Finnhub"] } },
     orderBy: { recordedAt: "desc" },
     take: 50,
-  }).catch(() => [] as ProviderHealth[]);
+  }).catch(() => [] as ProviderHealthRecord[]);
 
-  const latestSystemProvider = new Map<string, ProviderHealth>();
-  for (const row of systemProviders as ProviderHealth[]) {
+  const latestSystemProvider = new Map<string, ProviderHealthRecord>();
+  for (const row of systemProviders as ProviderHealthRecord[]) {
     if (!latestSystemProvider.has(row.provider)) latestSystemProvider.set(row.provider, row);
   }
 

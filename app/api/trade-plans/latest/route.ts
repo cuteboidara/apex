@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import type { TradePlan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { SUPPORTED_ASSETS, TRADE_PLAN_STYLES } from "@/lib/assets";
 import { ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
 
 export async function GET() {
+  type TradePlanRecord = Awaited<ReturnType<typeof prisma.tradePlan.findFirst>>;
+
   const latestRuns = await prisma.signalRun.findMany({
     where: { status: "COMPLETED" },
     orderBy: { completedAt: "desc" },
@@ -33,7 +34,7 @@ export async function GET() {
   );
 
   const payload: Record<string, Record<string, unknown>> = {};
-  grouped.forEach((plan: TradePlan | null) => {
+  grouped.forEach((plan: TradePlanRecord) => {
     if (!plan) return;
     if (!payload[plan.symbol]) payload[plan.symbol] = {};
     payload[plan.symbol][plan.style] = plan;

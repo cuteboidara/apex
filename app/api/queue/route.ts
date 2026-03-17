@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { TelegramSettings } from "@prisma/client";
 import { enqueueSignalCycle, signalCycleQueue } from "@/lib/queue";
 import { recordAuditEvent } from "@/lib/audit";
 import { requeueAlerts, setAlertSendingPaused } from "@/lib/telegramService";
@@ -7,10 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { reconcileStaleRuns } from "@/lib/runLifecycle";
 
 export async function GET() {
+  type TelegramSettingsRecord = Awaited<ReturnType<typeof prisma.telegramSettings.findFirst>>;
+
   await reconcileStaleRuns();
   const jobs = await signalCycleQueue.getJobs(["failed", "waiting", "active", "delayed"], 0, 20, true);
   const paused = await signalCycleQueue.isPaused().catch(() => false);
-  const settings = await prisma.telegramSettings.findFirst().catch(() => null as TelegramSettings | null);
+  const settings = await prisma.telegramSettings.findFirst().catch(() => null as TelegramSettingsRecord);
 
   return NextResponse.json({
     paused,

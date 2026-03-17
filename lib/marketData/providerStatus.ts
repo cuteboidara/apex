@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { providerRegistry } from "@/lib/marketData/providerRegistry";
 import { getProviderHealthScore } from "@/lib/marketData/providerHealthEngine";
 import type { AssetClass } from "@/lib/marketData/types";
-import type { ProviderHealth } from "@prisma/client";
 
 type ProviderSummary = {
   provider: string;
@@ -18,6 +17,7 @@ type ProviderSummary = {
 };
 
 export async function getProviderSummaries(): Promise<ProviderSummary[]> {
+  type ProviderHealthRecord = Awaited<ReturnType<typeof prisma.providerHealth.findMany>>[number];
   const keys = Array.from(
     new Set(
       Object.entries(providerRegistry).flatMap(([assetClass, adapters]) =>
@@ -33,7 +33,7 @@ export async function getProviderSummaries(): Promise<ProviderSummary[]> {
       prisma.providerHealth.findFirst({
         where: { provider },
         orderBy: { recordedAt: "desc" },
-      }).catch(() => null as ProviderHealth | null),
+      }).catch(() => null as ProviderHealthRecord | null),
     ]);
 
     return {
