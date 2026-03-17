@@ -1,0 +1,925 @@
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T20:45:03.104Z","severity":"WARN","runId":"cmmtnjw8v0004kotu84nj5c6h","asset":"BTCUSDT","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7QraieNP24GoN2eE2zN\"}"}
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T21:00:03.418Z","severity":"WARN","runId":"cmmto36oo0004kstuhyj896c0","asset":"XAGUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7Rzx4sdKU9ZZcPSDYhq\"}"}
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T22:00:03.959Z","severity":"WARN","runId":"cmmtq8cgw000akstukkdpg4v4","asset":"ETHUSDT","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7WaLQRffC9knvhymnsg\"}"}
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T22:30:02.914Z","severity":"WARN","runId":"cmmtraxdh000ekstumpl67px2","asset":"XAUUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7YrwtZ1SYFkuH4bcAmB\"}"}
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:00:03.080Z","severity":"WARN","runId":"cmmtsdi9g000ikstu3pdf1wv4","asset":"BTCUSDT","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7b9eXypENuWRStmKneo\"}"}
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:15:02.971Z","severity":"WARN","runId":"cmmtswsoy000mkotu0hk2hby8","asset":"EURUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7cHywNcpoHeQ4JkZphp\"}"}
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:19:46.255Z","severity":"WARN","runId":"cmmtt2oim00ajawtupydn4fzl","asset":"XAUUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7cesDeUmDtVyZiK6Aua\"}"}
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+{"timestamp":"2026-03-16T23:19:55.152Z","severity":"WARN","runId":"cmmtt2pcg00apawtunzx5y4qw","asset":"EURUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7cfX1VW2UspLPgD5trn\"}"}
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:20:02.681Z","severity":"WARN","runId":"cmmtt2psh00avawtu8f0slh5f","asset":"USDJPY","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7cg5ReDmQoEketCdZrC\"}"}
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:20:10.722Z","severity":"WARN","runId":"cmmtt2q3m00b1awtu47752umq","asset":"XAUUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7cgfpMNMmYs6JSXbrRf\"}"}
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GS10  HTTP 403 Forbidden
+[APEX:fetch] ✗ FRED-GDP  HTTP 403 Forbidden
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-16T23:30:03.350Z","severity":"WARN","runId":"cmmttg34g000mkstuogovbnz7","asset":"XAGUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7dSMYjAuMBxHgZEsrP8\"}"}
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-17T00:00:03.098Z","severity":"WARN","runId":"cmmtuio0i000qkstuqfh9dii4","asset":"USDJPY","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ7fj2H4mNNsxRkgnS2fG\"}"}
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-17T05:34:23.036Z","severity":"WARN","runId":"cmmu6gg6o015tawtunxsb0wub","asset":"EURUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ87DhCa67w16xYqmYjuh\"}"}
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-17T05:34:31.174Z","severity":"WARN","runId":"cmmu6ghkk015zawtun0woqxu5","asset":"XAGUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ87EJ2pNx8mjFwzy24sM\"}"}
+^C second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! This is a premium endpoint. You may subscribe to any of the premium plans at https://www.alphavantage.co/premium/ t
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+{"timestamp":"2026-03-17T05:34:14.214Z","severity":"WARN","runId":"cmmu6gfqp015nawture01geo9","asset":"XAUUSD","component":"explanation-engine","message":"Claude explanation failed; using fallback brief","reason":"Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Number of concurrent connections has exceeded your rate limit. Please try again later or contact sales at https://claude.com/contact-sales to discuss your options for a rate limit increase.\"},\"request_id\":\"req_011CZ87D3GHTD2MsCMtGAjHB\"}"}
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-USDJPY  API-level error: We have detected your API key as 9NFFWIWWIA7BHPR2 and our standard API rate limit is 25 requests per day. Please subscribe to any of the premium plans
+[APEX:fetch] ✗ newsapi-EURUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-BTC  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-ETH  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-rate-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-daily-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-rate-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-USDJPY  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GDP  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-FEDFUNDS  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-GS10  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-silver  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-daily-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ✗ newsapi-GBPUSD  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ FRED-CPIAUCSL  HTTP 429 Too Many Requests
+[APEX:fetch] ✗ newsapi-gold  HTTP 429 Too Many Requests
+[APEX:fetch] ⚠ AV-MACD-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAGUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-EURUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-USDJPY  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-MACD-XAUUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an
+[APEX:fetch] ⚠ AV-RSI-GBPUSD  API-level error: Thank you for using Alpha Vantage! Please consider spreading out your free API requests more sparingly (1 request per second). You may subscribe to an

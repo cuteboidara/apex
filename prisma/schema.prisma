@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Setup {
+  id        String    @id @default(cuid())
+  asset     String
+  direction String
+  rank      String
+  total     Int
+  macro     Int
+  structure Int
+  zones     Int
+  technical Int
+  timing    Int
+  reasoning String?
+  createdAt DateTime  @default(now())
+  tradeLog  TradeLog?
+}
+
+model TradeLog {
+  id      String  @id @default(cuid())
+  setupId String  @unique
+  setup   Setup   @relation(fields: [setupId], references: [id])
+  entry   Float?
+  exit    Float?
+  pnl     Float?
+  notes   String?
+  outcome String?
+}
+
+model Signal {
+  id           String   @id @default(cuid())
+  runId        String
+  run          SignalRun @relation(fields: [runId], references: [id])
+  asset        String
+  assetClass   String
+  direction    String
+  rank         String
+  total        Int
+  macro        Int
+  structure    Int
+  zones        Int
+  technical    Int
+  timing       Int
+  entry        Float?
+  stopLoss     Float?
+  tp1          Float?
+  tp2          Float?
+  tp3          Float?
+  brief        String
+  rawData      Json
+  sentTelegram Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  alerts       Alert[]
+  tradePlans   TradePlan[]
+}
+
+model TelegramSettings {
+  id                String   @id @default(cuid())
+  enabled           Boolean  @default(true)
+  minRank           String   @default("A")
+  allowedAssets     String   @default("ALL")
+  weekendCryptoOnly Boolean  @default(false)
+  updatedAt         DateTime @updatedAt
+}
+
+model SignalRun {
+  id                      String   @id @default(cuid())
+  queuedAt                DateTime @default(now())
+  startedAt               DateTime?
+  completedAt             DateTime?
+  totalDurationMs         Int?
+  dataFetchDurationMs     Int?
+  scoringDurationMs       Int?
+  persistenceDurationMs Int?
+  alertDispatchDurationMs Int?
+  engineVersion           String
+  featureVersion          String
+  promptVersion           String
+  status                  String
+  failureCode             String?
+  failureReason           String?
+  failureDetails          Json?
+  signals                 Signal[]
+  tradePlans              TradePlan[]
+}
+
+model TradePlan {
+  id                String    @id @default(cuid())
+  runId             String
+  run               SignalRun @relation(fields: [runId], references: [id])
+  signalId          String
+  signal            Signal    @relation(fields: [signalId], references: [id])
+  symbol            String
+  assetClass        String
+  style             String
+  setupFamily       String?
+  bias              String
+  confidence        Int
+  timeframe         String
+  entryType         String
+  entryMin          Float?
+  entryMax          Float?
+  stopLoss          Float?
+  takeProfit1       Float?
+  takeProfit2       Float?
+  takeProfit3       Float?
+  riskRewardRatio   Float?
+  invalidationLevel Float?
+  regimeTag         String?
+  liquidityThesis   String?
+  trapThesis        String?
+  setupScore        Int?
+  publicationRank   String?
+  thesis            String
+  executionNotes    String
+  status            String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([signalId, style])
+}
+
+model Alert {
+  id            String   @id @default(cuid())
+  signalId       String
+  signal         Signal   @relation(fields: [signalId], references: [id])
+  channel        String
+  recipient      String
+  status         String
+  attemptedAt    DateTime?
+  deliveredAt    DateTime?
+  failureReason  String?
+  retryCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+}
+
+model ProviderHealth {
+  id             String   @id @default(cuid())
+  provider       String
+  requestSymbol  String?
+  detail         String?
+  latencyMs      Int?
+  errorRate      Float?
+  quotaRemaining Int?
+  status         String
+  recordedAt     DateTime @default(now())
+}
+
+model MarketDataSnapshot {
+  id             String   @id @default(cuid())
+  symbol         String
+  assetClass     String
+  timeframe      String
+  provider       String
+  selected       Boolean  @default(false)
+  fallbackUsed   Boolean  @default(false)
+  price          Float?
+  open           Float?
+  high           Float?
+  low            Float?
+  close          Float?
+  volume         Float?
+  freshnessMs    Int?
+  marketStatus   String
+  reason         String?
+  capturedAt     DateTime @default(now())
+
+  @@index([symbol, timeframe, capturedAt])
+}
+
+model ProviderCircuitState {
+  id            String   @id @default(cuid())
+  provider      String
+  assetClass    String
+  state         String
+  score         Int      @default(100)
+  failureCount  Int      @default(0)
+  successCount  Int      @default(0)
+  errorStreak   Int      @default(0)
+  openedAt      DateTime?
+  lastFailureAt DateTime?
+  lastSuccessAt DateTime?
+  cooldownUntil DateTime?
+  updatedAt     DateTime @updatedAt
+
+  @@unique([provider, assetClass])
+}
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  actor         String
+  action        String
+  entityType    String
+  entityId      String
+  before        Json?
+  after         Json?
+  correlationId String?
+  timestamp     DateTime @default(now())
+}

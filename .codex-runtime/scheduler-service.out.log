@@ -1,0 +1,20 @@
+
+> apex@0.1.0 service:scheduler
+> tsx scripts/scheduler-service.ts
+
+{"timestamp":"2026-03-16T20:43:44.759Z","severity":"INFO","component":"scheduler-service","message":"Scheduler service started","cron":"*/15 * * * *"}
+{"timestamp":"2026-03-16T20:43:44.915Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"startup","jobId":"signal-cycle-cmmtnia930000kstu8rtivo0b","runId":"cmmtnia930000kstu8rtivo0b","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T20:45:00.063Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtnjw960002kstuc7crplda","runId":"cmmtnjw960002kstuc7crplda","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T21:00:00.049Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmto36oo0004kstuhyj896c0","runId":"cmmto36oo0004kstuhyj896c0","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T21:15:00.047Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtomh4o0006kstuqxc6d5lz","runId":"cmmtomh4o0006kstuqxc6d5lz","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T21:30:00.057Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtp5rkx0008kstu2wv2q18d","runId":"cmmtp5rkx0008kstu2wv2q18d","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T22:00:00.057Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtq8cgw000akstukkdpg4v4","runId":"cmmtq8cgw000akstukkdpg4v4","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T22:15:00.053Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtqrmwo000ckstuxf3gnygb","runId":"cmmtqrmwo000ckstuxf3gnygb","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T22:30:00.088Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtraxdh000ekstumpl67px2","runId":"cmmtraxdh000ekstumpl67px2","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T22:45:00.138Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtru7tr000gkstu5fg3i5xc","runId":"cmmtru7tr000gkstu5fg3i5xc","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T23:00:00.088Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtsdi9g000ikstu3pdf1wv4","runId":"cmmtsdi9g000ikstu3pdf1wv4","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T23:15:00.083Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtswspd000kkstue2ftc9k8","runId":"cmmtswspd000kkstue2ftc9k8","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T23:30:00.040Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmttg34g000mkstuogovbnz7","runId":"cmmttg34g000mkstuogovbnz7","queue":"signal-cycle"}
+{"timestamp":"2026-03-16T23:45:00.066Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmttzdl3000okstupv9dvpjb","runId":"cmmttzdl3000okstupv9dvpjb","queue":"signal-cycle"}
+{"timestamp":"2026-03-17T00:00:00.043Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtuio0i000qkstuqfh9dii4","runId":"cmmtuio0i000qkstuqfh9dii4","queue":"signal-cycle"}
+{"timestamp":"2026-03-17T00:00:00.056Z","severity":"INFO","component":"scheduler-service","message":"Signal cycle enqueued","trigger":"cron","jobId":"signal-cycle-cmmtuio0y000skotu2c4sl23p","runId":"cmmtuio0y000skotu2c4sl23p","queue":"signal-cycle"}
