@@ -16,7 +16,10 @@ export async function GET() {
     });
 
     const failureBreakdown = runs.reduce<Record<string, number>>(
-      (acc: Record<string, number>, run) => {
+      (
+        acc: Record<string, number>,
+        run: { failureCode?: string | null }
+      ) => {
         const key = run.failureCode ?? "NONE";
         acc[key] = (acc[key] ?? 0) + 1;
         return acc;
