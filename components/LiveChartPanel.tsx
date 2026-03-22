@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { TradingViewChartSurface } from "@/components/TradingViewChartSurface";
+import { LightweightChart } from "@/components/LightweightChart";
 import { SUPPORTED_ASSETS, type TradePlanStyle } from "@/lib/assets";
 import type { Timeframe } from "@/lib/marketData/types";
 
@@ -76,10 +77,6 @@ const TIMEFRAME_OPTIONS: Array<{ timeframe: Timeframe; resolution: "1" | "5" | "
   { timeframe: "4h", resolution: "240" },
   { timeframe: "1D", resolution: "D" },
 ];
-const SVG_WIDTH = 980;
-const SVG_HEIGHT = 420;
-const CHART_MARGIN = { top: 20, right: 90, bottom: 34, left: 18 };
-
 type LifecycleEvent = {
   key: string;
   label: string;
@@ -103,17 +100,6 @@ function formatFreshness(value: number | null) {
   if (value < 60_000) return `${Math.round(value / 1000)}s`;
   if (value < 3_600_000) return `${Math.round(value / 60_000)}m`;
   return `${Math.round(value / 3_600_000)}h`;
-}
-
-function formatTimeLabel(timestamp: number, timeframe: Timeframe) {
-  const date = new Date(timestamp);
-  if (timeframe === "1D") {
-    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  }
-  if (timeframe === "4h" || timeframe === "1h") {
-    return date.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit" });
-  }
-  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatEventTime(value: string | null | undefined) {
@@ -363,46 +349,6 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
     Number.isFinite(candle.close)
   ));
 
-  const overlayValues = overlayPlan
-    ? [overlayPlan.entryMin, overlayPlan.entryMax, overlayPlan.stopLoss, overlayPlan.takeProfit1, overlayPlan.takeProfit2, overlayPlan.takeProfit3]
-        .filter((value): value is number => value != null && Number.isFinite(value))
-    : [];
-  const candleLows = usableCandles.map(candle => candle.low);
-  const candleHighs = usableCandles.map(candle => candle.high);
-  const domainLow = [...candleLows, ...overlayValues].reduce<number | null>((min, value) => min == null ? value : Math.min(min, value), null);
-  const domainHigh = [...candleHighs, ...overlayValues].reduce<number | null>((max, value) => max == null ? value : Math.max(max, value), null);
-  const domainPadding = domainLow != null && domainHigh != null ? Math.max((domainHigh - domainLow) * 0.08, domainHigh * 0.003) : 1;
-  const minY = domainLow != null ? domainLow - domainPadding : null;
-  const maxY = domainHigh != null ? domainHigh + domainPadding : null;
-
-  const innerWidth = SVG_WIDTH - CHART_MARGIN.left - CHART_MARGIN.right;
-  const innerHeight = SVG_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
-  const step = usableCandles.length > 0 ? innerWidth / usableCandles.length : 0;
-  const candleWidth = Math.max(4, Math.min(14, step * 0.62));
-
-  const yForPrice = (value: number) => {
-    if (minY == null || maxY == null || maxY === minY) return CHART_MARGIN.top + innerHeight / 2;
-    const normalized = (value - minY) / (maxY - minY);
-    return CHART_MARGIN.top + innerHeight - (normalized * innerHeight);
-  };
-
-  const xForIndex = (index: number) => CHART_MARGIN.left + (index * step) + (step / 2);
-
-  const priceTicks = minY != null && maxY != null
-    ? Array.from({ length: 5 }, (_, index) => {
-        const ratio = index / 4;
-        const value = maxY - ((maxY - minY) * ratio);
-        return {
-          value,
-          y: yForPrice(value),
-        };
-      })
-    : [];
-
-  const labelIndices = usableCandles.length > 1
-    ? Array.from(new Set([0, Math.floor(usableCandles.length * 0.33), Math.floor(usableCandles.length * 0.66), usableCandles.length - 1]))
-    : [0];
-
   const statusTone = response?.marketStatus === "LIVE"
     ? "text-green-300 border-green-500/30 bg-green-500/10"
     : response?.marketStatus === "DEGRADED"
@@ -413,28 +359,6 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
     ? "text-green-300 border-green-500/30 bg-green-500/10"
     : "text-zinc-200 border-zinc-700 bg-zinc-950";
   const outcome = outcomeBadge(overlayPlan);
-  const visibleLifecycleEvents = lifecycleEvents.filter(event => {
-    const first = usableCandles[0]?.timestamp ?? null;
-    const last = usableCandles.at(-1)?.timestamp ?? null;
-    return first != null && last != null && event.timestamp >= first && event.timestamp <= last;
-  });
-  const xForTimestamp = (timestamp: number) => {
-    if (usableCandles.length <= 1) return CHART_MARGIN.left + innerWidth / 2;
-    if (timestamp <= usableCandles[0].timestamp) return xForIndex(0);
-    if (timestamp >= usableCandles[usableCandles.length - 1].timestamp) return xForIndex(usableCandles.length - 1);
-
-    for (let index = 1; index < usableCandles.length; index += 1) {
-      const previous = usableCandles[index - 1];
-      const current = usableCandles[index];
-      if (timestamp <= current.timestamp) {
-        const range = current.timestamp - previous.timestamp || 1;
-        const ratio = (timestamp - previous.timestamp) / range;
-        return xForIndex(index - 1) + ((xForIndex(index) - xForIndex(index - 1)) * ratio);
-      }
-    }
-
-    return xForIndex(usableCandles.length - 1);
-  };
   const widgetOverlay = overlayPlan ? {
     style: overlayPlan.style,
     bias: overlayPlan.bias,
@@ -541,161 +465,11 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
               loading={loading && !response}
               hasUsableCandles={usableCandles.length > 0}
               overlay={widgetOverlay}
-              fallback={usableCandles.length > 0 && minY != null && maxY != null ? (
-                <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="w-full h-[420px]">
-                  <rect x="0" y="0" width={SVG_WIDTH} height={SVG_HEIGHT} fill="transparent" />
-
-                  {priceTicks.map(tick => (
-                    <g key={tick.value}>
-                      <line
-                        x1={CHART_MARGIN.left}
-                        x2={SVG_WIDTH - CHART_MARGIN.right}
-                        y1={tick.y}
-                        y2={tick.y}
-                        stroke="rgba(63, 63, 70, 0.5)"
-                        strokeDasharray="4 4"
-                      />
-                      <text
-                        x={SVG_WIDTH - CHART_MARGIN.right + 10}
-                        y={tick.y + 4}
-                        fill="rgb(113 113 122)"
-                        fontSize="10"
-                        fontWeight="700"
-                      >
-                        {formatPrice(tick.value)}
-                      </text>
-                    </g>
-                  ))}
-
-                  {overlayPlan?.entryMin != null && overlayPlan.entryMax != null && (
-                    <rect
-                      x={CHART_MARGIN.left}
-                      y={Math.min(yForPrice(overlayPlan.entryMin), yForPrice(overlayPlan.entryMax))}
-                      width={innerWidth}
-                      height={Math.max(2, Math.abs(yForPrice(overlayPlan.entryMin) - yForPrice(overlayPlan.entryMax)))}
-                      fill={overlayPlan.bias === "LONG" ? "rgba(34, 197, 94, 0.14)" : "rgba(113, 113, 122, 0.20)"}
-                    />
-                  )}
-
-                  {usableCandles.map((candle, index) => {
-                    const x = xForIndex(index);
-                    const openY = yForPrice(candle.open);
-                    const closeY = yForPrice(candle.close);
-                    const highY = yForPrice(candle.high);
-                    const lowY = yForPrice(candle.low);
-                    const bodyY = Math.min(openY, closeY);
-                    const bodyHeight = Math.max(1.5, Math.abs(openY - closeY));
-                    const up = candle.close >= candle.open;
-                    const color = up ? "rgb(74 222 128)" : "rgb(161 161 170)";
-
-                    return (
-                      <g key={`${candle.timestamp}-${index}`}>
-                        <line x1={x} x2={x} y1={highY} y2={lowY} stroke={color} strokeWidth="1.2" />
-                        <rect
-                          x={x - candleWidth / 2}
-                          y={bodyY}
-                          width={candleWidth}
-                          height={bodyHeight}
-                          rx="1"
-                          fill={up ? color : "rgba(161, 161, 170, 0.55)"}
-                          stroke={color}
-                          strokeWidth="1"
-                        />
-                      </g>
-                    );
-                  })}
-
-                  {visibleLifecycleEvents.map((event, index) => {
-                    const x = xForTimestamp(event.timestamp);
-                    const labelY = CHART_MARGIN.top + 14 + ((index % 3) * 18);
-                    const levelY = event.level != null ? yForPrice(event.level) : null;
-                    return (
-                      <g key={event.key}>
-                        <line
-                          x1={x}
-                          x2={x}
-                          y1={CHART_MARGIN.top}
-                          y2={CHART_MARGIN.top + innerHeight}
-                          stroke={event.color}
-                          strokeDasharray="3 5"
-                          strokeWidth="1"
-                          opacity="0.75"
-                        />
-                        {levelY != null && (
-                          <>
-                            <circle cx={x} cy={levelY} r="5" fill={event.color} stroke="rgb(9 9 11)" strokeWidth="1.2" />
-                            <text
-                              x={x + 8}
-                              y={levelY - 8}
-                              fill={event.color}
-                              fontSize="10"
-                              fontWeight="700"
-                            >
-                              {event.label}
-                            </text>
-                          </>
-                        )}
-                        <text
-                          x={x + 6}
-                          y={labelY}
-                          fill={event.color}
-                          fontSize="10"
-                          fontWeight="700"
-                        >
-                          {event.shortLabel}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {overlayPlan && [
-                    { key: "entry", label: "Entry", value: overlayPlan.entryMax ?? overlayPlan.entryMin, color: overlayPlan.bias === "LONG" ? "rgb(74 222 128)" : "rgb(212 212 216)" },
-                    { key: "stop", label: "Stop", value: overlayPlan.stopLoss, color: "rgb(251 191 36)" },
-                    { key: "tp1", label: "TP1", value: overlayPlan.takeProfit1, color: "rgb(34 197 94)" },
-                    { key: "tp2", label: "TP2", value: overlayPlan.takeProfit2, color: "rgb(22 163 74)" },
-                    { key: "tp3", label: "TP3", value: overlayPlan.takeProfit3, color: "rgb(21 128 61)" },
-                  ]
-                    .filter(item => item.value != null)
-                    .map(item => {
-                      const y = yForPrice(item.value as number);
-                      return (
-                        <g key={item.key}>
-                          <line
-                            x1={CHART_MARGIN.left}
-                            x2={SVG_WIDTH - CHART_MARGIN.right}
-                            y1={y}
-                            y2={y}
-                            stroke={item.color}
-                            strokeDasharray="8 6"
-                            strokeWidth="1.2"
-                          />
-                          <text
-                            x={SVG_WIDTH - CHART_MARGIN.right + 10}
-                            y={y - 4}
-                            fill={item.color}
-                            fontSize="10"
-                            fontWeight="700"
-                          >
-                            {item.label}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                  {labelIndices.filter(index => usableCandles[index]).map(index => (
-                    <text
-                      key={`label-${index}`}
-                      x={xForIndex(index)}
-                      y={SVG_HEIGHT - 10}
-                      fill="rgb(113 113 122)"
-                      fontSize="10"
-                      fontWeight="700"
-                      textAnchor="middle"
-                    >
-                      {formatTimeLabel(usableCandles[index].timestamp, timeframe)}
-                    </text>
-                  ))}
-                </svg>
+              fallback={usableCandles.length > 0 ? (
+                <LightweightChart
+                  candles={usableCandles}
+                  overlayLevels={widgetOverlay?.levels}
+                />
               ) : null}
             />
           )}

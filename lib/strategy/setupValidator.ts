@@ -139,6 +139,10 @@ export function validateSetup(input: {
   const { style, snapshot, regime, liquidity, structure, setup, execution } = input;
   const diagnostics: StrategyDiagnostic[] = [];
 
+  // Detect Yahoo Finance daily-only provider — short-tf structure signals unavailable
+  const isYahooDaily =
+    snapshot.candleProviders?.["1m"]?.selectedProvider?.includes("Yahoo") === true;
+
   if (snapshot.stale) {
     diagnostics.push("degraded_data");
   }
@@ -155,12 +159,16 @@ export function validateSetup(input: {
     diagnostics.push(...setup.diagnostics);
   }
 
-  if (liquidity.quality !== "high" || liquidity.location === "mid") {
-    diagnostics.push("weak_location");
-  }
+  // For Yahoo daily-only assets, skip liquidity quality and HTF conflict checks —
+  // these derive from short-tf candles that are not available.
+  if (!isYahooDaily) {
+    if (liquidity.quality !== "high" || liquidity.location === "mid") {
+      diagnostics.push("weak_location");
+    }
 
-  if (setup.bias != null && higherTimeframeConflict(style, setup.bias, snapshot, regime, structure)) {
-    diagnostics.push("conflicting_htf_bias");
+    if (setup.bias != null && higherTimeframeConflict(style, setup.bias, snapshot, regime, structure)) {
+      diagnostics.push("conflicting_htf_bias");
+    }
   }
 
   if (setup.bias != null && isOverextended(style, snapshot, setup.bias)) {

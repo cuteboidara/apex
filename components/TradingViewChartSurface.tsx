@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createTradingViewDatafeed } from "@/lib/charting/tradingViewDatafeed";
 import { mapTimeframeToResolution } from "@/lib/charting/resolutionMap";
+import { LightweightChart } from "@/components/LightweightChart";
 import type { Timeframe } from "@/lib/marketData/types";
 
 type Props = {

@@ -120,9 +120,8 @@ export async function GET() {
     { provider: "Postgres", fallbackStatus: envFlags.database ? "configured" : "missing", detail: "Primary persistence" },
   ];
   const marketProviderConfig: Record<string, { enabled: boolean; detail: string }> = {
-    "Binance": { enabled: true, detail: "Primary crypto quotes and candles" },
-    "FCS API": { enabled: envFlags.fcs, detail: "Primary FX and metals quotes/candles, optional crypto fallback" },
-    "Alpha Vantage": { enabled: envFlags.alphaVantage, detail: "Fallback FX and metals quotes plus indicator enrichment" },
+    "Binance":       { enabled: true, detail: "Primary crypto quotes and candles" },
+    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes — daily OHLC, no API key required" },
   };
 
   const providerSummaries = await getProviderSummaries();

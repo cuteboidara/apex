@@ -50,15 +50,24 @@ function chooseBias(
   return snapshot.preferredBias;
 }
 
-function styleThreshold(style: TradePlanStyle): number {
-  switch (style) {
-    case "SCALP":
-      return 999;
-    case "INTRADAY":
-      return 60;
-    case "SWING":
-      return 64;
+function styleThreshold(style: TradePlanStyle, dailyOnly: boolean): number {
+  if (dailyOnly) {
+    switch (style) {
+      case "SCALP":    return 999;
+      case "INTRADAY": return 32;
+      case "SWING":    return 36;
+    }
   }
+  switch (style) {
+    case "SCALP":    return 999;
+    case "INTRADAY": return 60;
+    case "SWING":    return 64;
+  }
+}
+
+function isDailyOnlyProvider(snapshot: MarketSnapshot): boolean {
+  const provider = snapshot.candleProviders?.["1m"]?.selectedProvider ?? "";
+  return provider.includes("Yahoo") || (provider === "" && !snapshot.stale);
 }
 
 function trendAligned(bias: "LONG" | "SHORT", trend: string | null) {
@@ -89,6 +98,7 @@ export function classifySetup(input: {
     };
   }
 
+  const dailyOnly = isDailyOnlyProvider(snapshot);
   const bias = chooseBias(snapshot, regime, structure, liquidity, trap);
 
   const alignment =
@@ -97,7 +107,7 @@ export function classifySetup(input: {
     structure.score +
     trap.score;
 
-  if (alignment < styleThreshold(style)) {
+  if (alignment < styleThreshold(style, dailyOnly)) {
     return {
       valid: false,
       family: null,
@@ -108,6 +118,24 @@ export function classifySetup(input: {
         ? ["weak_location"]
         : ["no_confirmation"],
       thesis: `${style} alignment is too weak for publication.`,
+    };
+  }
+
+  // Daily-only (Yahoo Finance) fallback: assign setup family from daily trend/regime
+  // when short-tf structure signals are unavailable.
+  if (dailyOnly) {
+    const trend = snapshot.trend;
+    const isTrending = trend === "uptrend" || trend === "downtrend";
+    const dailyFamily: SetupClassification["family"] = isTrending ? "Swing Continuation" : "Range Fade";
+    const dailyConfirmation: SetupClassification["confirmation"] = isTrending ? "break_hold" : "clean_rejection";
+    return {
+      valid: true,
+      family: dailyFamily,
+      bias,
+      entryType: dailyFamily === "Range Fade" ? "LIMIT" : "STOP",
+      confirmation: dailyConfirmation,
+      diagnostics: [],
+      thesis: `${dailyFamily} identified on daily timeframe via ${trend ?? "range"} context. Entry planned from daily OHLC range.`,
     };
   }
 

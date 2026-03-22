@@ -5,14 +5,9 @@ import { classifyProviderStatus } from "@/lib/providerStatusClassifier";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const envFlags = {
-    fcs: Boolean(process.env.FCS_API_KEY && process.env.FCS_API_KEY !== "PASTE_YOUR_KEY_HERE"),
-    alphaVantage: Boolean(process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== "PASTE_YOUR_KEY_HERE"),
-  };
   const marketProviderConfig: Record<string, { enabled: boolean; detail: string }> = {
-    "Binance": { enabled: true, detail: "Primary crypto quotes and candles" },
-    "FCS API": { enabled: envFlags.fcs, detail: "Primary FX and metals quotes/candles, optional crypto fallback" },
-    "Alpha Vantage": { enabled: envFlags.alphaVantage, detail: "Fallback FX and metals quotes plus indicator enrichment" },
+    "Binance":       { enabled: true, detail: "Primary crypto quotes and candles" },
+    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes — daily OHLC, no API key required" },
   };
   const providers = (await getProviderSummaries()).map(provider => {
     const config = marketProviderConfig[provider.provider];

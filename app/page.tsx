@@ -383,12 +383,18 @@ interface CoverageSummary {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ASSETS = ["EURUSD","GBPUSD","USDJPY","XAUUSD","XAGUSD","BTCUSDT","ETHUSDT"] as const;
+const ASSETS = [
+  "EURUSD","GBPUSD","USDJPY","USDCAD","AUDUSD","NZDUSD","USDCHF","EURJPY","GBPJPY",
+  "XAUUSD","XAGUSD",
+  "BTCUSDT","ETHUSDT",
+] as const;
 const ASSET_CLASS_ORDER = ["CRYPTO", "FOREX", "COMMODITY"] as const;
-const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "NewsAPI", "FRED", "Finnhub", "Telegram", "FCS API", "Binance", "Alpha Vantage"] as const;
+const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "NewsAPI", "FRED", "Finnhub", "Telegram", "Yahoo Finance", "Binance"] as const;
 
 const ASSET_CLASS: Record<string, string> = {
   EURUSD: "FOREX", GBPUSD: "FOREX", USDJPY: "FOREX",
+  USDCAD: "FOREX", AUDUSD: "FOREX", NZDUSD: "FOREX",
+  USDCHF: "FOREX", EURJPY: "FOREX", GBPJPY: "FOREX",
   XAUUSD: "COMMODITY", XAGUSD: "COMMODITY",
   BTCUSDT: "CRYPTO", ETHUSDT: "CRYPTO",
 };
@@ -562,11 +568,9 @@ function compactProviderDetail(detail: string): string {
 
 function providerRole(provider: ProviderStatus): string {
   if (provider.assetClass === "CRYPTO" && provider.provider === "Binance") return "Primary crypto quotes and candles";
-  if (provider.assetClass === "CRYPTO" && provider.provider === "FCS API") return "Crypto fallback quotes and candles";
-  if (provider.assetClass === "FOREX" && provider.provider === "FCS API") return "Primary FX quotes and candles";
-  if (provider.assetClass === "FOREX" && provider.provider === "Alpha Vantage") return "FX fallback feed and indicator enrichment";
-  if (provider.assetClass === "COMMODITY" && provider.provider === "FCS API") return "Primary metals quotes and candles";
-  if (provider.assetClass === "COMMODITY" && provider.provider === "Alpha Vantage") return "Metals fallback feed and indicator enrichment";
+  if (provider.assetClass === "FOREX" && provider.provider === "Yahoo Finance") return "Primary FX daily OHLC — no API key";
+  if (provider.assetClass === "COMMODITY" && provider.provider === "Yahoo Finance") return "Primary metals daily OHLC — no API key";
+  if (provider.provider === "Yahoo Finance") return "Forex and metals price feed";
   if (provider.provider === "Postgres") return "Primary persistence";
   if (provider.provider === "Redis") return "Queue and retries";
   if (provider.provider === "Anthropic") return "Primary reasoning and summaries";

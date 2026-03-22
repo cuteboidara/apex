@@ -17,7 +17,9 @@ export type SetupFamily =
   | "Displacement Pullback"
   | "Breakout Acceptance"
   | "Mean-Reversion Reclaim"
-  | "Trend Continuation After Re-accumulation";
+  | "Trend Continuation After Re-accumulation"
+  | "Swing Continuation"
+  | "Range Fade";
 
 export type RegimeTag =
   | "trend"

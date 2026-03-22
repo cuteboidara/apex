@@ -21,6 +21,17 @@ import {
   fetchTechnicals,
 } from "@/lib/marketData";
 import { SUPPORTED_ASSETS, type SupportedAsset } from "@/lib/assets";
+import {
+  deriveDirectionSMC,
+  scoreMacroSMC,
+  scoreStructureSMC,
+  scoreZonesSMC,
+  scoreTechnicalSMC,
+  scoreTimingSMC,
+  classifySmcFamily,
+  meetsPublicationThreshold,
+  calcRSI,
+} from "@/lib/scoring/smcEngine";
 
 // ── Asset universe ────────────────────────────────────────────────────────────
 
@@ -44,6 +55,7 @@ type DataSummary = {
   asset: string;
   assetClass: string;
   stale: boolean;
+  closes: number[];
   price: {
     current: number | null;
     change24h: number | null;
@@ -70,114 +82,7 @@ type DataSummary = {
   newsSentimentScore: number;
 };
 
-function clampScore(value: number): number {
-  return Math.max(0, Math.min(20, Math.round(value)));
-}
-
-function deriveDirection(data: DataSummary): "LONG" | "SHORT" {
-  const trend = data.technicals.trend;
-  const rsi = data.technicals.rsi ?? 50;
-  const change = data.price.change24h ?? 0;
-  const newsBias = data.newsSentimentScore;
-  const sentimentValue = Number(data.sentiment?.value ?? 50);
-  const macdHist = data.technicals.macdHist ?? 0;
-
-  let longScore = 0;
-  let shortScore = 0;
-
-  if (trend === "uptrend") longScore += 2;
-  if (trend === "downtrend") shortScore += 2;
-  if (change > 0) longScore += 1;
-  if (change < 0) shortScore += 1;
-  if (newsBias > 0) longScore += 1;
-  if (newsBias < 0) shortScore += 1;
-  if (sentimentValue >= 60) longScore += 1;
-  if (sentimentValue <= 40) shortScore += 1;
-  if (rsi >= 55) longScore += 1;
-  if (rsi <= 45) shortScore += 1;
-
-  const price = data.price.current;
-  const high = data.price.high14d;
-  const low = data.price.low14d;
-  if (price != null && high != null && low != null && high > low) {
-    const normalized = (price - low) / (high - low);
-    if (normalized <= 0.45) longScore += 1;
-    if (normalized >= 0.55) shortScore += 1;
-  }
-
-  if (longScore > shortScore) return "LONG";
-  if (shortScore > longScore) return "SHORT";
-  if (macdHist > 0) return "LONG";
-  if (macdHist < 0) return "SHORT";
-
-  // Final tie-breaker stays neutral instead of biasing the engine long.
-  const symbolParity = Array.from(data.asset).reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return symbolParity % 2 === 0 ? "LONG" : "SHORT";
-}
-
-function scoreMacro(data: DataSummary, direction: "LONG" | "SHORT"): number {
-  const macro = data.macro;
-  if (!macro) return 10;
-
-  let score = 10;
-  const fedTrend = macro.fedTrend ?? "flat";
-  const cpiTrend = macro.cpiTrend ?? "flat";
-  const treasury = Number(macro.treasury10y ?? 0);
-
-  if (direction === "LONG") {
-    if (fedTrend === "falling") score += 4;
-    if (cpiTrend === "falling") score += 4;
-    if (treasury > 0 && treasury < 4.5) score += 2;
-    if (fedTrend === "rising") score -= 3;
-    if (cpiTrend === "rising") score -= 3;
-  } else {
-    if (fedTrend === "rising") score += 4;
-    if (cpiTrend === "rising") score += 4;
-    if (treasury >= 4.5) score += 2;
-    if (fedTrend === "falling") score -= 3;
-    if (cpiTrend === "falling") score -= 3;
-  }
-
-  return clampScore(score);
-}
-
-function scoreStructure(data: DataSummary, direction: "LONG" | "SHORT"): number {
-  const trend = data.technicals.trend;
-  const move = Math.abs(data.price.change24h ?? 0);
-  let score = trend === "consolidation" ? 10 : 12;
-
-  if (direction === "LONG" && trend === "uptrend") score += 6;
-  if (direction === "SHORT" && trend === "downtrend") score += 6;
-  if (direction === "LONG" && trend === "downtrend") score -= 6;
-  if (direction === "SHORT" && trend === "uptrend") score -= 6;
-  if (move > 1.2) score += 2;
-  if (move < 0.2) score -= 2;
-
-  return clampScore(score);
-}
-
-function scoreZones(data: DataSummary, direction: "LONG" | "SHORT"): number {
-  const price = data.price.current;
-  const high = data.price.high14d;
-  const low = data.price.low14d;
-  if (price == null || high == null || low == null || high <= low) return 8;
-
-  const range = high - low;
-  const normalized = (price - low) / range;
-  let score = 10;
-
-  if (direction === "LONG") {
-    if (normalized <= 0.25) score += 7;
-    else if (normalized <= 0.45) score += 3;
-    else if (normalized >= 0.8) score -= 4;
-  } else {
-    if (normalized >= 0.75) score += 7;
-    else if (normalized >= 0.55) score += 3;
-    else if (normalized <= 0.2) score -= 4;
-  }
-
-  return clampScore(score);
-}
+// ── Scoring is delegated to lib/scoring/smcEngine.ts ─────────────────────────
 
 function fallbackBrief(
   asset: Asset,
@@ -310,6 +215,7 @@ export async function analyzeAsset(
     asset:      asset.symbol,
     assetClass: asset.assetClass,
     stale: Boolean((priceData as Record<string, unknown> | null)?.stale) || toNullableNumber((priceData as Record<string, unknown>)?.price) == null,
+    closes,
     price: {
       current:  toNullableNumber((priceData as Record<string, unknown>)?.price),
       change24h: toNullableNumber((priceData as Record<string, unknown>)?.change24h),
@@ -350,6 +256,17 @@ export async function analyzeAsset(
   // ── 3. Deterministic hybrid strategy scoring ──────────────────────────────
 
   const scoringStartedAt = Date.now();
+
+  // ── SMC direction derivation ───────────────────────────────────────────────
+  const smcDirection = deriveDirectionSMC(
+    dataSummary.closes,
+    dataSummary.price.current!,
+    asset.symbol,
+    asset.assetClass,
+    dataSummary.macro,
+    dataSummary.sentiment,
+  );
+
   const macroBias =
     asset.assetClass === "COMMODITY"
       ? "risk_off"
@@ -361,7 +278,7 @@ export async function analyzeAsset(
     {
       asset: asset.symbol,
       assetClass: asset.assetClass,
-      direction: deriveDirection(dataSummary),
+      direction: smcDirection,
       total: 0,
     },
     {
@@ -401,20 +318,42 @@ export async function analyzeAsset(
     return b.setupScore - a.setupScore;
   });
   const bestPlan = rankedPlans[0];
-  const direction = bestPlan?.bias ?? deriveDirection(dataSummary);
+  const direction = bestPlan?.bias ?? smcDirection;
+
   // Only use plan breakdown scores when the plan is active (setupScore > 0).
   // Blocked plans have all-zero breakdowns, and ?? does not guard against 0,
   // so checking setupScore prevents silent zero-scoring on degraded data.
   const hasActivePlan = (bestPlan?.setupScore ?? 0) > 0;
-  const scores = {
-    macro:     hasActivePlan ? bestPlan!.scoreBreakdown.regimeAlignment       : scoreMacro(dataSummary, direction),
-    structure: hasActivePlan ? bestPlan!.scoreBreakdown.liquidityQuality      : scoreStructure(dataSummary, direction),
-    zones:     hasActivePlan ? bestPlan!.scoreBreakdown.structureConfirmation : scoreZones(dataSummary, direction),
-    technical: hasActivePlan ? Math.min(20, bestPlan!.scoreBreakdown.trapEdge + Math.ceil(bestPlan!.scoreBreakdown.entryPrecision / 2)) : 0,
-    timing:    hasActivePlan ? Math.min(20, bestPlan!.scoreBreakdown.riskReward + bestPlan!.scoreBreakdown.freshness + Math.floor(bestPlan!.scoreBreakdown.entryPrecision / 2)) : 0,
+
+  // ── SMC fallback scoring (Path A: no active plan) ─────────────────────────
+  const smcRsi = dataSummary.technicals.rsi ?? calcRSI(dataSummary.closes);
+  const structureResult = scoreStructureSMC(dataSummary.closes, dataSummary.price.current!, direction);
+
+  const smcScores = {
+    macro:     scoreMacroSMC(asset.symbol, asset.assetClass, dataSummary.macro, dataSummary.sentiment, direction),
+    structure: structureResult.score,
+    zones:     scoreZonesSMC(dataSummary.closes, dataSummary.price.current!, direction),
+    technical: scoreTechnicalSMC(dataSummary.closes, smcRsi, direction),
+    timing:    scoreTimingSMC(asset.assetClass, asset.symbol, dataSummary.news, direction),
   };
-  const total = hasActivePlan ? bestPlan!.setupScore : Object.values(scores).reduce((a, b) => a + b, 0);
-  const rank = bestPlan?.publicationRank ?? getRank(total);
+
+  const scores = hasActivePlan
+    ? {
+        macro:     bestPlan!.scoreBreakdown.regimeAlignment,
+        structure: bestPlan!.scoreBreakdown.liquidityQuality,
+        zones:     bestPlan!.scoreBreakdown.structureConfirmation,
+        technical: Math.min(20, bestPlan!.scoreBreakdown.trapEdge + Math.ceil(bestPlan!.scoreBreakdown.entryPrecision / 2)),
+        timing:    Math.min(20, bestPlan!.scoreBreakdown.riskReward + bestPlan!.scoreBreakdown.freshness + Math.floor(bestPlan!.scoreBreakdown.entryPrecision / 2)),
+      }
+    : smcScores;
+
+  const smcTotal = Object.values(smcScores).reduce((a, b) => a + b, 0);
+  const total = hasActivePlan ? bestPlan!.setupScore : smcTotal;
+
+  // SMC publication threshold: must meet minimum criteria for non-Silent rank
+  const passesThreshold = hasActivePlan || meetsPublicationThreshold(smcScores);
+  const rankFromScore = bestPlan?.publicationRank ?? getRank(total);
+  const rank = passesThreshold ? rankFromScore : "Silent";
   const levels = {
     entry: bestPlan?.entryMin != null && bestPlan.entryMax != null ? (bestPlan.entryMin + bestPlan.entryMax) / 2 : null,
     stopLoss: bestPlan?.stopLoss ?? null,
@@ -425,11 +364,25 @@ export async function analyzeAsset(
   const scoringDurationMs = Date.now() - scoringStartedAt;
 
   const narrativeStartedAt = Date.now();
+  const smcFamily = !hasActivePlan
+    ? classifySmcFamily(smcScores, {
+        bullishBOS: structureResult.bullishBOS,
+        bearishBOS: structureResult.bearishBOS,
+        rsiDivBullish: false,
+        rsiDivBearish: false,
+      })
+    : null;
+
   const deterministicBrief = fallbackBrief(asset, direction, scores, rank, levels, bestPlan ? {
     family: bestPlan.setupFamily,
     regimeTag: bestPlan.regimeTag,
     liquidityThesis: bestPlan.liquidityThesis,
     trapThesis: bestPlan.trapThesis,
+  } : smcFamily ? {
+    family: smcFamily,
+    regimeTag: structureResult.bullishBOS ? "expansion" : structureResult.bearishBOS ? "expansion" : "range",
+    liquidityThesis: `SMC scoring: BOS ${structureResult.bullishBOS ? "bullish" : structureResult.bearishBOS ? "bearish" : "none"}`,
+    trapThesis: "",
   } : undefined);
   const userPrompt = `Write a concise trading brief in plain text only, max 120 words.
 
@@ -438,7 +391,7 @@ Class: ${asset.assetClass}
 Direction: ${direction}
 Rank: ${rank}
 Scores: macro ${scores.macro}, structure ${scores.structure}, zones ${scores.zones}, technical ${scores.technical}, timing ${scores.timing}, total ${total}
-Setup family: ${bestPlan?.setupFamily ?? "n/a"}
+SMC setup family: ${bestPlan?.setupFamily ?? smcFamily ?? "n/a"}
 Regime: ${bestPlan?.regimeTag ?? "n/a"}
 Entry: ${levels.entry ?? "n/a"}
 Stop loss: ${levels.stopLoss ?? "n/a"}
@@ -526,7 +479,11 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
     total,
     rank,
     thresholds: { S: 85, A: 70, B: 55 },
-    setupFamily: bestPlan?.setupFamily ?? null,
+    setupFamily: bestPlan?.setupFamily ?? smcFamily ?? null,
+    smcFamily: smcFamily ?? null,
+    smcBullishBOS: structureResult.bullishBOS,
+    smcBearishBOS: structureResult.bearishBOS,
+    passesThreshold,
     regimeTag: bestPlan?.regimeTag ?? null,
   });
 
