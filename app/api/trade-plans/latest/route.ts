@@ -45,7 +45,7 @@ export async function GET() {
     payload[plan.symbol][plan.style] = plan;
   });
 
-  const plans = grouped.filter((plan): plan is NonNullable<TradePlanRecord> => Boolean(plan));
+  const plans = grouped.filter((plan: TradePlanRecord | null | undefined): plan is NonNullable<TradePlanRecord> => Boolean(plan));
 
   return NextResponse.json({
     runId: latestRuns[0]?.id ?? null,
