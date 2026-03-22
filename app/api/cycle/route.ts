@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { enqueueSignalCycle, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";

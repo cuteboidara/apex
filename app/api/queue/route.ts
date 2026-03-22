@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enqueueSignalCycle, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
 import { recordAuditEvent } from "@/lib/audit";
+
+export const dynamic = "force-dynamic";
 import { requeueAlerts, setAlertSendingPaused } from "@/lib/telegramService";
 import { prisma } from "@/lib/prisma";
 import { reconcileStaleRuns } from "@/lib/runLifecycle";

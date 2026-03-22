@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SUPPORTED_ASSETS as ASSETS } from "@/lib/assets";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   type SignalRecord = Awaited<ReturnType<typeof prisma.signal.findMany>>[number];
 

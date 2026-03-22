@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "node scripts/start-web.mjs",
     "start:web": "node scripts/start-web.mjs",
     "lint": "eslint",

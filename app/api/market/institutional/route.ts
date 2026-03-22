@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const NEWS_KEY   = process.env.NEWS_API_KEY ?? "";
 const NEWSAPI    = "https://newsapi.org/v2/everything";
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 async function getOrCreateSettings() {
   const existing = await prisma.telegramSettings.findFirst();
   if (existing) return existing;

@@ -1,0 +1,49 @@
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.4s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/29) ...
+  Generating static pages using 15 workers (7/29) 
+  Generating static pages using 15 workers (14/29) 
+  Generating static pages using 15 workers (21/29) 
+✓ Generating static pages using 15 workers (29/29) in 255.8ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/admin/trigger-cycle
+├ ƒ /api/alerts
+├ ƒ /api/analyze
+├ ƒ /api/cycle
+├ ƒ /api/health
+├ ƒ /api/insights
+├ ƒ /api/logs
+├ ƒ /api/market/calendar
+├ ƒ /api/market/candles
+├ ƒ /api/market/institutional
+├ ƒ /api/market/live
+├ ƒ /api/market/news
+├ ƒ /api/market/readiness
+├ ƒ /api/performance
+├ ƒ /api/queue
+├ ƒ /api/reasoning
+├ ƒ /api/runs
+├ ƒ /api/runs/[id]
+├ ƒ /api/setups
+├ ƒ /api/signals
+├ ƒ /api/signals/latest
+├ ƒ /api/stats
+├ ƒ /api/system
+├ ƒ /api/system/providers
+├ ƒ /api/telegram/settings
+├ ƒ /api/trade-plans
+└ ƒ /api/trade-plans/latest
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const DIMS = ["macro", "structure", "zones", "technical", "timing"] as const;
 
 export async function GET() {

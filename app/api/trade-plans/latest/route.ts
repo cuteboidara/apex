@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SUPPORTED_ASSETS, TRADE_PLAN_STYLES } from "@/lib/assets";
+
+export const dynamic = "force-dynamic";
 import { ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
 import { buildLatestSetupBreakdown } from "@/lib/setupBreakdown";
 import { refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";

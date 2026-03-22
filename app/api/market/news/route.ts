@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { fetchMarketNews } from "@/lib/finnhub";
 
+export const dynamic = "force-dynamic";
+
 // ── Asset keyword mapping ────────────────────────────────────────────────────
 
 const ALL_ASSETS = ["EURUSD","GBPUSD","USDJPY","XAUUSD","XAGUSD","BTCUSDT","ETHUSDT"];

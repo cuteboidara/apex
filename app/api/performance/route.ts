@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildPerformanceReport, refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const lookbackDays = Math.max(7, Math.min(180, Number.parseInt(searchParams.get("lookbackDays") ?? "30", 10) || 30));

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ensureTradePlansForRun, ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
+
+export const dynamic = "force-dynamic";
 import { refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";
 
 export async function GET(req: NextRequest) {

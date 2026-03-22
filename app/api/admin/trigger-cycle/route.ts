@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 import { recordAuditEvent } from "@/lib/audit";
 import { logEvent } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { getQueueConfiguration, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
+
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 import { classifyProviderStatus } from "@/lib/providerStatusClassifier";

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateInsightsExplanation } from "@/lib/llm/explanationService";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 interface Trade {
   asset: string;
   direction: string;

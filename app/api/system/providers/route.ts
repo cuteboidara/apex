@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { classifyProviderStatus } from "@/lib/providerStatusClassifier";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const envFlags = {
     fcs: Boolean(process.env.FCS_API_KEY && process.env.FCS_API_KEY !== "PASTE_YOUR_KEY_HERE"),

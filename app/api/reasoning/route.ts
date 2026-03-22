@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateReasoningExplanation } from "@/lib/llm/explanationService";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 const CRITERIA: Record<string, Array<[number, string]>> = {
   macro: [
     [20, "Rate environment, GDP trend, and sector narrative all support trade direction"],

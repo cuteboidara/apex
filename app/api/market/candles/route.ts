@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SUPPORTED_ASSETS } from "@/lib/assets";
 import { orchestrateCandles } from "@/lib/marketData/candleOrchestrator";
+
+export const dynamic = "force-dynamic";
 import type { Timeframe } from "@/lib/marketData/types";
 
 const SUPPORTED_TIMEFRAMES = new Set<Timeframe>(["1m", "5m", "15m", "1h", "4h", "1D"]);

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { fetchEconomicCalendar } from "@/lib/finnhub";
 
+export const dynamic = "force-dynamic";
+
 const COUNTRY_FLAG: Record<string, string> = {
   US: "🇺🇸", EU: "🇪🇺", GB: "🇬🇧", JP: "🇯🇵",
   CA: "🇨🇦", AU: "🇦🇺", NZ: "🇳🇿", CH: "🇨🇭",
