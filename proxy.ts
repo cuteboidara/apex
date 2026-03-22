@@ -1,10 +1,25 @@
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
 
-export const proxy = withAuth({
-  pages: {
-    signIn: "/auth/signin",
+export const proxy = withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl;
+    const token = req.nextauth.token;
+
+    // Protect /admin/* — only ADMIN_EMAIL may access
+    if (pathname.startsWith("/admin")) {
+      if (!token || token.email !== ADMIN_EMAIL) {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+    }
   },
-});
+  {
+    pages: {
+      signIn: "/auth/signin",
+    },
+  },
+);
 
 export const config = {
   matcher: [

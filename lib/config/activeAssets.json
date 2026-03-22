@@ -1,0 +1,15 @@
+{
+  "EURUSD":  true,
+  "GBPUSD":  true,
+  "USDJPY":  true,
+  "USDCAD":  true,
+  "AUDUSD":  true,
+  "NZDUSD":  true,
+  "USDCHF":  true,
+  "EURJPY":  true,
+  "GBPJPY":  true,
+  "XAUUSD":  true,
+  "XAGUSD":  true,
+  "BTCUSDT": true,
+  "ETHUSDT": true
+}

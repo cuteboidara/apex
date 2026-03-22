@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createTradingViewDatafeed } from "@/lib/charting/tradingViewDatafeed";
 import { mapTimeframeToResolution } from "@/lib/charting/resolutionMap";
-import { LightweightChart } from "@/components/LightweightChart";
 import type { Timeframe } from "@/lib/marketData/types";
 
 type Props = {
@@ -291,15 +290,15 @@ export function TradingViewChartSurface({ symbol, timeframe, loading, hasUsableC
     : "border-zinc-800 bg-zinc-950 text-zinc-300";
 
   return (
-    <div className="relative min-h-[420px] rounded-xl border border-zinc-900 bg-[#0b0b0b] overflow-hidden">
+    <div className="relative min-h-[300px] md:min-h-[420px] rounded-xl border border-zinc-900 bg-[#0b0b0b] overflow-hidden">
       <div
         id={containerId}
         ref={containerRef}
-        className={showWidget ? "h-[420px] w-full" : "hidden"}
+        className={showWidget ? "h-[300px] md:h-[420px] w-full" : "hidden"}
       />
 
       {showFallback && (
-        <div className="h-[420px] w-full">
+        <div className="h-[300px] md:h-[420px] w-full">
           {fallback}
         </div>
       )}

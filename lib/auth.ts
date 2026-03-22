@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -21,6 +22,28 @@ export const authOptions: NextAuthOptions = {
 
         const valid = await bcrypt.compare(credentials.password, user.hashedPassword);
         if (!valid) return null;
+
+        // Admin always bypasses status check
+        if (user.email !== ADMIN_EMAIL) {
+          if (user.status === "PENDING") {
+            throw new Error("Your account is pending approval. You will be notified when approved.");
+          }
+          if (user.status === "SUSPENDED") {
+            throw new Error("Your account has been suspended. Contact support.");
+          }
+          if (user.status === "BANNED") {
+            throw new Error("Your account has been banned.");
+          }
+        }
+
+        // Track login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastLoginAt: new Date(),
+            loginCount: { increment: 1 },
+          },
+        });
 
         return { id: user.id, name: user.name ?? "", email: user.email, role: user.role };
       },

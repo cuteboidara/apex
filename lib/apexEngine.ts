@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
+import fs from "fs";
+import path from "path";
 import { ENGINE_VERSION, FAILURE_CODES, FEATURE_VERSION, PROMPT_VERSION, type FailureCode } from "@/lib/runConfig";
 import { buildTradePlans } from "@/lib/tradePlanner";
 import { generateSignalNarrative } from "@/lib/llm/explanationService";
+import { runSignalAnalysisPipeline, type SignalAnalysisInput } from "@/lib/ai/signalAnalysisPipeline";
 import type { Timeframe } from "@/lib/marketData/types";
 import {
   applyTradePlanQualityGates,
@@ -37,6 +40,16 @@ import {
 
 export const ASSETS = SUPPORTED_ASSETS;
 export type Asset = SupportedAsset;
+
+function getActiveAssetSymbols(): Set<string> {
+  try {
+    const p = path.join(process.cwd(), "lib/config/activeAssets.json");
+    const config = JSON.parse(fs.readFileSync(p, "utf-8")) as Record<string, boolean>;
+    return new Set(Object.entries(config).filter(([, v]) => v).map(([k]) => k));
+  } catch {
+    return new Set(ASSETS.map(a => a.symbol));
+  }
+}
 type PersistenceTransaction = {
   signal: typeof prisma.signal;
   tradePlan: typeof prisma.tradePlan;
@@ -594,6 +607,75 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
     signalId: signal.id,
     tradePlanCount: 3,
   });
+
+  // ── 5. Fire 3-stage AI pipeline async (non-blocking) ──────────────────────
+  // Only runs for published signals (B/A/S). Does not block signal publication.
+  if (rank === "S" || rank === "A" || rank === "B") {
+    const pipelineInput: SignalAnalysisInput = {
+      asset:         asset.symbol,
+      direction,
+      rank,
+      total,
+      macro:         scores.macro,
+      structure:     scores.structure,
+      zones:         scores.zones,
+      technical:     scores.technical,
+      timing:        scores.timing,
+      price:         dataSummary.price.current!,
+      rsi:           dataSummary.technicals.rsi,
+      trend:         dataSummary.technicals.trend,
+      closes:        dataSummary.closes.slice(-30), // last 30 closes is enough context
+      setupFamily:   bestPlan?.setupFamily ?? smcFamily ?? null,
+      regimeTag:     bestPlan?.regimeTag ?? null,
+      newsHeadlines: dataSummary.news.slice(0, 3).map(n => n.title),
+      fedFunds:      dataSummary.macro?.fedFundsRate
+                       ? parseFloat(dataSummary.macro.fedFundsRate) || null
+                       : null,
+      cpi:           dataSummary.macro?.cpi ?? null,
+      treasury10y:   dataSummary.macro?.treasury10y ?? null,
+      entryPrice:    levels.entry,
+      tp1:           levels.tp1,
+      tp2:           levels.tp2,
+      tp3:           levels.tp3,
+      stopLoss:      levels.stopLoss,
+      sessionUTC:    new Date().getUTCHours(),
+    };
+
+    runSignalAnalysisPipeline(pipelineInput)
+      .then(async output => {
+        if (!output) return;
+        await prisma.signal.update({
+          where: { id: signal.id },
+          data: {
+            aiExplanation:       output.explanation       || null,
+            aiRiskAssessment:    output.riskAssessment    || null,
+            aiMarketContext:     output.marketContext      || null,
+            aiEntryRefinement:   output.entryRefinement   || null,
+            aiInvalidationLevel: output.invalidationLevel || null,
+            aiUnifiedAnalysis:   output.unifiedAnalysis   || null,
+            aiGptConfidence:     output.gptConfidence,
+            aiClaudeConfidence:  output.claudeConfidence,
+            aiGeminiConfidence:  output.geminiConfidence,
+            aiVerdict:           output.verdict           || null,
+            aiGeneratedAt:       new Date(output.generatedAt),
+          },
+        });
+        logEvent({
+          runId,
+          asset: asset.symbol,
+          component: "ai-pipeline",
+          message: "3-stage AI analysis complete",
+          verdict: output.verdict,
+          geminiConfidence: output.geminiConfidence,
+          claudeConfidence: output.claudeConfidence,
+          gptConfidence: output.gptConfidence,
+        });
+      })
+      .catch(err => {
+        console.error(`[APEX:ai] Pipeline failed for ${asset.symbol}:`, String(err).slice(0, 120));
+      });
+  }
+
   return {
     signal,
     metrics: {
@@ -623,11 +705,14 @@ export async function runFullCycle(runId: string) {
     },
   });
 
+  const activeSymbols  = getActiveAssetSymbols();
+  const assetsToRun    = ASSETS.filter(a => activeSymbols.has(a.symbol));
+
   logEvent({
     runId,
     component: "signal-engine",
     message: "Signal cycle started",
-    assetCount: ASSETS.length,
+    assetCount: assetsToRun.length,
     rankThresholds: { S: 85, A: 70, B: 55 },
   });
   await recordAuditEvent({
@@ -652,7 +737,7 @@ export async function runFullCycle(runId: string) {
       });
       return null;
     });
-  const results = await Promise.allSettled(ASSETS.map(a => analyzeAsset(a, runId, gateState, macroResult)));
+  const results = await Promise.allSettled(assetsToRun.map(a => analyzeAsset(a, runId, gateState, macroResult)));
 
   const fulfilled = results
     .filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof analyzeAsset>>> =>

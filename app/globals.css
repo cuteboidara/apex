@@ -58,3 +58,15 @@ input[type="range"] {
 .fade-in {
   animation: fadeIn 0.25s ease-out;
 }
+
+/* ── Mobile optimizations ──────────────────────────────────────────────────── */
+
+/* Momentum scrolling for all overflow-x-auto containers */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe-area bottom padding (for devices with home indicator) */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}

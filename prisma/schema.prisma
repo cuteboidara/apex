@@ -7,12 +7,18 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  name           String?
-  email          String   @unique
-  hashedPassword String
-  role           String   @default("MEMBER")
-  createdAt      DateTime @default(now())
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  hashedPassword  String
+  role            String    @default("MEMBER")
+  status          String    @default("PENDING")
+  approvedAt      DateTime?
+  approvedBy      String?
+  suspendedReason String?
+  lastLoginAt     DateTime?
+  loginCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
 }
 
 model Setup {
@@ -65,6 +71,20 @@ model Signal {
   rawData      Json
   sentTelegram Boolean  @default(false)
   createdAt    DateTime @default(now())
+
+  // 3-stage AI analysis pipeline fields
+  aiExplanation       String?
+  aiRiskAssessment    String?
+  aiMarketContext     String?
+  aiEntryRefinement   String?
+  aiInvalidationLevel String?
+  aiUnifiedAnalysis   String?
+  aiGptConfidence     Int?
+  aiClaudeConfidence  Int?
+  aiGeminiConfidence  Int?
+  aiVerdict           String?
+  aiGeneratedAt       DateTime?
+
   alerts       Alert[]
   tradePlans   TradePlan[]
 }

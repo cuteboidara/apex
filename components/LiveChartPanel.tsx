@@ -448,7 +448,7 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
           )}
 
           {!loading && usableCandles.length === 0 && (
-            <div className="min-h-[420px] rounded-xl border border-zinc-900 bg-[#0b0b0b] flex items-center justify-center text-center px-6">
+            <div className="min-h-[300px] md:min-h-[420px] rounded-xl border border-zinc-900 bg-[#0b0b0b] flex items-center justify-center text-center px-6">
               <div>
                 <p className="text-sm font-bold text-zinc-200">Candle data unavailable</p>
                 <p className="text-[10px] text-zinc-500 mt-2">

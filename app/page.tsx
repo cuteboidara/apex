@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { TradingViewChartPanel } from "@/components/TradingViewChartPanel";
 
@@ -51,6 +51,19 @@ interface Signal {
   rawData:     RawData;
   sentTelegram: boolean;
   createdAt:   string;
+
+  // 3-stage AI pipeline fields (populated async after persistence)
+  aiExplanation?:       string | null;
+  aiRiskAssessment?:    string | null;
+  aiMarketContext?:     string | null;
+  aiEntryRefinement?:   string | null;
+  aiInvalidationLevel?: string | null;
+  aiUnifiedAnalysis?:   string | null;
+  aiGptConfidence?:     number | null;
+  aiClaudeConfidence?:  number | null;
+  aiGeminiConfidence?:  number | null;
+  aiVerdict?:           string | null;
+  aiGeneratedAt?:       string | null;
 }
 
 interface TelegramSettings {
@@ -543,6 +556,14 @@ function blockedReasonLabel(reason: string | null | undefined): string {
   return "blocked";
 }
 
+function verdictTone(verdict: string): string {
+  if (verdict === "STRONG")   return "border-green-500/30 text-green-300 bg-green-500/10";
+  if (verdict === "MODERATE") return "border-yellow-500/30 text-yellow-300 bg-yellow-500/10";
+  if (verdict === "WEAK")     return "border-orange-500/30 text-orange-300 bg-orange-500/10";
+  if (verdict === "AVOID")    return "border-red-500/30 text-red-300 bg-red-500/10";
+  return "border-zinc-800 text-zinc-500 bg-zinc-900/60";
+}
+
 function qualityGateLabel(reason: string | null | undefined): string {
   if (reason === "degraded_low_confidence") return "Degraded low-confidence";
   if (reason === "style_disabled_poor_performance") return "Style paused";
@@ -637,6 +658,7 @@ function AssetCard({
   tradePlans: TradePlan[];
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [planVisible, setPlanVisible] = useState(false);
   const [activeStyle, setActiveStyle] = useState<TradePlan["style"]>("SCALP");
   const activePlan = tradePlans.find(plan => plan.style === activeStyle) ?? null;
   const fresh = signal ? isFresh(signal.createdAt) : false;
@@ -655,7 +677,7 @@ function AssetCard({
 
   return (
     <div className={`
-      bg-[#0d0d0d] border rounded-2xl p-4 flex flex-col gap-3 transition-all duration-300 min-h-[380px]
+      bg-[#0d0d0d] border rounded-2xl p-3 md:p-4 flex flex-col gap-3 transition-all duration-300 md:min-h-[380px]
       ${rc.border}
       ${fresh ? `shadow-lg ${rc.glow}` : ""}
       ${fresh ? "ring-1 ring-inset ring-white/3" : ""}
@@ -699,12 +721,61 @@ function AssetCard({
             ))}
           </div>
 
+          {/* AI Analysis section */}
+          {signal.aiUnifiedAnalysis && (
+            <div className="rounded-xl border border-zinc-800/60 bg-zinc-950/40 p-3 space-y-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-600">AI Analysis</p>
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded border border-blue-500/30 text-blue-300 bg-blue-500/10">GPT-4</span>
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded border border-green-500/30 text-green-300 bg-green-500/10">CLAUDE</span>
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded border border-purple-500/30 text-purple-300 bg-purple-500/10">GEMINI</span>
+                {signal.aiVerdict && (
+                  <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded border ${verdictTone(signal.aiVerdict)}`}>
+                    {signal.aiVerdict}
+                  </span>
+                )}
+              </div>
+              <p className="text-[9px] text-zinc-400 leading-relaxed">{signal.aiUnifiedAnalysis}</p>
+              {(signal.aiGptConfidence != null || signal.aiClaudeConfidence != null || signal.aiGeminiConfidence != null) && (
+                <div className="space-y-1 pt-1">
+                  {signal.aiGptConfidence != null && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[7px] text-blue-400 w-10 shrink-0">GPT-4</span>
+                      <div className="flex-1 h-1 rounded-full bg-zinc-800">
+                        <div className="h-1 rounded-full bg-blue-500 transition-all" style={{ width: `${signal.aiGptConfidence}%` }} />
+                      </div>
+                      <span className="text-[7px] tabular-nums text-blue-400 w-6 text-right">{signal.aiGptConfidence}</span>
+                    </div>
+                  )}
+                  {signal.aiClaudeConfidence != null && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[7px] text-green-400 w-10 shrink-0">Claude</span>
+                      <div className="flex-1 h-1 rounded-full bg-zinc-800">
+                        <div className="h-1 rounded-full bg-green-500 transition-all" style={{ width: `${signal.aiClaudeConfidence}%` }} />
+                      </div>
+                      <span className="text-[7px] tabular-nums text-green-400 w-6 text-right">{signal.aiClaudeConfidence}</span>
+                    </div>
+                  )}
+                  {signal.aiGeminiConfidence != null && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[7px] text-purple-400 w-10 shrink-0">Gemini</span>
+                      <div className="flex-1 h-1 rounded-full bg-zinc-800">
+                        <div className="h-1 rounded-full bg-purple-500 transition-all" style={{ width: `${signal.aiGeminiConfidence}%` }} />
+                      </div>
+                      <span className="text-[7px] tabular-nums text-purple-400 w-6 text-right">{signal.aiGeminiConfidence}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="border-t border-zinc-900/60 pt-2.5">
             <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-              <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-lg border ${directionTone(signal.direction)}`}>
+              <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-lg border min-h-[44px] flex items-center ${directionTone(signal.direction)}`}>
                 {signal.direction === "LONG" ? "▲" : "▼"} {signal.direction}
               </span>
-              <span className="text-[9px] text-zinc-700">Latest update {timeAgo(signal.createdAt)}</span>
+              <span className="hidden md:block text-[9px] text-zinc-700">Latest update {timeAgo(signal.createdAt)}</span>
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               {(["SCALP", "INTRADAY", "SWING"] as const).map(style => (
@@ -723,6 +794,15 @@ function AssetCard({
             </div>
           </div>
 
+          {/* Mobile: View Plan toggle */}
+          <button
+            onClick={() => setPlanVisible(v => !v)}
+            className="md:hidden w-full text-[9px] font-bold tracking-widest uppercase px-3 py-2.5 rounded-lg border border-zinc-800 text-zinc-400 min-h-[44px] transition-colors hover:border-green-500/30 hover:text-green-300"
+          >
+            {planVisible ? "Hide Plan ▲" : "View Plan ▼"}
+          </button>
+
+          <div className={planVisible ? "" : "hidden md:block"}>
           {activePlan ? (
             <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3 space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -855,6 +935,7 @@ function AssetCard({
               <p className="text-[10px] text-zinc-700">No persisted trade plans for this instrument yet.</p>
             </div>
           )}
+          </div>{/* end mobile collapsible plan */}
         </>
       ) : (
         <div className="flex-1 flex items-center justify-center rounded-xl border border-zinc-900 bg-zinc-950/60">
@@ -946,52 +1027,88 @@ function TelegramPanel({ settings, onSave }: {
   );
 }
 
+// ─── MobileBottomNav ──────────────────────────────────────────────────────────
+
+function MobileBottomNav() {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-black/95 border-t border-zinc-900 backdrop-blur-sm pb-safe">
+      <div className="flex items-center justify-around px-2 py-1">
+        {([
+          { href: "#section-dashboard", label: "Dashboard", icon: "⬡" },
+          { href: "#section-signals",   label: "Signals",   icon: "◈" },
+          { href: "#section-chart",     label: "Chart",     icon: "◱" },
+          { href: "#section-settings",  label: "Settings",  icon: "⚙" },
+        ] as const).map(({ href, label, icon }) => (
+          <a
+            key={label}
+            href={href}
+            className="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] gap-0.5 text-zinc-500 active:text-green-300 transition-colors"
+          >
+            <span className="text-base leading-none">{icon}</span>
+            <span className="text-[8px] uppercase tracking-widest">{label}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 // ─── TickerBar ────────────────────────────────────────────────────────────────
+
+function TickerItem({ p }: { p: LivePrice }) {
+  const up = (p.changePct ?? 0) >= 0;
+  return (
+    <div className="flex items-center gap-2 px-4 border-r border-zinc-900/60 shrink-0">
+      <span className="text-[10px] md:text-[10px] font-black tracking-wider text-zinc-400">{p.symbol}</span>
+      <span className={`text-[8px] px-1.5 py-0.5 rounded border ${marketStatusTone(p.marketStatus)}`}>
+        {p.provider}
+      </span>
+      <span className="text-[10px] md:text-[11px] font-bold tabular-nums text-white">
+        {p.currentPrice != null && p.currentPrice > 0 ? fmt(p.currentPrice) : "—"}
+      </span>
+      {p.marketStatus === "LIVE" && p.changePct != null && (
+        <span className={`text-[9px] font-semibold tabular-nums ${up ? "text-green-300" : "text-zinc-500"}`}>
+          {up ? "▲" : "▼"} {Math.abs(p.changePct).toFixed(2)}%
+        </span>
+      )}
+      {p.marketStatus !== "LIVE" && (
+        <span className={`text-[8px] ${p.marketStatus === "UNAVAILABLE" ? "text-zinc-500" : "text-zinc-400"}`}>
+          {p.marketStatus}
+        </span>
+      )}
+    </div>
+  );
+}
 
 function TickerBar({ prices }: { prices: LivePrice[] }) {
   if (prices.length === 0) return null;
-
   const items = [...prices, ...prices]; // duplicate for seamless loop
 
   return (
-    <div className="border-b border-zinc-900/80 bg-black overflow-hidden">
-      <style>{`
-        @keyframes ticker-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .ticker-track {
-          display: flex;
-          width: max-content;
-          animation: ticker-scroll 40s linear infinite;
-        }
-        .ticker-track:hover { animation-play-state: paused; }
-      `}</style>
-      <div className="ticker-track py-2">
-        {items.map((p, i) => {
-          const up = (p.changePct ?? 0) >= 0;
-          return (
-            <div key={i} className="flex items-center gap-2 px-5 border-r border-zinc-900/60 shrink-0">
-              <span className="text-[10px] font-black tracking-wider text-zinc-400">{p.symbol}</span>
-              <span className={`text-[8px] px-1.5 py-0.5 rounded border ${marketStatusTone(p.marketStatus)}`}>
-                {p.provider}
-              </span>
-              <span className="text-[11px] font-bold tabular-nums text-white">
-                {p.currentPrice != null && p.currentPrice > 0 ? fmt(p.currentPrice) : "—"}
-              </span>
-              {p.marketStatus === "LIVE" && p.changePct != null && (
-                <span className={`text-[9px] font-semibold tabular-nums ${up ? "text-green-300" : "text-zinc-500"}`}>
-                  {up ? "▲" : "▼"} {Math.abs(p.changePct).toFixed(2)}%
-                </span>
-              )}
-              {p.marketStatus !== "LIVE" && (
-                <span className={`text-[8px] ${p.marketStatus === "UNAVAILABLE" ? "text-zinc-500" : "text-zinc-400"}`}>
-                  {p.marketStatus}
-                </span>
-              )}
-            </div>
-          );
-        })}
+    <div className="border-b border-zinc-900/80 bg-black">
+      {/* Mobile: touch-scrollable, no animation */}
+      <div className="md:hidden overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" } as CSSProperties}>
+        <div className="flex py-1.5 w-max">
+          {prices.map((p, i) => <TickerItem key={i} p={p} />)}
+        </div>
+      </div>
+      {/* Desktop: infinite scroll animation */}
+      <div className="hidden md:block overflow-hidden">
+        <style>{`
+          @keyframes ticker-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .ticker-track {
+            display: flex;
+            width: max-content;
+            animation: ticker-scroll 40s linear infinite;
+          }
+          .ticker-track:hover { animation-play-state: paused; }
+        `}</style>
+        <div className="ticker-track py-2">
+          {items.map((p, i) => <TickerItem key={i} p={p} />)}
+        </div>
       </div>
     </div>
   );
@@ -1400,6 +1517,10 @@ function MarketIntelPanel({
 export default function Home() {
   const { data: session } = useSession();
 
+  // ── Mobile UI state ───────────────────────────────────────────────────────
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAllSignals, setShowAllSignals] = useState(false);
+
   // ── Existing state ────────────────────────────────────────────────────────
   const [latestSignals, setLatestSignals] = useState<Record<string, Signal>>({});
   const [latestTradePlans, setLatestTradePlans] = useState<Record<string, Record<string, TradePlan>>>({});
@@ -1805,7 +1926,8 @@ export default function Home() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white pb-16 md:pb-0">
+      <MobileBottomNav />
 
       {/* ── BREAKING BANNER ─────────────────────────────────────────────── */}
       <BreakingBanner
@@ -1814,7 +1936,7 @@ export default function Home() {
       />
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
-      <header className="border-b border-zinc-900/80 px-4 sm:px-6 py-3 sticky top-0 z-30 bg-black/95 backdrop-blur-sm">
+      <header id="section-dashboard" className="border-b border-zinc-900/80 px-4 sm:px-6 py-3 sticky top-0 z-30 bg-black/95 backdrop-blur-sm">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/30">
@@ -1822,11 +1944,11 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-sm font-black tracking-[0.28em] uppercase text-white">APEX</h1>
-              <p className="text-[8px] text-green-400 tracking-[0.3em] uppercase">Institutional Signal Operations</p>
+              <p className="text-[8px] text-green-400 tracking-[0.3em] uppercase hidden sm:block">Institutional Signal Operations</p>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-5">
             <div className="text-right">
               <p className="text-[8px] text-zinc-700 tracking-widest uppercase">UTC Time</p>
               <p className="text-xs font-black tabular-nums text-white">{fmtTime(now)}</p>
@@ -1844,31 +1966,75 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Desktop buttons */}
             {session?.user?.name && (
-              <span className="hidden sm:block text-[10px] text-zinc-500 font-medium">
+              <span className="hidden md:block text-[10px] text-zinc-500 font-medium">
                 {session.user.name}
               </span>
             )}
             <button onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-400 hover:border-red-500/30 hover:text-red-400 transition-colors">
+              className="hidden md:block text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-400 hover:border-red-500/30 hover:text-red-400 transition-colors">
               Sign Out
             </button>
             <button onClick={() => setShowTelegram(v => !v)}
-              className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border transition-all ${
+              className={`hidden md:block text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border transition-all ${
                 showTelegram ? "border-green-500/40 text-green-300 bg-green-500/10" : "border-zinc-800 text-zinc-400 hover:border-green-500/30 hover:text-green-300"
               }`}>
               TG Settings
             </button>
+            {/* Run Cycle — always visible */}
             <button onClick={runCycle} disabled={cycleRunning}
-              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 transition-colors">
+              className="text-[10px] font-bold tracking-widest uppercase px-3 py-2 md:py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 transition-colors min-h-[44px] md:min-h-0">
               {cycleRunning ? "Running…" : "⬡ Run Cycle"}
             </button>
+            {/* Enqueue — desktop only */}
             <button onClick={enqueueCycleManually} disabled={cycleRunning || !queueAvailable}
-              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-green-500/30 hover:text-green-300 disabled:opacity-40 disabled:hover:border-zinc-800 disabled:hover:text-zinc-300 transition-colors">
+              className="hidden md:block text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-green-500/30 hover:text-green-300 disabled:opacity-40 disabled:hover:border-zinc-800 disabled:hover:text-zinc-300 transition-colors">
               {queueAvailable ? "Enqueue" : "Queue Offline"}
+            </button>
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="md:hidden flex flex-col items-center justify-center gap-1 w-10 h-10 rounded-lg border border-zinc-800 text-zinc-400"
+              aria-label="Menu"
+            >
+              <span className="w-4 h-0.5 bg-current" />
+              <span className="w-4 h-0.5 bg-current" />
+              <span className="w-4 h-0.5 bg-current" />
             </button>
           </div>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-zinc-900/60 mt-3 pt-3 pb-1 space-y-2 fade-in">
+            <div className="flex gap-3 text-[9px] text-zinc-500 px-1 pb-1">
+              <span>UTC {fmtTime(now)}</span>
+              <span>·</span>
+              <span>Last cycle {lastCycleStr}</span>
+              <span>·</span>
+              <span className={activeSignals > 0 ? "text-green-300" : "text-zinc-600"}>
+                {activeSignals} active
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => { enqueueCycleManually(); setMobileMenuOpen(false); }} disabled={cycleRunning || !queueAvailable}
+                className="text-[10px] font-bold tracking-widest uppercase px-3 py-2.5 rounded-lg border border-zinc-800 text-zinc-300 disabled:opacity-40 transition-colors min-h-[44px]">
+                {queueAvailable ? "Enqueue" : "Queue Offline"}
+              </button>
+              <button onClick={() => { setShowTelegram(v => !v); setMobileMenuOpen(false); }}
+                className={`text-[10px] font-bold tracking-widest uppercase px-3 py-2.5 rounded-lg border min-h-[44px] transition-all ${
+                  showTelegram ? "border-green-500/40 text-green-300 bg-green-500/10" : "border-zinc-800 text-zinc-400"
+                }`}>
+                TG Settings
+              </button>
+              <button onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                className="text-[10px] font-bold tracking-widest uppercase px-3 py-2.5 rounded-lg border border-zinc-800 text-zinc-400 min-h-[44px] transition-colors">
+                Sign Out{session?.user?.name ? ` (${session.user.name})` : ""}
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ── LIVE TICKER ─────────────────────────────────────────────────── */}
@@ -1896,7 +2062,7 @@ export default function Home() {
         )}
 
         {coverageSummaries.length > 0 && (
-          <div className="mb-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="mb-5 grid grid-cols-2 xl:grid-cols-4 gap-3">
             {coverageSummaries.map(item => (
               <CoverageSummaryCard key={item.label} item={item} />
             ))}
@@ -1904,6 +2070,7 @@ export default function Home() {
         )}
 
         {/* ── Telegram settings panel ───────────────────────────────────── */}
+        <div id="section-settings" />
         {showTelegram && (
           <div className="bg-[#0d0d0d] border border-zinc-800 rounded-2xl p-5 mb-5 fade-in max-w-sm">
             <div className="flex items-center gap-2 mb-4">
@@ -1961,7 +2128,8 @@ export default function Home() {
               {performance ? `${performance.summary.publishedCount} published · ${performance.summary.resolvedCount} resolved` : "Awaiting tracked outcomes"}
             </span>
           </div>
-          <div className="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-5">
+          <div className="overflow-x-auto mb-5">
+          <div className="grid grid-cols-2 xl:grid-cols-5 gap-3 min-w-[560px] xl:min-w-0">
             <PerformanceMetricCard
               label="Win Rate"
               value={fmtPct(performanceSummary?.winRate)}
@@ -1990,6 +2158,7 @@ export default function Home() {
               accent={rrTone(performanceSummary?.averageRR)}
             />
           </div>
+          </div>{/* end overflow-x-auto */}
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
             <PerformanceListPanel
               title="Worst Setup Families"
@@ -2056,12 +2225,14 @@ export default function Home() {
           </div>
         </div>
 
-        <TradingViewChartPanel latestTradePlans={latestTradePlans} />
+        <div id="section-chart">
+          <TradingViewChartPanel latestTradePlans={latestTradePlans} />
+        </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
 
           {/* ── ASSET GRID ────────────────────────────────────────────── */}
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-3" id="section-signals">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Asset Universe</h2>
               {lastRefresh && (
@@ -2098,9 +2269,21 @@ export default function Home() {
                   <p className="text-zinc-900 text-[9px] mt-1">Run a cycle to generate signals.</p>
                 </div>
               ) : (
-                <div className="space-y-0">
-                  {signalFeed.map(s => <SignalFeedItem key={s.id} signal={s} />)}
-                </div>
+                <>
+                  <div className="space-y-0">
+                    {(showAllSignals ? signalFeed : signalFeed.slice(0, 3)).map(s => (
+                      <SignalFeedItem key={s.id} signal={s} />
+                    ))}
+                  </div>
+                  {signalFeed.length > 3 && (
+                    <button
+                      onClick={() => setShowAllSignals(v => !v)}
+                      className="md:hidden mt-2 w-full text-[9px] font-bold tracking-widest uppercase px-3 py-2 rounded-lg border border-zinc-800 text-zinc-500 min-h-[44px] transition-colors"
+                    >
+                      {showAllSignals ? `Show less ▲` : `View all ${signalFeed.length} ▼`}
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
