@@ -1,5 +1,8 @@
 import type { ConnectionOptions } from "bullmq";
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
+
+// ── BullMQ / ioredis-compatible config (unchanged) ───────────────────────────
+// BullMQ requires a raw ioredis connection; it uses REDIS_URL (not Upstash REST).
 
 export type RedisConfigSource =
   | "REDIS_URL"
@@ -13,25 +16,17 @@ export type RedisRuntimeConfig = {
   restOnlyConfigured: boolean;
 };
 
-const globalForRedis = globalThis as typeof globalThis & {
-  __apexRedisClient?: Redis | null;
-};
-
 function resolveRedisConfig(): RedisRuntimeConfig {
   const candidates = [
-    { source: "REDIS_URL" as const, value: process.env.REDIS_URL ?? null },
-    { source: "KV_URL" as const, value: process.env.KV_URL ?? null },
-    { source: "UPSTASH_REDIS_URL" as const, value: process.env.UPSTASH_REDIS_URL ?? null },
-    { source: "UPSTASH_REDIS_TLS_URL" as const, value: process.env.UPSTASH_REDIS_TLS_URL ?? null },
+    { source: "REDIS_URL" as const,               value: process.env.REDIS_URL               ?? null },
+    { source: "KV_URL" as const,                  value: process.env.KV_URL                  ?? null },
+    { source: "UPSTASH_REDIS_URL" as const,       value: process.env.UPSTASH_REDIS_URL       ?? null },
+    { source: "UPSTASH_REDIS_TLS_URL" as const,   value: process.env.UPSTASH_REDIS_TLS_URL   ?? null },
   ];
 
   const configured = candidates.find(candidate => Boolean(candidate.value));
   if (configured) {
-    return {
-      url: configured.value,
-      source: configured.source,
-      restOnlyConfigured: false,
-    };
+    return { url: configured.value, source: configured.source, restOnlyConfigured: false };
   }
 
   return {
@@ -51,17 +46,17 @@ export function getRedisConfiguration(): RedisRuntimeConfig {
   return redisConfig;
 }
 
+/** True when a raw ioredis-compatible URL is available (needed for BullMQ). */
 export function isRedisConfigured(): boolean {
   return Boolean(redisConfig.url);
 }
 
 function buildTlsOptions(url: URL) {
   if (url.protocol !== "rediss:") return undefined;
-  return {
-    servername: url.hostname,
-  };
+  return { servername: url.hostname };
 }
 
+/** Returns ioredis-compatible ConnectionOptions for BullMQ. */
 export function createRedisConnectionOptions(): ConnectionOptions {
   if (!redisConfig.url) {
     throw new Error("Redis not configured");
@@ -81,37 +76,42 @@ export function createRedisConnectionOptions(): ConnectionOptions {
     enableReadyCheck: false,
     lazyConnect: true,
     connectTimeout: 10_000,
-    retryStrategy: times => Math.min(times * 250, 2_000),
+    retryStrategy: (times: number) => Math.min(times * 250, 2_000),
     tls: buildTlsOptions(url),
   };
 }
 
-export function getRedisClient(): Redis | null {
-  if (!redisConfig.url) {
-    return null;
-  }
+// ── Upstash Redis REST client (for caching, rate limiting) ───────────────────
 
-  if (!globalForRedis.__apexRedisClient) {
-    const url = new URL(redisConfig.url);
-    const client = new Redis(redisConfig.url, {
-      lazyConnect: true,
-      maxRetriesPerRequest: 1,
-      enableReadyCheck: false,
-      connectTimeout: 10_000,
-      retryStrategy: times => Math.min(times * 250, 2_000),
-      tls: buildTlsOptions(url),
-    });
+const globalForUpstash = globalThis as typeof globalThis & {
+  __apexUpstashClient?: Redis | null;
+};
 
-    client.on("error", () => {
-      // Redis is optional; cache and queue callers degrade gracefully.
-    });
-
-    globalForRedis.__apexRedisClient = client;
-  }
-
-  return globalForRedis.__apexRedisClient;
+/** True when Upstash REST credentials are present. */
+export function isUpstashConfigured(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN
+  );
 }
 
+export function getUpstashClient(): Redis | null {
+  if (!isUpstashConfigured()) return null;
+
+  if (!globalForUpstash.__apexUpstashClient) {
+    globalForUpstash.__apexUpstashClient = new Redis({
+      url:   process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+
+  return globalForUpstash.__apexUpstashClient;
+}
+
+/** Named export matching the spec: `import { redis } from "@/lib/runtime/redis"` */
+export const redis: Redis | null = (() => getUpstashClient())();
+
+/** Cache mode is "redis" when Upstash REST credentials are present. */
 export function getCacheMode(): "redis" | "memory" {
-  return redisConfig.url ? "redis" : "memory";
+  return isUpstashConfigured() ? "redis" : "memory";
 }

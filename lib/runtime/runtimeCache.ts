@@ -1,4 +1,4 @@
-import { getCacheMode, getRedisClient } from "@/lib/runtime/redis";
+import { getCacheMode, getUpstashClient } from "@/lib/runtime/redis";
 
 type MemoryEntry = {
   expiresAt: number;
@@ -22,6 +22,7 @@ export function getRuntimeCacheMode(): "redis" | "memory" {
 }
 
 export async function getCachedValue<T>(key: string): Promise<T | null> {
+  // Memory cache is always checked first (avoids a round-trip)
   const memoryEntry = pruneMemory(key);
   if (memoryEntry) {
     try {
@@ -31,54 +32,60 @@ export async function getCachedValue<T>(key: string): Promise<T | null> {
     }
   }
 
-  const redis = getRedisClient();
-  if (!redis) {
-    return null;
-  }
+  const client = getUpstashClient();
+  if (!client) return null;
 
   try {
-    const raw = await redis.get(key);
-    if (!raw) return null;
+    // Upstash auto-deserialises JSON; no JSON.parse needed here.
+    const value = await client.get<T>(key);
+    if (value == null) return null;
 
-    memoryCache.set(key, {
-      value: raw,
-      expiresAt: Date.now() + 15_000,
-    });
-    return JSON.parse(raw) as T;
+    // Backfill the memory cache so subsequent reads are free.
+    try {
+      memoryCache.set(key, {
+        value: JSON.stringify(value),
+        expiresAt: Date.now() + 15_000,
+      });
+    } catch {
+      // ignore serialisation errors — memory cache is best-effort
+    }
+
+    return value;
   } catch {
     return null;
   }
 }
 
 export async function setCachedValue<T>(key: string, value: T, ttlMs: number): Promise<void> {
-  const raw = JSON.stringify(value);
-
-  memoryCache.set(key, {
-    value: raw,
-    expiresAt: Date.now() + ttlMs,
-  });
-
-  const redis = getRedisClient();
-  if (!redis) {
-    return;
+  // Always write to memory cache synchronously
+  try {
+    memoryCache.set(key, {
+      value: JSON.stringify(value),
+      expiresAt: Date.now() + ttlMs,
+    });
+  } catch {
+    // ignore
   }
 
+  const client = getUpstashClient();
+  if (!client) return;
+
   try {
-    await redis.set(key, raw, "PX", ttlMs);
+    // Upstash uses { px: ms } instead of ioredis "PX" flag
+    await client.set(key, value, { px: ttlMs });
   } catch {
-    // optional cache backend
+    // optional cache backend — degrade gracefully
   }
 }
 
 export async function deleteCachedValue(key: string): Promise<void> {
   memoryCache.delete(key);
-  const redis = getRedisClient();
-  if (!redis) {
-    return;
-  }
+
+  const client = getUpstashClient();
+  if (!client) return;
 
   try {
-    await redis.del(key);
+    await client.del(key);
   } catch {
     // optional cache backend
   }
