@@ -403,28 +403,36 @@ async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" |
 }
 
 async function fetchTwelveDataAsset(symbol: string): Promise<{ price: number | null; closes: number[] }> {
-  if (!TWELVE_KEY) return { price: null, closes: [] };
+  // --- Twelve Data attempt ---
+  if (TWELVE_KEY) {
+    // Twelve Data uses slash format for forex/metals: EUR/USD, XAU/USD
+    const tdSymbol = symbol.length === 6
+      ? `${symbol.slice(0, 3)}/${symbol.slice(3)}`
+      : symbol;
 
-  // Twelve Data uses slash format for forex/metals: EUR/USD, XAU/USD
-  const tdSymbol = symbol.length === 6
-    ? `${symbol.slice(0, 3)}/${symbol.slice(3)}`
-    : symbol;
+    const [priceRes, seriesRes] = await Promise.all([
+      safeFetchJson(`${TWELVE_BASE}/price?symbol=${tdSymbol}&apikey=${TWELVE_KEY}`, `twelve-price-${symbol}`),
+      safeFetchJson(`${TWELVE_BASE}/time_series?symbol=${tdSymbol}&interval=1day&outputsize=50&apikey=${TWELVE_KEY}`, `twelve-series-${symbol}`),
+    ]);
 
-  const [priceRes, seriesRes] = await Promise.all([
-    safeFetchJson(`${TWELVE_BASE}/price?symbol=${tdSymbol}&apikey=${TWELVE_KEY}`, `twelve-price-${symbol}`),
-    safeFetchJson(`${TWELVE_BASE}/time_series?symbol=${tdSymbol}&interval=1day&outputsize=50&apikey=${TWELVE_KEY}`, `twelve-series-${symbol}`),
-  ]);
+    const price = toPositiveNumber((priceRes as Record<string, unknown> | null)?.price);
 
-  const price = toPositiveNumber((priceRes as Record<string, unknown> | null)?.price);
+    const values = ((seriesRes as Record<string, unknown> | null)?.values) as Array<Record<string, string>> | undefined;
+    const closes = (values ?? [])
+      .map(v => Number(v.close))
+      .filter(n => Number.isFinite(n) && n > 0)
+      .reverse(); // Twelve Data returns newest first
 
-  const values = ((seriesRes as Record<string, unknown> | null)?.values) as Array<Record<string, string>> | undefined;
-  const closes = (values ?? [])
-    .map(v => Number(v.close))
-    .filter(n => Number.isFinite(n) && n > 0)
-    .reverse(); // Twelve Data returns newest first
+    console.log(`[APEX:twelve] ${symbol} → price=${price}, closes=${closes.length}`);
 
-  console.log(`[APEX:twelve] ${symbol} → price=${price}, closes=${closes.length}`);
-  return { price, closes };
+    if (price != null && closes.length > 0) {
+      return { price, closes };
+    }
+  }
+
+  // --- Yahoo Finance fallback ---
+  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
+  return fetchYahooPrice(symbol);
 }
 
 export async function fetchForexData(fromCurrency: string, toCurrency: string, context?: MarketRequestContext) {
