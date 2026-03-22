@@ -29,7 +29,8 @@
       "Bash(cmd /c \"tasklist | findstr node\")",
       "Bash(cmd /c \"tasklist /FI \\\\\"PID eq 11084\\\\\"\")",
       "Bash(cmd /c \"taskkill /F /IM node.exe /T\")",
-      "Bash(cmd /c \"rmdir /S /Q .next\")"
+      "Bash(cmd /c \"rmdir /S /Q .next\")",
+      "Bash(npx next:*)"
     ]
   }
 }
