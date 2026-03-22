@@ -133,7 +133,7 @@ async function getPersistedCandleFallback(
       close: row.close,
       volume: row.volume,
     }))
-    .sort((left, right) => left.timestamp - right.timestamp) as CandleBar[];
+    .sort((left: CandleBar, right: CandleBar) => left.timestamp - right.timestamp) as CandleBar[];
 
   const timestamp = candles.at(-1)?.timestamp ?? null;
   if (candles.length === 0 || timestamp == null) {
