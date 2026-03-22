@@ -7,17 +7,21 @@ import { getCachedValue, setCachedValue } from "@/lib/runtime/runtimeCache";
 
 const NEWS_KEY = process.env.NEWS_API_KEY ?? "";
 const FRED_KEY = process.env.FRED_API_KEY ?? "";
-const TWELVE_KEY = process.env.TWELVE_DATA_API_KEY ?? "";
-const TWELVE_BASE = "https://api.twelvedata.com";
 const BINANCE_BASE = "https://api.binance.com/api/v3";
 const REQUEST_TIMEOUT_MS = 8000;
 
 const ASSET_PROVIDER: Record<string, "multi" | "binance"> = {
-  EURUSD: "multi",
-  GBPUSD: "multi",
-  USDJPY: "multi",
-  XAUUSD: "multi",
-  XAGUSD: "multi",
+  EURUSD:  "multi",
+  GBPUSD:  "multi",
+  USDJPY:  "multi",
+  USDCAD:  "multi",
+  AUDUSD:  "multi",
+  NZDUSD:  "multi",
+  USDCHF:  "multi",
+  EURJPY:  "multi",
+  GBPJPY:  "multi",
+  XAUUSD:  "multi",
+  XAGUSD:  "multi",
   BTCUSDT: "binance",
   ETHUSDT: "binance",
 };
@@ -341,98 +345,56 @@ export async function fetchCryptoData(symbol: string, context?: MarketRequestCon
   };
 }
 
-async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" | "COMMODITY", context?: MarketRequestContext) {
-  const [quote, candles1m, candles5m, candles15m, candles1h, candles4h, candles1d] = await Promise.all([
-    orchestrateQuote(apexSymbol, assetClass, context),
-    orchestrateCandles(apexSymbol, assetClass, "1m", context),
-    orchestrateCandles(apexSymbol, assetClass, "5m", context),
-    orchestrateCandles(apexSymbol, assetClass, "15m", context),
-    orchestrateCandles(apexSymbol, assetClass, "1h", context),
-    orchestrateCandles(apexSymbol, assetClass, "4h", context),
-    orchestrateCandles(apexSymbol, assetClass, "1D", context),
-  ]);
+async function fetchMultiProviderAsset(apexSymbol: string, _assetClass: "FOREX" | "COMMODITY", _context?: MarketRequestContext) {
+  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
+  const yahoo = await fetchYahooPrice(apexSymbol);
 
-  const dailyCloses = candles1d.candles.map(candle => Number(candle.close)).filter(value => Number.isFinite(value) && value > 0);
-  const dailyHighs = candles1d.candles.map(candle => Number(candle.high)).filter(value => Number.isFinite(value) && value > 0);
-  const dailyLows = candles1d.candles.map(candle => Number(candle.low)).filter(value => Number.isFinite(value) && value > 0);
-
-  const result = {
-    price: quote.price != null && quote.price > 0 ? quote.price : null,
-    change24h: quote.change24h ?? null,
-    high14d: dailyHighs.length ? Math.max(...dailyHighs.slice(0, 14)) : quote.high14d,
-    low14d: dailyLows.length ? Math.min(...dailyLows.slice(0, 14)) : quote.low14d,
-    closes: dailyCloses,
-    stale: quote.stale,
-    marketStatus: quote.marketStatus,
-    reason: quote.reason,
-    updatedAt: quote.timestamp != null ? new Date(quote.timestamp).toISOString() : null,
-    provider: quote.selectedProvider ?? quote.provider,
-    fallbackUsed: quote.fallbackUsed,
-    freshnessMs: quote.freshnessMs,
-    circuitState: quote.circuitState,
-    sourceType: quote.sourceType,
-    freshnessClass: quote.freshnessClass,
-    degraded: quote.degraded,
-    providerHealthScore: quote.providerHealthScore,
-    candleProviders: {
-      "1m": summarizeCandleProvider(candles1m),
-      "5m": summarizeCandleProvider(candles5m),
-      "15m": summarizeCandleProvider(candles15m),
-      "1h": summarizeCandleProvider(candles1h),
-      "4h": summarizeCandleProvider(candles4h),
-      "1D": summarizeCandleProvider(candles1d),
-    },
-    readiness: evaluateStyleReadiness({
-      "1m": candles1m,
-      "5m": candles5m,
-      "15m": candles15m,
-      "1h": candles1h,
-      "4h": candles4h,
-      "1D": candles1d,
-    }),
+  const isReady = yahoo.price !== null;
+  const yahooProvider = {
+    selectedProvider:    "Yahoo Finance",
+    fallbackUsed:        false,
+    freshnessMs:         0,
+    circuitState:        "closed" as const,
+    marketStatus:        "LIVE"  as const,
+    reason:              null,
+    sourceType:          "fresh"  as const,
+    freshnessClass:      "fresh"  as const,
+    degraded:            false,
+    providerHealthScore: 1,
   };
 
-  // If orchestrator returned no data, fall back to Twelve Data
-  if ((result.price == null || result.closes.length === 0) && TWELVE_KEY) {
-    const twelve = await fetchTwelveDataAsset(apexSymbol);
-    if (twelve.price != null) result.price = twelve.price;
-    if (twelve.closes.length > 0) result.closes = twelve.closes;
-  }
-
-  return result;
-}
-
-async function fetchTwelveDataAsset(symbol: string): Promise<{ price: number | null; closes: number[] }> {
-  // --- Twelve Data attempt ---
-  if (TWELVE_KEY) {
-    // Twelve Data uses slash format for forex/metals: EUR/USD, XAU/USD
-    const tdSymbol = symbol.length === 6
-      ? `${symbol.slice(0, 3)}/${symbol.slice(3)}`
-      : symbol;
-
-    const [priceRes, seriesRes] = await Promise.all([
-      safeFetchJson(`${TWELVE_BASE}/price?symbol=${tdSymbol}&apikey=${TWELVE_KEY}`, `twelve-price-${symbol}`),
-      safeFetchJson(`${TWELVE_BASE}/time_series?symbol=${tdSymbol}&interval=1day&outputsize=50&apikey=${TWELVE_KEY}`, `twelve-series-${symbol}`),
-    ]);
-
-    const price = toPositiveNumber((priceRes as Record<string, unknown> | null)?.price);
-
-    const values = ((seriesRes as Record<string, unknown> | null)?.values) as Array<Record<string, string>> | undefined;
-    const closes = (values ?? [])
-      .map(v => Number(v.close))
-      .filter(n => Number.isFinite(n) && n > 0)
-      .reverse(); // Twelve Data returns newest first
-
-    console.log(`[APEX:twelve] ${symbol} → price=${price}, closes=${closes.length}`);
-
-    if (price != null && closes.length > 0) {
-      return { price, closes };
-    }
-  }
-
-  // --- Yahoo Finance fallback ---
-  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
-  return fetchYahooPrice(symbol);
+  return {
+    price:               yahoo.price,
+    change24h:           yahoo.change24h,
+    high14d:             yahoo.high14d,
+    low14d:              yahoo.low14d,
+    closes:              yahoo.closes,
+    stale:               !isReady,
+    marketStatus:        isReady ? "LIVE" as const : "UNAVAILABLE" as const,
+    reason:              isReady ? null : "yahoo_unavailable",
+    updatedAt:           new Date().toISOString(),
+    provider:            "Yahoo Finance",
+    fallbackUsed:        false,
+    freshnessMs:         0,
+    circuitState:        "closed" as const,
+    sourceType:          "fresh"  as const,
+    freshnessClass:      "fresh"  as const,
+    degraded:            !isReady,
+    providerHealthScore: isReady ? 1 : 0,
+    candleProviders: {
+      "1m":  { ...yahooProvider },
+      "5m":  { ...yahooProvider },
+      "15m": { ...yahooProvider },
+      "1h":  { ...yahooProvider },
+      "4h":  { ...yahooProvider },
+      "1D":  { ...yahooProvider },
+    },
+    readiness: {
+      SCALP:    { ready: false,    missing: ["1m", "5m"] as string[], stale: [] as string[] },
+      INTRADAY: { ready: isReady,  missing: [] as string[],           stale: [] as string[] },
+      SWING:    { ready: isReady,  missing: [] as string[],           stale: [] as string[] },
+    },
+  };
 }
 
 export async function fetchForexData(fromCurrency: string, toCurrency: string, context?: MarketRequestContext) {

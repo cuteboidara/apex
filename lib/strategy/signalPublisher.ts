@@ -113,26 +113,21 @@ function providerPenalty(snapshot: MarketSnapshot) {
   return penalty;
 }
 
-function isFromTwelveData(snapshot: MarketSnapshot): boolean {
-  const p1m = snapshot.candleProviders?.["1m"];
-  const p5m = snapshot.candleProviders?.["5m"];
-  return (
-    (typeof p1m?.selectedProvider === "string" && p1m.selectedProvider.toLowerCase().includes("twelve")) ||
-    (typeof p5m?.selectedProvider === "string" && p5m.selectedProvider.toLowerCase().includes("twelve")) ||
-    p1m?.freshnessClass === "stale" ||
-    p5m?.freshnessClass === "stale"
-  );
+function isYahooDailyOnly(snapshot: MarketSnapshot, style: TradePlanStyle): boolean {
+  if (style !== "SCALP") return false;
+  const provider = snapshot.candleProviders?.["1m"]?.selectedProvider ?? "";
+  return provider.includes("Yahoo") || provider === "";
 }
 
 export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnapshot): PublishedStrategyPlan {
-  // If 1m/5m candles came from the Twelve Data fallback (or are stale),
-  // SCALP requires sub-minute precision that fallback data cannot support.
-  if (style === "SCALP" && isFromTwelveData(snapshot)) {
+  // Yahoo Finance only provides daily OHLC data. SCALP requires sub-minute
+  // precision that daily data cannot support — block it for all non-crypto assets.
+  if (isYahooDailyOnly(snapshot, style)) {
     return blockedPlan(
       style,
       snapshot,
       ["degraded_data"],
-      "SCALP skipped: 1m/5m candle data sourced from Twelve Data fallback or marked stale."
+      "SCALP skipped: asset data sourced from Yahoo Finance (daily only, no intraday candles)."
     );
   }
 
