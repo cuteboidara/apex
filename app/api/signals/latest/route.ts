@@ -24,7 +24,7 @@ export async function GET() {
   // Return as a map: { BTCUSDT: signal, EURUSD: signal, ... }
   const map: Record<string, unknown> = {};
   ASSETS.forEach((a, i: number) => {
-    const usable = results[i].find((signal: unknown) => hasUsablePrice(signal)) ?? results[i][0] ?? null;
+    const usable = results[i].find((signal: SignalRecord) => hasUsablePrice(signal)) ?? results[i][0] ?? null;
     if (usable) map[a.symbol] = usable;
   });
 

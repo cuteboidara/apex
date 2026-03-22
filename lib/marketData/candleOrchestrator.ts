@@ -124,7 +124,7 @@ async function getPersistedCandleFallback(
   }).catch(() => [] as SnapshotRecord[]);
 
   const candles = snapshots
-    .filter(row => row.capturedAt != null && row.close != null)
+    .filter((row: SnapshotRecord) => row.capturedAt != null && row.close != null)
     .map(row => ({
       timestamp: row.capturedAt.getTime(),
       open: row.open,
