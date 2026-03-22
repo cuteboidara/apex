@@ -40,6 +40,18 @@ export function planExecution(input: {
     volatilityRatio,
     style,
     entryType: setup.entryType,
+    localInvalidationLow: Math.min(
+      liquidity.levels.previousDayLow ?? snapshot.currentPrice,
+      liquidity.levels.weeklyLow ?? snapshot.currentPrice,
+      snapshot.currentPrice
+    ),
+    localInvalidationHigh: Math.max(
+      liquidity.levels.previousDayHigh ?? snapshot.currentPrice,
+      liquidity.levels.weeklyHigh ?? snapshot.currentPrice,
+      snapshot.currentPrice
+    ),
+    allowTp2: structure.breakOfStructure || structure.marketStructureShift || (structure.displacement && liquidity.quality === "high"),
+    allowTp3: structure.breakOfStructure && structure.displacement && liquidity.quality === "high" && snapshot.trend !== "consolidation",
   });
 
   if (!levels) {
@@ -49,9 +61,9 @@ export function planExecution(input: {
   const averageEntry = (levels.entryMin + levels.entryMax) / 2;
   const rr = scoreRiskReward(averageEntry, levels.stopLoss, levels.takeProfit1);
   const entryPrecisionScore =
-    liquidity.quality === "high" && structure.reclaim ? 10 :
-    liquidity.quality === "high" || structure.breakOfStructure ? 8 :
-    5;
+    liquidity.quality === "high" && (structure.reclaim || structure.breakOfStructure) ? 10 :
+    liquidity.quality === "high" && structure.displacement ? 8 :
+    4;
 
   return {
     timeframe: `${timeframe.execution} / ${timeframe.confirmation}`,
@@ -65,7 +77,7 @@ export function planExecution(input: {
     invalidationLevel: levels.invalidationLevel,
     riskUnit: levels.riskUnit,
     riskRewardRatio: rr.ratio,
-    executionNotes: `Execute on ${timeframe.execution} with ${timeframe.confirmation} confirmation. Holding period: ${timeframe.holdingPeriod}.`,
+    executionNotes: `Execute on ${timeframe.execution} with ${timeframe.confirmation} confirmation. Holding period: ${timeframe.holdingPeriod}. Use structure-based invalidation only.`,
     entryPrecisionScore,
     riskRewardScore: rr.score,
   };

@@ -9,7 +9,27 @@
       "Bash(node:*)",
       "Bash(npx prisma:*)",
       "Bash(npx tsx:*)",
-      "Bash(RUN_FULL=1 npx tsx:*)"
+      "Bash(RUN_FULL=1 npx tsx:*)",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(npx tsc:*)",
+      "Bash(DIRECT_DATABASE_URL=\"\" npx prisma db push 2>&1)",
+      "Bash(npx neonctl:*)",
+      "Bash(neon --version)",
+      "Bash(find . -name neon.json -not -path */node_modules/*)",
+      "Bash(npx @neondatabase/local --version)",
+      "Bash(psql -U postgres -c \"SELECT version\\(\\);\")",
+      "mcp__Neon__list_projects",
+      "mcp__Neon__get_connection_string",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(cmd /c \"taskkill /F /IM node.exe\")",
+      "Bash(cmd /c \"taskkill /F /PID 11084\")",
+      "Bash(cmd /c \"netstat -ano | findstr :3000\" 2>&1)",
+      "Bash(cmd /c \"netstat -ano | findstr LISTEN\")",
+      "Bash(cmd /c \"wmic process where \\\\\"name='node.exe'\\\\\" get ProcessId,CommandLine\" 2>&1)",
+      "Bash(cmd /c \"tasklist | findstr node\")",
+      "Bash(cmd /c \"tasklist /FI \\\\\"PID eq 11084\\\\\"\")",
+      "Bash(cmd /c \"taskkill /F /IM node.exe /T\")",
+      "Bash(cmd /c \"rmdir /S /Q .next\")"
     ]
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { TradingViewChartPanel } from "@/components/TradingViewChartPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,23 @@ interface TradePlan {
   thesis: string;
   executionNotes: string;
   status: "ACTIVE" | "NO_SETUP" | "STALE";
+  providerAtSignal: string | null;
+  providerHealthStateAtSignal: "HEALTHY" | "DEGRADED" | "UNHEALTHY" | null;
+  providerMarketStatusAtSignal: "LIVE" | "DEGRADED" | "UNAVAILABLE" | null;
+  providerFallbackUsedAtSignal: boolean;
+  qualityGateReason: string | null;
+  detectedAt: string | null;
+  entryHitAt: string | null;
+  stopHitAt: string | null;
+  tp1HitAt: string | null;
+  tp2HitAt: string | null;
+  tp3HitAt: string | null;
+  invalidatedAt: string | null;
+  expiredAt: string | null;
+  maxFavorableExcursion: number | null;
+  maxAdverseExcursion: number | null;
+  realizedRR: number | null;
+  outcome: "PENDING_ENTRY" | "OPEN" | "TP1" | "TP2" | "TP3" | "STOP" | "STOP_AFTER_TP1" | "STOP_AFTER_TP2" | "INVALIDATED" | "EXPIRED" | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -217,6 +235,87 @@ interface ProviderStatus {
   score: number | null;
   healthState: string | null;
   circuitState: string | null;
+  availability: string;
+  blockedReason: string | null;
+}
+
+interface SetupBreakdown {
+  runId: string | null;
+  long: number;
+  short: number;
+  noSetup: number;
+  active: number;
+  stale: number;
+  total: number;
+  directionBalance: string;
+  generatedAt: string | null;
+}
+
+interface CommentaryStatus {
+  provider: string;
+  available: boolean;
+  status: string;
+  detail: string;
+  blockedReason: string | null;
+}
+
+interface LatestTradePlansResponse {
+  runId: string | null;
+  plans: Record<string, Record<string, TradePlan>>;
+  breakdown: SetupBreakdown;
+  timestamp: string;
+}
+
+interface PerformanceBucket {
+  key: string;
+  label: string;
+  publishedCount: number;
+  enteredCount: number;
+  resolvedCount: number;
+  wins: number;
+  losses: number;
+  breakeven: number;
+  pendingCount: number;
+  openCount: number;
+  invalidatedCount: number;
+  expiredCount: number;
+  winRate: number | null;
+  tp1HitRate: number | null;
+  tp2HitRate: number | null;
+  tp3HitRate: number | null;
+  averageRR: number | null;
+}
+
+interface StyleGate {
+  style: "SCALP" | "INTRADAY" | "SWING";
+  disabled: boolean;
+  sampleSize: number;
+  winRate: number | null;
+  averageRR: number | null;
+  reason: string | null;
+  lookbackDays: number;
+  minimumSampleSize: number;
+}
+
+interface PerformanceResponse {
+  summary: PerformanceBucket;
+  breakdowns: {
+    bySymbol: PerformanceBucket[];
+    byStyle: PerformanceBucket[];
+    bySetupFamily: PerformanceBucket[];
+    byDirection: PerformanceBucket[];
+    byRegime: PerformanceBucket[];
+    byProviderHealthState: PerformanceBucket[];
+  };
+  worstPerformers: {
+    setupFamilies: PerformanceBucket[];
+    symbols: PerformanceBucket[];
+  };
+  qualityGate: {
+    degradedConfidenceFloor: number;
+    byStyle: Record<"SCALP" | "INTRADAY" | "SWING", StyleGate>;
+  };
+  timestamp: string;
 }
 
 interface SystemStatus {
@@ -228,8 +327,13 @@ interface SystemStatus {
     failed: number;
     delayed: number;
     failureReason?: string;
+    mode: "queue" | "direct";
+    connectionSource: string | null;
   };
   providers: ProviderStatus[];
+  blockedProviders: ProviderStatus[];
+  commentary: CommentaryStatus;
+  latestSetupBreakdown: SetupBreakdown;
   timestamp: string;
 }
 
@@ -263,9 +367,24 @@ interface QueueResponse {
   jobs: QueueJob[];
 }
 
+interface CycleNotice {
+  tone: "info" | "error";
+  message: string;
+}
+
+interface CoverageSummary {
+  label: string;
+  status: string;
+  summary: string;
+  detail: string;
+  providers: string;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ASSETS = ["EURUSD","GBPUSD","USDJPY","XAUUSD","XAGUSD","BTCUSDT","ETHUSDT"] as const;
+const ASSET_CLASS_ORDER = ["CRYPTO", "FOREX", "COMMODITY"] as const;
+const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "NewsAPI", "FRED", "Finnhub", "Telegram", "FCS API", "Binance", "Alpha Vantage"] as const;
 
 const ASSET_CLASS: Record<string, string> = {
   EURUSD: "FOREX", GBPUSD: "FOREX", USDJPY: "FOREX",
@@ -274,10 +393,10 @@ const ASSET_CLASS: Record<string, string> = {
 };
 
 const RC: Record<string, { text: string; border: string; bg: string; glow: string }> = {
-  S:      { text: "text-amber-300",   border: "border-amber-300/50",   bg: "bg-amber-300/8",   glow: "shadow-amber-300/10" },
-  A:      { text: "text-emerald-400", border: "border-emerald-400/50", bg: "bg-emerald-400/8", glow: "shadow-emerald-400/10" },
-  B:      { text: "text-sky-400",     border: "border-sky-400/50",     bg: "bg-sky-400/8",     glow: "shadow-sky-400/10" },
-  Silent: { text: "text-zinc-500",    border: "border-zinc-800",       bg: "bg-zinc-900/40",   glow: "" },
+  S:      { text: "text-green-300", border: "border-green-500/60", bg: "bg-green-500/10", glow: "shadow-green-500/10" },
+  A:      { text: "text-green-200", border: "border-green-700/70", bg: "bg-green-500/8", glow: "shadow-green-500/5" },
+  B:      { text: "text-green-500", border: "border-green-900/70", bg: "bg-green-950/40", glow: "" },
+  Silent: { text: "text-zinc-400", border: "border-zinc-900", bg: "bg-zinc-950/70", glow: "" },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -287,6 +406,16 @@ function fmt(n: number | null | undefined, dec = 4): string {
   if (Math.abs(n) >= 10000) dec = 2;
   else if (Math.abs(n) >= 100) dec = 3;
   return n.toFixed(dec);
+}
+
+function fmtPct(value: number | null | undefined, digits = 0): string {
+  if (value == null || !isFinite(value)) return "—";
+  return `${(value * 100).toFixed(digits)}%`;
+}
+
+function fmtRR(value: number | null | undefined): string {
+  if (value == null || !isFinite(value)) return "—";
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}R`;
 }
 
 function timeAgo(iso: string): string {
@@ -308,29 +437,50 @@ function fmtTime(d: Date): string {
 }
 
 function sentimentStyle(s: "bullish" | "bearish" | "neutral"): string {
-  if (s === "bullish") return "text-emerald-400 bg-emerald-500/8 border-emerald-500/20";
-  if (s === "bearish") return "text-red-400 bg-red-500/8 border-red-500/20";
+  if (s === "bullish") return "text-green-300 bg-green-500/10 border-green-500/30";
+  if (s === "bearish") return "text-zinc-200 bg-zinc-950 border-zinc-800";
   return "text-zinc-500 bg-zinc-800/40 border-zinc-700/30";
 }
 
 function sentimentDot(s: "bullish" | "bearish" | "neutral"): string {
-  if (s === "bullish") return "🟢";
-  if (s === "bearish") return "🔴";
-  return "⚪";
+  if (s === "bullish") return "UP";
+  if (s === "bearish") return "DN";
+  return "FLAT";
 }
 
 function toneForStatus(status: string): string {
   const normalized = status.toLowerCase();
-  if (normalized === "completed" || normalized === "delivered" || normalized === "configured" || normalized === "online") {
-    return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+  if (normalized === "completed" || normalized === "delivered" || normalized === "configured" || normalized === "online" || normalized === "healthy" || normalized === "live" || normalized === "ok") {
+    return "text-green-300 bg-green-500/10 border-green-500/30";
   }
-  if (normalized === "running" || normalized === "waiting" || normalized === "active" || normalized === "processing") {
-    return "text-amber-300 bg-amber-500/10 border-amber-500/30";
+  if (normalized === "running" || normalized === "waiting" || normalized === "active" || normalized === "processing" || normalized === "degraded") {
+    return "text-white bg-zinc-950 border-zinc-800";
   }
-  if (normalized === "failed" || normalized === "offline" || normalized === "missing") {
-    return "text-red-400 bg-red-500/10 border-red-500/30";
+  if (normalized === "failed" || normalized === "offline" || normalized === "missing" || normalized === "error" || normalized === "unavailable") {
+    return "text-zinc-400 bg-zinc-950/80 border-zinc-900";
   }
   return "text-zinc-400 bg-zinc-900/60 border-zinc-800";
+}
+
+function marketStatusTone(status: string): string {
+  const normalized = status.toLowerCase();
+  if (normalized === "live" || normalized === "healthy") return "text-green-300 border-green-500/30 bg-green-500/10";
+  if (normalized === "degraded" || normalized === "stale") return "text-zinc-300 border-zinc-800 bg-zinc-950";
+  return "text-zinc-500 border-zinc-900 bg-zinc-950/80";
+}
+
+function deltaTone(value: number): string {
+  return value >= 0 ? "text-green-300" : "text-zinc-400";
+}
+
+function directionTone(direction: string): string {
+  return direction === "LONG"
+    ? "bg-green-500/10 border-green-500/30 text-green-300"
+    : "bg-zinc-950 border-zinc-800 text-zinc-300";
+}
+
+function readinessTone(ready: boolean): string {
+  return ready ? "border-green-500/30 text-green-300" : "border-zinc-800 text-zinc-500";
 }
 
 function fmtMs(ms: number | null | undefined): string {
@@ -351,9 +501,95 @@ function readinessSummary(readiness: LivePrice["styleReadiness"], style: "SCALP"
 }
 
 function planStatusTone(status: TradePlan["status"]): string {
-  if (status === "ACTIVE") return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
-  if (status === "STALE") return "text-amber-300 bg-amber-500/10 border-amber-500/30";
+  if (status === "ACTIVE") return "text-green-300 bg-green-500/10 border-green-500/30";
+  if (status === "STALE") return "text-zinc-300 bg-zinc-950 border-zinc-800";
   return "text-zinc-400 bg-zinc-900/60 border-zinc-800";
+}
+
+function outcomeTone(outcome: TradePlan["outcome"]): string {
+  if (outcome === "TP1" || outcome === "TP2" || outcome === "TP3" || outcome === "STOP_AFTER_TP1" || outcome === "STOP_AFTER_TP2") {
+    return "text-green-300 bg-green-500/10 border-green-500/30";
+  }
+  if (outcome === "STOP" || outcome === "INVALIDATED" || outcome === "EXPIRED") {
+    return "text-zinc-300 bg-zinc-950 border-zinc-800";
+  }
+  return "text-zinc-500 bg-zinc-900/60 border-zinc-800";
+}
+
+function outcomeLabel(outcome: TradePlan["outcome"]): string {
+  if (!outcome) return "Pending";
+  return outcome.replaceAll("_", " ");
+}
+
+function rrTone(value: number | null | undefined): string {
+  if (value == null || !isFinite(value)) return "text-zinc-500";
+  if (value > 0) return "text-green-300";
+  if (value < 0) return "text-zinc-300";
+  return "text-zinc-500";
+}
+
+function blockedReasonLabel(reason: string | null | undefined): string {
+  if (reason === "credits") return "credits";
+  if (reason === "rate_limit") return "rate limit";
+  if (reason === "permissions") return "permissions";
+  if (reason === "configuration") return "configuration";
+  return "blocked";
+}
+
+function qualityGateLabel(reason: string | null | undefined): string {
+  if (reason === "degraded_low_confidence") return "Degraded low-confidence";
+  if (reason === "style_disabled_poor_performance") return "Style paused";
+  return "No gate";
+}
+
+function compactProviderDetail(detail: string): string {
+  const normalized = detail.toLowerCase();
+  if (normalized.includes("rate_limit_error") || normalized.includes("concurrent connections has exceeded your rate limit")) {
+    return "Rate limit reached.";
+  }
+  if (normalized.includes("credit balance is too low")) return "Credit balance too low.";
+  if (normalized.includes("out of api credits")) return "Daily API credits exhausted.";
+  if (normalized.includes("exceeded your current quota")) return "Provider quota exhausted.";
+  if (normalized.includes("insufficient_quota") || normalized.includes("resource exhausted")) return "Provider quota exhausted.";
+  if (normalized.includes("premium endpoint")) return "Endpoint requires a paid plan.";
+  if (normalized.includes("api key not valid")) return "Provider rejected the API key.";
+  if (normalized.includes("please consider spreading out") || normalized.includes("rate limit")) return "Free-tier rate limit reached.";
+  if (normalized.includes("403")) return "Provider rejected the request.";
+  if (normalized.includes("signal cycle queue")) return "Background queue unavailable.";
+  return detail.length > 120 ? `${detail.slice(0, 117)}...` : detail;
+}
+
+function providerRole(provider: ProviderStatus): string {
+  if (provider.assetClass === "CRYPTO" && provider.provider === "Binance") return "Primary crypto quotes and candles";
+  if (provider.assetClass === "CRYPTO" && provider.provider === "FCS API") return "Crypto fallback quotes and candles";
+  if (provider.assetClass === "FOREX" && provider.provider === "FCS API") return "Primary FX quotes and candles";
+  if (provider.assetClass === "FOREX" && provider.provider === "Alpha Vantage") return "FX fallback feed and indicator enrichment";
+  if (provider.assetClass === "COMMODITY" && provider.provider === "FCS API") return "Primary metals quotes and candles";
+  if (provider.assetClass === "COMMODITY" && provider.provider === "Alpha Vantage") return "Metals fallback feed and indicator enrichment";
+  if (provider.provider === "Postgres") return "Primary persistence";
+  if (provider.provider === "Redis") return "Queue and retries";
+  if (provider.provider === "Anthropic") return "Primary reasoning and summaries";
+  if (provider.provider === "OpenAI") return "Secondary reasoning fallback";
+  if (provider.provider === "Gemini") return "Final reasoning fallback";
+  if (provider.provider === "NewsAPI") return "Headline enrichment";
+  if (provider.provider === "FRED") return "Macro data";
+  if (provider.provider === "Finnhub") return "Calendar and institutional/news enrichment";
+  if (provider.provider === "Telegram") return "Alert delivery";
+  return provider.detail;
+}
+
+function compareProviders(a: ProviderStatus, b: ProviderStatus): number {
+  const assetOrder = (assetClass: string | null) => {
+    if (!assetClass) return -1;
+    const index = ASSET_CLASS_ORDER.indexOf(assetClass as (typeof ASSET_CLASS_ORDER)[number]);
+    return index === -1 ? ASSET_CLASS_ORDER.length : index;
+  };
+  const providerOrder = (providerName: string) => {
+    const index = PROVIDER_ORDER.indexOf(providerName as (typeof PROVIDER_ORDER)[number]);
+    return index === -1 ? PROVIDER_ORDER.length : index;
+  };
+
+  return assetOrder(a.assetClass) - assetOrder(b.assetClass) || providerOrder(a.provider) - providerOrder(b.provider);
 }
 
 // ─── RankBadge ────────────────────────────────────────────────────────────────
@@ -370,7 +606,7 @@ function RankBadge({ rank, size = "sm" }: { rank: string; size?: "sm" | "lg" }) 
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   const pct   = (value / 20) * 100;
-  const color = pct >= 75 ? "#C8A96E" : pct >= 50 ? "#666" : "#333";
+  const color = pct >= 75 ? "#4ade80" : pct >= 50 ? "#22c55e" : "#14532d";
   return (
     <div className="flex items-center gap-2">
       <span className="text-[8px] text-zinc-700 uppercase w-12 shrink-0 tracking-wide">{label}</span>
@@ -422,24 +658,18 @@ function AssetCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-black text-zinc-100">{symbol}</p>
+            <p className="text-sm font-black text-white">{symbol}</p>
             <span className="text-[8px] text-zinc-700 tracking-widest uppercase border border-zinc-800 rounded px-1.5 py-0.5">
               {livePrice?.assetClass ?? signal?.assetClass ?? ASSET_CLASS[symbol]}
             </span>
-            <span className={`text-[8px] tracking-widest px-1.5 py-0.5 rounded border ${
-              quoteStatus === "LIVE"
-                ? "text-[#C8A96E] border-[#C8A96E]/20"
-                : quoteStatus === "DEGRADED"
-                  ? "text-amber-300 border-amber-500/30"
-                  : "text-red-400 border-red-500/30"
-            }`}>
+            <span className={`text-[8px] tracking-widest px-1.5 py-0.5 rounded border ${marketStatusTone(quoteStatus)}`}>
               {quoteStatus}
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-0.5">
-            <span className="text-base font-bold tabular-nums text-zinc-200">{fmt(price)}</span>
+            <span className="text-base font-bold tabular-nums text-white">{fmt(price)}</span>
             {chg != null && (
-              <span className={`text-[10px] font-semibold tabular-nums ${chg >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              <span className={`text-[10px] font-semibold tabular-nums ${deltaTone(chg)}`}>
                 {chg >= 0 ? "+" : ""}{chg.toFixed(2)}%
               </span>
             )}
@@ -466,11 +696,7 @@ function AssetCard({
 
           <div className="border-t border-zinc-900/60 pt-2.5">
             <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-              <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-lg border ${
-                signal.direction === "LONG"
-                  ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
-                  : "bg-red-500/10 border-red-500/40 text-red-400"
-              }`}>
+              <span className={`text-[10px] font-black tracking-widest px-2.5 py-1 rounded-lg border ${directionTone(signal.direction)}`}>
                 {signal.direction === "LONG" ? "▲" : "▼"} {signal.direction}
               </span>
               <span className="text-[9px] text-zinc-700">Latest update {timeAgo(signal.createdAt)}</span>
@@ -482,8 +708,8 @@ function AssetCard({
                   onClick={() => setActiveStyle(style)}
                   className={`rounded-lg border px-2 py-1.5 text-[9px] font-bold tracking-widest transition-colors ${
                     activeStyle === style
-                      ? "border-[#C8A96E]/50 bg-[#C8A96E]/10 text-[#C8A96E]"
-                      : "border-zinc-800 text-zinc-500 hover:text-zinc-300"
+                      ? "border-green-500/30 bg-green-500/10 text-green-300"
+                      : "border-zinc-800 text-zinc-500 hover:text-white"
                   }`}
                 >
                   {style}
@@ -496,7 +722,7 @@ function AssetCard({
             <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3 space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-[10px] font-black text-zinc-100">{activePlan.timeframe}</p>
+                  <p className="text-[10px] font-black text-white">{activePlan.timeframe}</p>
                   <p className="text-[9px] text-zinc-700 mt-1">
                     {activePlan.setupFamily ?? "No setup family"} · {activePlan.entryType === "NONE" ? "No executable plan" : `${activePlan.entryType} execution`}
                   </p>
@@ -515,11 +741,7 @@ function AssetCard({
                 <span className="rounded-full border border-zinc-800 px-2 py-1">{activePlan.bias}</span>
                 <span className="rounded-full border border-zinc-800 px-2 py-1">{activePlan.regimeTag ?? "unclear"}</span>
                 {livePrice?.styleReadiness && (
-                  <span className={`rounded-full border px-2 py-1 ${
-                    livePrice.styleReadiness[activeStyle].ready
-                      ? "border-emerald-500/30 text-emerald-400"
-                      : "border-amber-500/30 text-amber-300"
-                  }`}>
+                  <span className={`rounded-full border px-2 py-1 ${readinessTone(livePrice.styleReadiness[activeStyle].ready)}`}>
                     {activeStyle} {livePrice.styleReadiness[activeStyle].ready ? "ready" : "blocked"}
                   </span>
                 )}
@@ -529,17 +751,53 @@ function AssetCard({
                   {readinessSummary(livePrice.styleReadiness, activeStyle)}
                 </p>
               )}
+              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="rounded-lg bg-[#0b0b0b] px-2 py-2">
+                  <p className="text-[8px] uppercase tracking-wider text-zinc-700">Outcome</p>
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    <span className={`px-2 py-0.5 rounded-full border text-[8px] font-bold ${outcomeTone(activePlan.outcome)}`}>
+                      {outcomeLabel(activePlan.outcome)}
+                    </span>
+                    <span className={`text-[10px] font-bold tabular-nums ${rrTone(activePlan.realizedRR)}`}>
+                      {fmtRR(activePlan.realizedRR)}
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-[#0b0b0b] px-2 py-2">
+                  <p className="text-[8px] uppercase tracking-wider text-zinc-700">Excursion</p>
+                  <p className="mt-1 text-[10px] font-bold text-white">
+                    MFE {fmtRR(activePlan.maxFavorableExcursion)}
+                  </p>
+                  <p className="text-[9px] text-zinc-600 mt-0.5">
+                    MAE {fmtRR(activePlan.maxAdverseExcursion)}
+                  </p>
+                </div>
+              </div>
+              {(activePlan.providerHealthStateAtSignal || activePlan.providerAtSignal) && (
+                <p className="text-[9px] text-zinc-600">
+                  {activePlan.providerAtSignal ?? "Unknown provider"} · {activePlan.providerHealthStateAtSignal ?? "unknown"}
+                  {activePlan.providerMarketStatusAtSignal ? ` · ${activePlan.providerMarketStatusAtSignal.toLowerCase()}` : ""}
+                  {activePlan.providerFallbackUsedAtSignal ? " · fallback" : ""}
+                </p>
+              )}
+              {activePlan.qualityGateReason && (
+                <div className="rounded-lg border border-zinc-900 bg-[#0b0b0b] px-3 py-2">
+                  <p className="text-[9px] text-zinc-400">
+                    Quality gate: {qualityGateLabel(activePlan.qualityGateReason)}
+                  </p>
+                </div>
+              )}
 
               {activePlan.status === "ACTIVE" ? (
                 <>
                   <div className="grid grid-cols-2 gap-2 text-[10px]">
                     {[
-                      { label: "Entry Zone", value: `${fmt(activePlan.entryMin)} - ${fmt(activePlan.entryMax)}`, color: "text-zinc-200" },
-                      { label: "Stop Loss", value: fmt(activePlan.stopLoss), color: "text-red-400" },
-                      { label: "TP1", value: fmt(activePlan.takeProfit1), color: "text-emerald-400" },
-                      { label: "TP2", value: fmt(activePlan.takeProfit2), color: "text-emerald-400" },
-                      { label: "TP3", value: fmt(activePlan.takeProfit3), color: "text-emerald-400" },
-                      { label: "R:R", value: activePlan.riskRewardRatio != null ? `${activePlan.riskRewardRatio.toFixed(2)}R` : "—", color: "text-[#C8A96E]" },
+                      { label: "Entry Zone", value: `${fmt(activePlan.entryMin)} - ${fmt(activePlan.entryMax)}`, color: "text-white" },
+                      { label: "Stop Loss", value: fmt(activePlan.stopLoss), color: "text-zinc-400" },
+                      { label: "TP1", value: fmt(activePlan.takeProfit1), color: "text-white" },
+                      { label: "TP2", value: fmt(activePlan.takeProfit2), color: "text-white" },
+                      { label: "TP3", value: fmt(activePlan.takeProfit3), color: "text-white" },
+                      { label: "R:R", value: activePlan.riskRewardRatio != null ? `${activePlan.riskRewardRatio.toFixed(2)}R` : "—", color: "text-zinc-300" },
                     ].map(item => (
                       <div key={item.label} className="rounded-lg bg-[#0b0b0b] px-2 py-2">
                         <p className="text-[8px] uppercase tracking-wider text-zinc-700">{item.label}</p>
@@ -549,7 +807,7 @@ function AssetCard({
                   </div>
                   <div className="rounded-lg bg-[#0b0b0b] px-2 py-2">
                     <p className="text-[8px] uppercase tracking-wider text-zinc-700">Invalidation</p>
-                    <p className="mt-1 text-[10px] font-bold tabular-nums text-zinc-200">{fmt(activePlan.invalidationLevel)}</p>
+                    <p className="mt-1 text-[10px] font-bold tabular-nums text-white">{fmt(activePlan.invalidationLevel)}</p>
                   </div>
                 </>
               ) : (
@@ -579,7 +837,7 @@ function AssetCard({
                 {activePlan.thesis.length > 160 && (
                   <button
                     onClick={() => setExpanded(v => !v)}
-                    className="text-[9px] text-zinc-700 hover:text-[#C8A96E] transition-colors tracking-widest"
+                    className="text-[9px] text-zinc-500 hover:text-green-300 transition-colors tracking-widest"
                   >
                     {expanded ? "show less ▲" : "show more ▼"}
                   </button>
@@ -611,15 +869,15 @@ function SignalFeedItem({ signal }: { signal: Signal }) {
       <RankBadge rank={signal.rank} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-zinc-200">{signal.asset}</span>
-          <span className={`text-[9px] font-bold ${signal.direction === "LONG" ? "text-emerald-500" : "text-red-500"}`}>
+          <span className="text-xs font-bold text-white">{signal.asset}</span>
+          <span className={`text-[9px] font-bold ${signal.direction === "LONG" ? "text-green-300" : "text-zinc-500"}`}>
             {signal.direction === "LONG" ? "▲" : "▼"}
           </span>
           <span className={`text-[10px] font-black ${rc.text}`}>{signal.total}</span>
         </div>
         <p className="text-[9px] text-zinc-700">{timeAgo(signal.createdAt)}</p>
       </div>
-      {signal.sentTelegram && <span className="text-[8px] text-blue-500 opacity-60">TG</span>}
+      {signal.sentTelegram && <span className="text-[8px] text-zinc-500 opacity-70">TG</span>}
     </div>
   );
 }
@@ -647,8 +905,8 @@ function TelegramPanel({ settings, onSave }: {
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-zinc-500 tracking-widest uppercase">Telegram Alerts</span>
         <button onClick={() => setEnabled(v => !v)}
-          className={`w-9 h-5 rounded-full border transition-all relative ${enabled ? "bg-[#C8A96E]/20 border-[#C8A96E]/50" : "bg-zinc-900 border-zinc-800"}`}>
-          <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${enabled ? "left-4 bg-[#C8A96E]" : "left-0.5 bg-zinc-600"}`} />
+          className={`w-9 h-5 rounded-full border transition-all relative ${enabled ? "bg-green-500/15 border-green-500/40" : "bg-zinc-900 border-zinc-800"}`}>
+          <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${enabled ? "left-4 bg-green-400" : "left-0.5 bg-zinc-600"}`} />
         </button>
       </div>
       <div>
@@ -663,20 +921,20 @@ function TelegramPanel({ settings, onSave }: {
         </div>
       </div>
       <div>
-        <label className="text-[9px] text-zinc-700 tracking-widests uppercase block mb-1.5">Asset Filter</label>
+        <label className="text-[9px] text-zinc-700 tracking-widest uppercase block mb-1.5">Asset Filter</label>
         <input value={assets} onChange={e => setAssets(e.target.value)} placeholder="ALL"
-          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-zinc-300 placeholder-zinc-700 focus:outline-none focus:border-[#C8A96E]/40 transition-colors" />
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-green-500/40 transition-colors" />
         <p className="text-[8px] text-zinc-800 mt-1">ALL or comma-separated: BTCUSDT,ETHUSDT</p>
       </div>
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-zinc-500 tracking-widest uppercase">Weekend Crypto Only</span>
         <button onClick={() => setWeekend(v => !v)}
-          className={`w-9 h-5 rounded-full border transition-all relative ${weekend ? "bg-[#C8A96E]/20 border-[#C8A96E]/50" : "bg-zinc-900 border-zinc-800"}`}>
-          <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${weekend ? "left-4 bg-[#C8A96E]" : "left-0.5 bg-zinc-600"}`} />
+          className={`w-9 h-5 rounded-full border transition-all relative ${weekend ? "bg-green-500/15 border-green-500/40" : "bg-zinc-900 border-zinc-800"}`}>
+          <span className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${weekend ? "left-4 bg-green-400" : "left-0.5 bg-zinc-600"}`} />
         </button>
       </div>
       <button onClick={save} disabled={saving}
-        className="w-full py-2 rounded-xl text-[10px] font-bold tracking-widest uppercase bg-[#C8A96E] text-black hover:bg-[#d4b87a] disabled:opacity-50 transition-colors">
+        className="w-full py-2 rounded-xl text-[10px] font-bold tracking-widest uppercase border border-green-500/40 bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 transition-colors">
         {saving ? "Saving…" : "Save Settings"}
       </button>
     </div>
@@ -691,7 +949,7 @@ function TickerBar({ prices }: { prices: LivePrice[] }) {
   const items = [...prices, ...prices]; // duplicate for seamless loop
 
   return (
-    <div className="border-b border-zinc-900/80 bg-[#060606] overflow-hidden">
+    <div className="border-b border-zinc-900/80 bg-black overflow-hidden">
       <style>{`
         @keyframes ticker-scroll {
           0%   { transform: translateX(0); }
@@ -710,25 +968,19 @@ function TickerBar({ prices }: { prices: LivePrice[] }) {
           return (
             <div key={i} className="flex items-center gap-2 px-5 border-r border-zinc-900/60 shrink-0">
               <span className="text-[10px] font-black tracking-wider text-zinc-400">{p.symbol}</span>
-              <span className={`text-[8px] px-1.5 py-0.5 rounded border ${
-                p.marketStatus === "LIVE"
-                  ? "text-zinc-600 border-zinc-800"
-                  : p.marketStatus === "DEGRADED"
-                    ? "text-amber-300 border-amber-500/30"
-                    : "text-red-400 border-red-500/30"
-              }`}>
+              <span className={`text-[8px] px-1.5 py-0.5 rounded border ${marketStatusTone(p.marketStatus)}`}>
                 {p.provider}
               </span>
-              <span className="text-[11px] font-bold tabular-nums text-zinc-200">
+              <span className="text-[11px] font-bold tabular-nums text-white">
                 {p.currentPrice != null && p.currentPrice > 0 ? fmt(p.currentPrice) : "—"}
               </span>
               {p.marketStatus === "LIVE" && p.changePct != null && (
-                <span className={`text-[9px] font-semibold tabular-nums ${up ? "text-emerald-400" : "text-red-400"}`}>
+                <span className={`text-[9px] font-semibold tabular-nums ${up ? "text-green-300" : "text-zinc-500"}`}>
                   {up ? "▲" : "▼"} {Math.abs(p.changePct).toFixed(2)}%
                 </span>
               )}
               {p.marketStatus !== "LIVE" && (
-                <span className={`text-[8px] ${p.marketStatus === "UNAVAILABLE" ? "text-red-400" : "text-amber-300"}`}>
+                <span className={`text-[8px] ${p.marketStatus === "UNAVAILABLE" ? "text-zinc-500" : "text-zinc-400"}`}>
                   {p.marketStatus}
                 </span>
               )}
@@ -750,15 +1002,15 @@ function BreakingBanner({ items, onDismiss }: {
   const item = items[0];
 
   return (
-    <div className="bg-red-950/40 border-b border-red-900/50 px-4 py-2 flex items-center gap-3">
-      <span className="text-red-400 text-[10px] font-black tracking-widest shrink-0 animate-pulse">⚡ BREAKING</span>
-      <p className="text-xs text-red-300 flex-1 truncate">{item.headline}</p>
+    <div className="bg-black border-b border-zinc-900 px-4 py-2 flex items-center gap-3">
+      <span className="text-green-300 text-[10px] font-black tracking-widest shrink-0 animate-pulse">BREAKING</span>
+      <p className="text-xs text-white flex-1 truncate">{item.headline}</p>
       <div className="flex items-center gap-2 shrink-0">
         {item.affectedAssets.slice(0, 3).map(a => (
-          <span key={a} className="text-[8px] text-red-500/70 border border-red-900/50 rounded px-1 py-0.5">{a}</span>
+          <span key={a} className="text-[8px] text-zinc-500 border border-zinc-900 rounded px-1 py-0.5">{a}</span>
         ))}
         <button onClick={() => onDismiss(item.id)}
-          className="text-red-600 hover:text-red-400 text-xs transition-colors ml-1">✕</button>
+          className="text-zinc-600 hover:text-zinc-300 text-xs transition-colors ml-1">✕</button>
       </div>
     </div>
   );
@@ -767,9 +1019,59 @@ function BreakingBanner({ items, onDismiss }: {
 function OpsMetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
     <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
-      <p className="text-[9px] text-zinc-700 tracking-[0.22em] uppercase">{label}</p>
-      <p className="text-2xl font-black text-zinc-100 mt-2">{value}</p>
+      <p className="text-[9px] text-green-400 tracking-[0.22em] uppercase">{label}</p>
+      <p className="text-2xl font-black text-white mt-2">{value}</p>
       <p className="text-[10px] text-zinc-600 mt-1">{detail}</p>
+    </div>
+  );
+}
+
+function PerformanceMetricCard({ label, value, detail, accent }: {
+  label: string;
+  value: string;
+  detail: string;
+  accent?: string;
+}) {
+  return (
+    <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
+      <p className="text-[9px] text-zinc-600 tracking-[0.22em] uppercase">{label}</p>
+      <p className={`text-2xl font-black mt-2 ${accent ?? "text-white"}`}>{value}</p>
+      <p className="text-[10px] text-zinc-600 mt-1">{detail}</p>
+    </div>
+  );
+}
+
+function PerformanceListPanel({ title, subtitle, items, empty }: {
+  title: string;
+  subtitle: string;
+  items: PerformanceBucket[];
+  empty: string;
+}) {
+  return (
+    <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">{title}</h3>
+        <span className="text-[9px] text-zinc-800">{subtitle}</span>
+      </div>
+      {items.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-xs text-zinc-700">{empty}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map(item => (
+            <div key={item.key} className="rounded-xl border border-zinc-900 bg-zinc-950/60 px-3 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold text-zinc-200">{item.label}</span>
+                <span className={`text-[10px] font-black ${rrTone(item.averageRR)}`}>{fmtRR(item.averageRR)}</span>
+              </div>
+              <p className="text-[9px] text-zinc-600 mt-1">
+                Win {fmtPct(item.winRate)} · TP1 {fmtPct(item.tp1HitRate)} · {item.resolvedCount} resolved
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -796,10 +1098,10 @@ function RunFeedItem({ run }: { run: SignalRunRecord }) {
         <span>{run.promptVersion}</span>
       </div>
       {run.failureReason && (
-        <p className="text-[9px] text-red-400 mt-2 leading-relaxed">{run.failureReason}</p>
+        <p className="text-[9px] text-zinc-400 mt-2 leading-relaxed">{run.failureReason}</p>
       )}
       {run.failureCode && (
-        <p className="text-[9px] text-amber-300 mt-1">{run.failureCode}</p>
+        <p className="text-[9px] text-zinc-500 mt-1">{run.failureCode}</p>
       )}
     </div>
   );
@@ -824,34 +1126,59 @@ function AlertFeedItem({ alert }: { alert: AlertRecord }) {
         </span>
       </div>
       {alert.failureReason && (
-        <p className="text-[9px] text-red-400 mt-2 leading-relaxed">{alert.failureReason}</p>
+        <p className="text-[9px] text-zinc-400 mt-2 leading-relaxed">{alert.failureReason}</p>
       )}
     </div>
   );
 }
 
-function ProviderHealthPanel({ providers }: { providers: ProviderStatus[] }) {
+function ProviderHealthRow({ provider }: { provider: ProviderStatus }) {
   return (
-    <div className="space-y-2">
-      {providers.map(provider => (
-        <div key={provider.provider} className="flex items-center justify-between gap-3 rounded-xl border border-zinc-900 bg-zinc-950/60 px-3 py-2">
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold text-zinc-200">
-              {provider.provider}
-              {provider.assetClass ? <span className="text-zinc-600 font-medium"> · {provider.assetClass}</span> : null}
-            </p>
-            <p className="text-[9px] text-zinc-700">
-              {provider.detail}
-              {provider.latencyMs != null ? ` · ${provider.latencyMs}ms` : ""}
-              {provider.score != null ? ` · score ${provider.score}` : ""}
-              {provider.circuitState ? ` · circuit ${provider.circuitState.toLowerCase()}` : ""}
-            </p>
-          </div>
-          <span className={`text-[8px] font-bold px-2 py-1 rounded-full border whitespace-nowrap ${toneForStatus(provider.status)}`}>
-            {provider.status}
-          </span>
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-zinc-900 bg-zinc-950/60 px-3 py-2.5">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[10px] font-bold text-zinc-200">
+            {provider.assetClass ? `${provider.assetClass} · ${provider.provider}` : provider.provider}
+          </p>
+          {provider.availability === "blocked" && (
+            <span className="text-[8px] font-bold px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-300">
+              {blockedReasonLabel(provider.blockedReason)}
+            </span>
+          )}
         </div>
-      ))}
+        <p className="text-[9px] text-zinc-500 mt-1">{providerRole(provider)}</p>
+        <p className="text-[9px] text-zinc-700 mt-1">
+          {compactProviderDetail(provider.detail)}
+          {provider.latencyMs != null ? ` · ${provider.latencyMs}ms` : ""}
+          {provider.score != null ? ` · score ${provider.score}` : ""}
+          {provider.circuitState ? ` · circuit ${provider.circuitState.toLowerCase()}` : ""}
+        </p>
+      </div>
+      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border whitespace-nowrap ${toneForStatus(provider.status)}`}>
+        {provider.status}
+      </span>
+    </div>
+  );
+}
+
+function ProviderHealthPanel({ providers }: { providers: ProviderStatus[] }) {
+  const coreProviders = providers.filter(provider => !provider.assetClass).sort(compareProviders);
+  const marketProviders = providers.filter(provider => provider.assetClass).sort(compareProviders);
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-[8px] font-bold tracking-[0.18em] uppercase text-zinc-600">Core APIs</p>
+        {coreProviders.map(provider => (
+          <ProviderHealthRow key={provider.provider} provider={provider} />
+        ))}
+      </div>
+      <div className="space-y-2">
+        <p className="text-[8px] font-bold tracking-[0.18em] uppercase text-zinc-600">Market Data APIs</p>
+        {marketProviders.map(provider => (
+          <ProviderHealthRow key={`${provider.assetClass}:${provider.provider}`} provider={provider} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -868,15 +1195,31 @@ function QueueJobItem({ job, onRetry }: { job: QueueJob; onRetry: (jobId: string
           {job.status}
         </span>
       </div>
-      {job.failedReason && <p className="text-[9px] text-red-400 mt-2">{job.failedReason}</p>}
+      {job.failedReason && <p className="text-[9px] text-zinc-400 mt-2">{job.failedReason}</p>}
       {job.status === "failed" && (
         <button
           onClick={() => onRetry(job.id)}
-          className="mt-3 text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg bg-[#C8A96E] text-black hover:bg-[#d4b87a] transition-colors"
+          className="mt-3 text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-green-500/40 bg-green-600 text-white hover:bg-green-500 transition-colors"
         >
           Retry Job
         </button>
       )}
+    </div>
+  );
+}
+
+function CoverageSummaryCard({ item }: { item: CoverageSummary }) {
+  return (
+    <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[9px] text-green-400 tracking-[0.22em] uppercase">{item.label}</p>
+        <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(item.status)}`}>
+          {item.status}
+        </span>
+      </div>
+      <p className="text-lg font-black text-white mt-3">{item.summary}</p>
+      <p className="text-[10px] text-zinc-600 mt-1">{item.providers}</p>
+      <p className="text-[10px] text-zinc-500 mt-2 leading-relaxed">{item.detail}</p>
     </div>
   );
 }
@@ -909,12 +1252,12 @@ function MarketIntelPanel({
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex-1 px-4 py-3 text-[10px] font-bold tracking-widest uppercase transition-all border-b-2 -mb-px flex items-center justify-center gap-2 ${
               tab === t.id
-                ? "border-[#C8A96E] text-[#C8A96E]"
-                : "border-transparent text-zinc-600 hover:text-zinc-400"
+                ? "border-green-500 text-green-300"
+                : "border-transparent text-zinc-600 hover:text-white"
             }`}>
             {t.label}
             {t.count > 0 && (
-              <span className={`text-[8px] px-1.5 py-0.5 rounded-full ${tab === t.id ? "bg-[#C8A96E]/20 text-[#C8A96E]" : "bg-zinc-800 text-zinc-600"}`}>
+              <span className={`text-[8px] px-1.5 py-0.5 rounded-full ${tab === t.id ? "bg-green-500/10 text-green-300" : "bg-zinc-800 text-zinc-600"}`}>
                 {t.count}
               </span>
             )}
@@ -939,7 +1282,7 @@ function MarketIntelPanel({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                         {isBreak && (
-                          <span className="text-[8px] font-black tracking-widest bg-red-500/20 text-red-400 border border-red-500/30 rounded px-1.5 py-0.5">
+                          <span className="text-[8px] font-black tracking-widest bg-zinc-900 text-zinc-300 border border-zinc-700 rounded px-1.5 py-0.5">
                             BREAKING
                           </span>
                         )}
@@ -972,18 +1315,18 @@ function MarketIntelPanel({
             {calendar.length === 0 ? (
               <div className="py-12 text-center text-zinc-800 text-sm">No upcoming high-impact events.</div>
             ) : calendar.map((ev, i) => (
-              <div key={i} className={`px-4 py-3 ${ev.isToday ? "bg-[#C8A96E]/3 border-l-2 border-[#C8A96E]/30" : ""}`}>
+              <div key={i} className={`px-4 py-3 ${ev.isToday ? "bg-zinc-950 border-l-2 border-zinc-700/50" : ""}`}>
                 <div className="flex items-start gap-2.5">
                   <span className="text-lg leading-none">{ev.flag}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       {ev.imminent && (
-                        <span className="text-[8px] font-black text-red-400 animate-pulse">⚠ IMMINENT</span>
+                        <span className="text-[8px] font-black text-zinc-300 animate-pulse">IMMINENT</span>
                       )}
                       {ev.isToday && !ev.imminent && (
-                        <span className="text-[8px] font-bold text-[#C8A96E]">TODAY</span>
+                        <span className="text-[8px] font-bold text-zinc-300">TODAY</span>
                       )}
-                      <span className="text-[8px] font-black text-red-500 tracking-widest bg-red-500/10 border border-red-500/20 rounded px-1.5 py-0.5">
+                      <span className="text-[8px] font-black text-zinc-400 tracking-widest bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5">
                         HIGH IMPACT
                       </span>
                     </div>
@@ -992,7 +1335,7 @@ function MarketIntelPanel({
                       <span>{ev.date} {ev.time}</span>
                       {ev.forecast != null && <span>Fcst: <span className="text-zinc-400">{ev.forecast}{ev.unit}</span></span>}
                       {ev.previous != null && <span>Prev: <span className="text-zinc-500">{ev.previous}{ev.unit}</span></span>}
-                      {ev.actual   != null && <span>Act: <span className="text-emerald-400">{ev.actual}{ev.unit}</span></span>}
+                      {ev.actual   != null && <span>Act: <span className="text-zinc-200">{ev.actual}{ev.unit}</span></span>}
                     </div>
                     <div className="flex gap-1 mt-1.5 flex-wrap">
                       {ev.affectedAssets.slice(0, 4).map(a => (
@@ -1018,7 +1361,7 @@ function MarketIntelPanel({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                       {item.isTier1Bank && (
-                        <span className="text-[8px] font-black tracking-widest bg-[#C8A96E]/10 text-[#C8A96E] border border-[#C8A96E]/20 rounded px-1.5 py-0.5">
+                        <span className="text-[8px] font-black tracking-widest bg-zinc-900 text-zinc-300 border border-zinc-700 rounded px-1.5 py-0.5">
                           TIER 1
                         </span>
                       )}
@@ -1053,9 +1396,11 @@ export default function Home() {
   // ── Existing state ────────────────────────────────────────────────────────
   const [latestSignals, setLatestSignals] = useState<Record<string, Signal>>({});
   const [latestTradePlans, setLatestTradePlans] = useState<Record<string, Record<string, TradePlan>>>({});
+  const [setupBreakdown, setSetupBreakdown] = useState<SetupBreakdown | null>(null);
   const [signalFeed,    setSignalFeed]    = useState<Signal[]>([]);
   const [tgSettings,    setTgSettings]    = useState<TelegramSettings | null>(null);
   const [cycleRunning,  setCycleRunning]  = useState(false);
+  const [cycleNotice,   setCycleNotice]   = useState<CycleNotice | null>(null);
   const [showTelegram,  setShowTelegram]  = useState(false);
   const [now,           setNow]           = useState(new Date());
   const [lastRefresh,   setLastRefresh]   = useState<Date | null>(null);
@@ -1063,6 +1408,7 @@ export default function Home() {
   const [alerts,        setAlerts]        = useState<AlertRecord[]>([]);
   const [system,        setSystem]        = useState<SystemStatus | null>(null);
   const [queueJobs,     setQueueJobs]     = useState<QueueJob[]>([]);
+  const [performance,   setPerformance]   = useState<PerformanceResponse | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedRun,   setSelectedRun]   = useState<RunDetail | null>(null);
   const [failureBreakdown, setFailureBreakdown] = useState<Record<string, number>>({});
@@ -1085,16 +1431,33 @@ export default function Home() {
   // ── Existing data fetch ───────────────────────────────────────────────────
 
   const fetchData = useCallback(async () => {
-    const [latestRes, plansRes, feedRes, tgRes] = await Promise.allSettled([
+    const [latestRes, plansRes, feedRes, tgRes, performanceRes] = await Promise.allSettled([
       fetch("/api/signals/latest").then(r => r.json()),
       fetch("/api/trade-plans/latest").then(r => r.json()),
       fetch("/api/signals?rank=S,A&limit=20").then(r => r.json()),
       fetch("/api/telegram/settings").then(r => r.json()),
+      fetch("/api/performance").then(r => r.json()),
     ]);
     if (latestRes.status === "fulfilled") setLatestSignals(latestRes.value ?? {});
-    if (plansRes.status === "fulfilled") setLatestTradePlans(plansRes.value ?? {});
+    if (plansRes.status === "fulfilled") {
+      const payload = plansRes.value as unknown;
+      if (
+        payload &&
+        typeof payload === "object" &&
+        "plans" in payload &&
+        "breakdown" in payload
+      ) {
+        const response = payload as LatestTradePlansResponse;
+        setLatestTradePlans(response.plans ?? {});
+        setSetupBreakdown(response.breakdown ?? null);
+      } else {
+        setLatestTradePlans((payload as Record<string, Record<string, TradePlan>>) ?? {});
+        setSetupBreakdown(null);
+      }
+    }
     if (feedRes.status   === "fulfilled") setSignalFeed(feedRes.value   ?? []);
     if (tgRes.status     === "fulfilled") setTgSettings(tgRes.value     ?? null);
+    if (performanceRes.status === "fulfilled") setPerformance(performanceRes.value ?? null);
     setLastRefresh(new Date());
   }, []);
 
@@ -1209,19 +1572,37 @@ export default function Home() {
   async function runCycle() {
     if (cycleRunning) return;
     setCycleRunning(true);
+    setCycleNotice(null);
     try {
       const res  = await fetch("/api/cycle", { method: "POST" });
       const body = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(body?.error ?? "Failed to queue cycle");
+        throw new Error(body?.error ?? "Failed to run cycle");
       }
 
-      window.setTimeout(() => {
-        fetchData().catch(() => null);
-        fetchOps().catch(() => null);
-      }, 5000);
-    } catch { /* silent */ }
+      if (body?.mode === "direct") {
+        setCycleNotice({
+          tone: "info",
+          message: "Signal cycle completed inline because Redis is unavailable.",
+        });
+        await Promise.allSettled([fetchData(), fetchOps()]);
+      } else {
+        setCycleNotice({
+          tone: "info",
+          message: "Signal cycle queued for worker execution.",
+        });
+        window.setTimeout(() => {
+          fetchData().catch(() => null);
+          fetchOps().catch(() => null);
+        }, 5000);
+      }
+    } catch (error) {
+      setCycleNotice({
+        tone: "error",
+        message: error instanceof Error ? error.message : "Failed to run cycle.",
+      });
+    }
     finally { setCycleRunning(false); }
   }
 
@@ -1249,17 +1630,38 @@ export default function Home() {
 
   async function enqueueCycleManually() {
     if (cycleRunning) return;
+    if (!queueAvailable) {
+      setCycleNotice({
+        tone: "info",
+        message: "Redis queue is unavailable. Use Run Cycle to execute inline.",
+      });
+      return;
+    }
     setCycleRunning(true);
+    setCycleNotice(null);
     try {
-      await fetch("/api/queue", {
+      const res = await fetch("/api/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "enqueue_cycle" }),
       });
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(body?.error ?? "Failed to enqueue cycle");
+      }
+      setCycleNotice({
+        tone: "info",
+        message: "Signal cycle queued for worker execution.",
+      });
       window.setTimeout(() => {
         fetchOps().catch(() => null);
       }, 1500);
-    } catch { /* silent */ }
+    } catch (error) {
+      setCycleNotice({
+        tone: "error",
+        message: error instanceof Error ? error.message : "Failed to enqueue cycle.",
+      });
+    }
     finally { setCycleRunning(false); }
   }
 
@@ -1309,8 +1711,82 @@ export default function Home() {
     .filter(s => s.rank === "S" || s.rank === "A").length;
 
   const latestRun = runs[0] ?? null;
+  const queueAvailable = system?.queue.status?.toLowerCase() === "online";
   const deliveredAlerts = alerts.filter(a => a.status === "DELIVERED").length;
   const failedAlerts = alerts.filter(a => a.status === "FAILED").length;
+  const configuredProviderCount = system
+    ? system.providers.filter(provider => provider.availability === "available").length
+    : 0;
+  const coreProviders = system?.providers.filter(provider => !provider.assetClass) ?? [];
+  const coreIssues = coreProviders.filter(provider => provider.availability !== "available");
+  const marketCoverage: CoverageSummary[] = system ? (ASSET_CLASS_ORDER as readonly string[]).map(assetClass => {
+    const assetProviders = system.providers.filter(provider => provider.assetClass === assetClass);
+    const assetQuotes = livePrices.filter(price => price.assetClass === assetClass);
+    const expectedSymbols = ASSETS.filter(symbol => ASSET_CLASS[symbol] === assetClass).length;
+    const liveQuotes = assetQuotes.filter(price => price.marketStatus === "LIVE" && price.currentPrice != null);
+    const issueDetails = assetProviders
+      .filter(provider => provider.availability !== "available")
+      .map(provider => `${provider.provider}: ${compactProviderDetail(provider.detail)}`)
+      .slice(0, 2);
+    const providerList = Array.from(new Set(assetProviders.map(provider => provider.provider))).join(" · ") || "No provider data";
+    const label = assetClass === "COMMODITY" ? "Metals" : assetClass === "FOREX" ? "Forex" : "Crypto";
+
+    if (liveQuotes.length > 0) {
+      return {
+        label,
+        status: "LIVE",
+        summary: `${liveQuotes.length}/${expectedSymbols} live quotes`,
+        providers: providerList,
+        detail: `${providerList} are returning usable prices for this asset class.`,
+      };
+    }
+
+    return {
+      label,
+      status: assetProviders.length > 0 ? "DEGRADED" : "MISSING",
+      summary: assetProviders.length > 0 ? "Configured but blocked" : "No provider data",
+      providers: providerList,
+      detail: issueDetails.join(" · ") || "Awaiting market data checks.",
+    };
+  }) : [];
+  const serviceCoverage: CoverageSummary[] = system ? [{
+    label: "Core Services",
+    status: queueAvailable && coreIssues.length === 0 ? "ONLINE" : "DEGRADED",
+    summary: queueAvailable ? "Control plane available" : "Run Cycle executes inline",
+    providers: "Postgres · Redis · Anthropic/OpenAI/Gemini · Telegram",
+      detail: coreIssues.length > 0
+        ? coreIssues.map(provider => `${provider.provider}: ${compactProviderDetail(provider.detail)}`).join(" · ")
+        : "Postgres persistence, Redis queueing, the LLM explanation chain, and Telegram delivery are responding normally.",
+  }] : [];
+  const coverageSummaries = [...marketCoverage, ...serviceCoverage];
+  const degradedCoverage = marketCoverage.filter(item => item.status !== "LIVE");
+  const latestSetupMix = system?.latestSetupBreakdown ?? setupBreakdown;
+  const performanceSummary = performance?.summary ?? null;
+  const longPerformance = performance?.breakdowns.byDirection.find(item => item.key === "LONG") ?? null;
+  const shortPerformance = performance?.breakdowns.byDirection.find(item => item.key === "SHORT") ?? null;
+  const directionPerformance = [longPerformance, shortPerformance].filter((item): item is PerformanceBucket => Boolean(item));
+  const scalpGate = performance?.qualityGate.byStyle.SCALP ?? null;
+  const systemNotice = system
+    ? [
+        queueAvailable
+          ? `Queue is online${system.queue.connectionSource ? ` via ${system.queue.connectionSource}` : ""}.`
+          : "Queue is offline, so Run Cycle executes inline.",
+        system.commentary.available
+          ? "Commentary provider is available."
+          : `Commentary provider unavailable${system.commentary.blockedReason ? ` due to ${blockedReasonLabel(system.commentary.blockedReason)}` : ""}.`,
+        marketCoverage.find(item => item.label === "Crypto")?.status === "LIVE"
+          ? "Crypto market data is live."
+          : "Crypto market data is degraded.",
+        degradedCoverage
+          .filter(item => item.label !== "Crypto")
+          .length > 0
+          ? `${degradedCoverage
+            .filter(item => item.label !== "Crypto")
+            .map(item => item.label.toLowerCase())
+            .join(" and ")} feeds are configured but currently blocked by provider limits or plan restrictions.`
+          : "Forex and metals feeds are responding normally.",
+      ].join(" ")
+    : null;
 
   // Breaking news: < 15 min old, non-neutral, not dismissed
   const breakingItems = newsItems.filter(n => {
@@ -1322,7 +1798,7 @@ export default function Home() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#080808] text-zinc-100">
+    <div className="min-h-screen bg-black text-white">
 
       {/* ── BREAKING BANNER ─────────────────────────────────────────────── */}
       <BreakingBanner
@@ -1331,30 +1807,30 @@ export default function Home() {
       />
 
       {/* ── HEADER ─────────────────────────────────────────────────────── */}
-      <header className="border-b border-zinc-900/80 px-4 sm:px-6 py-3 sticky top-0 z-30 bg-[#080808]/95 backdrop-blur-sm">
+      <header className="border-b border-zinc-900/80 px-4 sm:px-6 py-3 sticky top-0 z-30 bg-black/95 backdrop-blur-sm">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#C8A96E]/10 flex items-center justify-center border border-[#C8A96E]/20">
-              <div className="w-2.5 h-2.5 rounded-sm bg-[#C8A96E]" />
+            <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/30">
+              <div className="w-2.5 h-2.5 rounded-sm bg-green-400" />
             </div>
             <div>
-              <h1 className="text-sm font-black tracking-[0.28em] uppercase text-[#C8A96E]">APEX</h1>
-              <p className="text-[8px] text-zinc-700 tracking-[0.3em] uppercase">Institutional Signal Operations</p>
+              <h1 className="text-sm font-black tracking-[0.28em] uppercase text-white">APEX</h1>
+              <p className="text-[8px] text-green-400 tracking-[0.3em] uppercase">Institutional Signal Operations</p>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-5">
             <div className="text-right">
-              <p className="text-[8px] text-zinc-700 tracking-widests uppercase">UTC Time</p>
-              <p className="text-xs font-black tabular-nums text-zinc-300">{fmtTime(now)}</p>
+              <p className="text-[8px] text-zinc-700 tracking-widest uppercase">UTC Time</p>
+              <p className="text-xs font-black tabular-nums text-white">{fmtTime(now)}</p>
             </div>
             <div className="text-right">
-              <p className="text-[8px] text-zinc-700 tracking-widests uppercase">Last Cycle</p>
-              <p className="text-xs font-black tabular-nums text-zinc-300">{lastCycleStr}</p>
+              <p className="text-[8px] text-zinc-700 tracking-widest uppercase">Last Cycle</p>
+              <p className="text-xs font-black tabular-nums text-white">{lastCycleStr}</p>
             </div>
             <div className="text-right">
-              <p className="text-[8px] text-zinc-700 tracking-widests uppercase">Active Signals</p>
-              <p className={`text-xs font-black tabular-nums ${activeSignals > 0 ? "text-[#C8A96E]" : "text-zinc-600"}`}>
+              <p className="text-[8px] text-zinc-700 tracking-widest uppercase">Active Signals</p>
+              <p className={`text-xs font-black tabular-nums ${activeSignals > 0 ? "text-green-300" : "text-zinc-600"}`}>
                 {activeSignals} / {Object.keys(latestSignals).length || "—"}
               </p>
             </div>
@@ -1362,18 +1838,18 @@ export default function Home() {
 
           <div className="flex items-center gap-2">
             <button onClick={() => setShowTelegram(v => !v)}
-              className={`text-[10px] font-bold tracking-widests uppercase px-3 py-1.5 rounded-lg border transition-all ${
-                showTelegram ? "border-[#C8A96E]/50 text-[#C8A96E] bg-[#C8A96E]/5" : "border-zinc-800 text-zinc-600 hover:text-zinc-400"
+              className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border transition-all ${
+                showTelegram ? "border-green-500/40 text-green-300 bg-green-500/10" : "border-zinc-800 text-zinc-400 hover:border-green-500/30 hover:text-green-300"
               }`}>
               TG Settings
             </button>
             <button onClick={runCycle} disabled={cycleRunning}
-              className="text-[10px] font-bold tracking-widests uppercase px-3 py-1.5 rounded-lg bg-[#C8A96E] text-black hover:bg-[#d4b87a] disabled:opacity-50 transition-colors">
+              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 transition-colors">
               {cycleRunning ? "Running…" : "⬡ Run Cycle"}
             </button>
-            <button onClick={enqueueCycleManually} disabled={cycleRunning}
-              className="text-[10px] font-bold tracking-widests uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-[#C8A96E]/40 hover:text-[#C8A96E] transition-colors">
-              Enqueue
+            <button onClick={enqueueCycleManually} disabled={cycleRunning || !queueAvailable}
+              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-green-500/30 hover:text-green-300 disabled:opacity-40 disabled:hover:border-zinc-800 disabled:hover:text-zinc-300 transition-colors">
+              {queueAvailable ? "Enqueue" : "Queue Offline"}
             </button>
           </div>
         </div>
@@ -1384,12 +1860,39 @@ export default function Home() {
 
       <div className="max-w-[1600px] mx-auto px-4 py-5">
 
+        {cycleNotice && (
+          <div
+            className={`mb-5 rounded-2xl border px-4 py-3 text-[10px] font-bold tracking-[0.18em] uppercase ${
+              cycleNotice.tone === "error"
+                ? "border-zinc-800 bg-zinc-950 text-zinc-200"
+                : "border-green-500/20 bg-green-500/8 text-green-300"
+            }`}
+          >
+              {cycleNotice.message}
+          </div>
+        )}
+
+        {systemNotice && (
+          <div className="mb-5 rounded-2xl border border-zinc-800 bg-[#0d0d0d] px-4 py-3">
+            <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-green-400">System Mode</p>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">{systemNotice}</p>
+          </div>
+        )}
+
+        {coverageSummaries.length > 0 && (
+          <div className="mb-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {coverageSummaries.map(item => (
+              <CoverageSummaryCard key={item.label} item={item} />
+            ))}
+          </div>
+        )}
+
         {/* ── Telegram settings panel ───────────────────────────────────── */}
         {showTelegram && (
-          <div className="bg-[#0d0d0d] border border-[#C8A96E]/20 rounded-2xl p-5 mb-5 fade-in max-w-sm">
+          <div className="bg-[#0d0d0d] border border-zinc-800 rounded-2xl p-5 mb-5 fade-in max-w-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#C8A96E]" />
-              <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-[#C8A96E]">Telegram Settings</h2>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-white">Telegram Settings</h2>
             </div>
             <TelegramPanel
               key={tgSettings ? `${tgSettings.id}:${tgSettings.enabled}:${tgSettings.minRank}:${tgSettings.allowedAssets}:${tgSettings.weekendCryptoOnly}` : "telegram-default"}
@@ -1401,13 +1904,13 @@ export default function Home() {
 
         {/* ── Cycle running overlay ─────────────────────────────────────── */}
         {cycleRunning && (
-          <div className="bg-[#0d0d0d] border border-[#C8A96E]/20 rounded-2xl p-4 mb-5 fade-in">
+          <div className="bg-[#0d0d0d] border border-zinc-800 rounded-2xl p-4 mb-5 fade-in">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#C8A96E] animate-pulse" />
-              <p className="text-xs text-[#C8A96E] font-bold tracking-widest">
-                Queueing institutional signal cycle for worker execution…
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <p className="text-xs text-white font-bold tracking-widest">
+                Executing institutional signal cycle…
               </p>
-              <span className="text-[9px] text-zinc-700 ml-auto">worker</span>
+              <span className="text-[9px] text-zinc-700 ml-auto">control plane</span>
             </div>
           </div>
         )}
@@ -1430,10 +1933,114 @@ export default function Home() {
           />
           <OpsMetricCard
             label="Providers"
-            value={system ? `${system.providers.filter(p => p.status === "configured" || p.status === "online").length}/${system.providers.length}` : "—"}
+            value={system ? `${configuredProviderCount}/${system.providers.length}` : "—"}
             detail={system ? "Configured or online dependencies" : "No provider data"}
           />
         </div>
+
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Execution Diagnostics</h2>
+            <span className="text-[9px] text-zinc-800">
+              {performance ? `${performance.summary.publishedCount} published · ${performance.summary.resolvedCount} resolved` : "Awaiting tracked outcomes"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 xl:grid-cols-5 gap-3 mb-5">
+            <PerformanceMetricCard
+              label="Win Rate"
+              value={fmtPct(performanceSummary?.winRate)}
+              detail={performanceSummary ? `${performanceSummary.wins} wins · ${performanceSummary.losses} losses` : "Waiting for resolved trades"}
+              accent="text-green-300"
+            />
+            <PerformanceMetricCard
+              label="TP1 Hit"
+              value={fmtPct(performanceSummary?.tp1HitRate)}
+              detail={performanceSummary ? `${performanceSummary.enteredCount} entered plans` : "No entered plans yet"}
+            />
+            <PerformanceMetricCard
+              label="TP2 Hit"
+              value={fmtPct(performanceSummary?.tp2HitRate)}
+              detail={performanceSummary ? `${performanceSummary.resolvedCount} resolved with RR` : "No resolved plans yet"}
+            />
+            <PerformanceMetricCard
+              label="TP3 Hit"
+              value={fmtPct(performanceSummary?.tp3HitRate)}
+              detail={performanceSummary ? `${performanceSummary.openCount} still open` : "No tracked outcomes yet"}
+            />
+            <PerformanceMetricCard
+              label="Average RR"
+              value={fmtRR(performanceSummary?.averageRR)}
+              detail={performanceSummary ? `${performanceSummary.pendingCount} pending · ${performanceSummary.invalidatedCount} invalidated` : "No realized RR yet"}
+              accent={rrTone(performanceSummary?.averageRR)}
+            />
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
+            <PerformanceListPanel
+              title="Worst Setup Families"
+              subtitle="lowest avg RR"
+              items={performance?.worstPerformers.setupFamilies ?? []}
+              empty="No setup-family samples have cleared the minimum resolved count."
+            />
+            <PerformanceListPanel
+              title="Worst Symbols"
+              subtitle="lowest avg RR"
+              items={performance?.worstPerformers.symbols ?? []}
+              empty="No symbol samples have cleared the minimum resolved count."
+            />
+            <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Long Vs Short</h3>
+                <span className="text-[9px] text-zinc-800">
+                  {performance ? `${performance.breakdowns.byDirection.length} sides` : "No samples"}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {directionPerformance.map(item => (
+                  <div key={item.key} className="rounded-xl border border-zinc-900 bg-zinc-950/60 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold text-zinc-200">{item.label}</span>
+                      <span className={`text-[10px] font-black ${rrTone(item.averageRR)}`}>{fmtRR(item.averageRR)}</span>
+                    </div>
+                    <p className="text-[9px] text-zinc-600 mt-1">
+                      Win {fmtPct(item.winRate)} · TP1 {fmtPct(item.tp1HitRate)} · {item.resolvedCount} resolved
+                    </p>
+                  </div>
+                ))}
+                {!performance && (
+                  <div className="py-8 text-center">
+                    <p className="text-xs text-zinc-700">Direction performance unavailable.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Quality Gate</h3>
+                <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(scalpGate?.disabled ? "degraded" : "online")}`}>
+                  {scalpGate?.disabled ? "scalp paused" : "scalp live"}
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                  <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Degraded Confidence Floor</p>
+                  <p className="text-lg font-black text-zinc-100 mt-1">{performance?.qualityGate.degradedConfidenceFloor ?? "—"}</p>
+                  <p className="text-[9px] text-zinc-500 mt-1">Degraded market data suppresses setups below this confidence.</p>
+                </div>
+                <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                  <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Scalp Gate</p>
+                  <p className="text-[10px] font-bold text-zinc-100 mt-2">
+                    {scalpGate ? `${scalpGate.sampleSize} samples · win ${fmtPct(scalpGate.winRate)} · avg ${fmtRR(scalpGate.averageRR)}` : "No scalp samples yet"}
+                  </p>
+                  <p className="text-[9px] text-zinc-500 mt-1">
+                    {scalpGate?.reason ?? "Scalp remains enabled unless recent tracked performance degrades."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <TradingViewChartPanel latestTradePlans={latestTradePlans} />
 
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-5">
 
@@ -1464,8 +2071,8 @@ export default function Home() {
             <div className="bg-[#0d0d0d] border border-zinc-900 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#C8A96E] animate-pulse" />
-                  <h3 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Signal Feed</h3>
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <h3 className="text-[10px] font-bold tracking-[0.22em] uppercase text-green-400">Signal Feed</h3>
                 </div>
                 <span className="text-[9px] text-zinc-800">A+ only</span>
               </div>
@@ -1495,10 +2102,10 @@ export default function Home() {
                       { label: "10Y Yield", val: macro.treasury10y  ? `${macro.treasury10y}%`   : "—", trend: null },
                     ].map(({ label, val, trend }) => (
                       <div key={label} className="flex items-center justify-between">
-                        <span className="text-[9px] text-zinc-700 tracking-widests uppercase">{label}</span>
+                        <span className="text-[9px] text-zinc-700 tracking-widest uppercase">{label}</span>
                         <div className="flex items-center gap-1.5">
                           {trend && (
-                            <span className={`text-[8px] ${trend === "rising" ? "text-red-500" : trend === "falling" ? "text-emerald-500" : "text-zinc-700"}`}>
+                            <span className={`text-[8px] ${trend === "rising" ? "text-zinc-400" : trend === "falling" ? "text-zinc-300" : "text-zinc-700"}`}>
                               {trend === "rising" ? "▲" : trend === "falling" ? "▼" : "—"}
                             </span>
                           )}
@@ -1538,8 +2145,8 @@ export default function Home() {
         {/* ── MARKET INTELLIGENCE PANEL ─────────────────────────────────── */}
         <div className="mt-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#C8A96E] animate-pulse" />
-            <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">Market Intelligence</h2>
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-green-400">Market Intelligence</h2>
             <span className="text-[9px] text-zinc-800">
               {newsItems.length} articles · {calendarEvents.length} events · {institutionalItems.length} institutional
             </span>
@@ -1604,7 +2211,7 @@ export default function Home() {
               <h2 className="text-[10px] font-bold tracking-[0.22em] uppercase text-zinc-600">System Health</h2>
               {system && (
                 <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.queue.status)}`}>
-                  queue {system.queue.status}
+                  queue {String(system.queue.status).toUpperCase()}
                 </span>
               )}
             </div>
@@ -1620,19 +2227,85 @@ export default function Home() {
                     <p className="text-lg font-black text-zinc-100 mt-1">{system.queue.active}</p>
                   </div>
                 </div>
+                <div className="grid grid-cols-1 gap-2 mb-4">
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Runtime</p>
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.queue.status)}`}>
+                        {system.queue.mode}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">
+                      Queue {String(system.queue.status).toUpperCase()}
+                      {system.queue.connectionSource ? ` via ${system.queue.connectionSource}` : ""}
+                    </p>
+                    <p className="text-[9px] text-zinc-500 mt-1">
+                      {system.queue.failureReason ?? "Redis-backed queue is reachable."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Commentary</p>
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.commentary.available ? "online" : "unavailable")}`}>
+                        {system.commentary.available ? "available" : "unavailable"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">{system.commentary.provider}</p>
+                    <p className="text-[9px] text-zinc-500 mt-1">
+                      {system.commentary.blockedReason
+                        ? `${blockedReasonLabel(system.commentary.blockedReason)} · ${compactProviderDetail(system.commentary.detail)}`
+                        : compactProviderDetail(system.commentary.detail)}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Provider Blocks</p>
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.blockedProviders.length > 0 ? "degraded" : "online")}`}>
+                        {system.blockedProviders.length}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">
+                      {system.blockedProviders.length > 0 ? system.blockedProviders.map(provider => provider.provider).join(" · ") : "No provider blocks"}
+                    </p>
+                    <p className="text-[9px] text-zinc-500 mt-1">
+                      {system.blockedProviders.length > 0
+                        ? system.blockedProviders
+                            .slice(0, 3)
+                            .map(provider => `${provider.provider}: ${blockedReasonLabel(provider.blockedReason)}`)
+                            .join(" · ")
+                        : "Credits, rate limits, and permission blocks appear here."}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Latest Setup Mix</p>
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(latestSetupMix?.directionBalance === "balanced" ? "online" : latestSetupMix?.active ? "degraded" : "unavailable")}`}>
+                        {latestSetupMix?.directionBalance ?? "unknown"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">
+                      LONG {latestSetupMix?.long ?? "—"} · SHORT {latestSetupMix?.short ?? "—"} · NO_SETUP {latestSetupMix?.noSetup ?? "—"}
+                    </p>
+                    <p className="text-[9px] text-zinc-500 mt-1">
+                      {latestSetupMix?.runId
+                        ? `Latest run ${latestSetupMix.runId} · ${latestSetupMix.total} plans`
+                        : "Latest setup-direction breakdown unavailable."}
+                    </p>
+                  </div>
+                </div>
                 <ProviderHealthPanel providers={system.providers} />
                 <div className="mt-4 flex gap-2 flex-wrap">
                   <button
                     onClick={toggleAlertsPause}
                     className={`text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border transition-colors ${
-                      alertSendingPaused ? "border-emerald-500/30 text-emerald-400" : "border-red-500/30 text-red-400"
+                      alertSendingPaused ? "border-zinc-700 text-zinc-300" : "border-zinc-800 text-zinc-500"
                     }`}
                   >
                     {alertSendingPaused ? "Resume Alerts" : "Pause Alerts"}
                   </button>
                   <button
                     onClick={() => requeueFailedAlerts()}
-                    className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-[#C8A96E]/40 hover:text-[#C8A96E] transition-colors"
+                    className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-green-500/30 hover:text-green-300 transition-colors"
                   >
                     Requeue Alerts
                   </button>
@@ -1703,22 +2376,22 @@ export default function Home() {
                     ))}
                   </div>
                   {selectedRun.failureReason && (
-                    <p className="text-[9px] text-red-400 mt-2">{selectedRun.failureReason}</p>
+                    <p className="text-[9px] text-zinc-400 mt-2">{selectedRun.failureReason}</p>
                   )}
                   {selectedRun.failureCode && (
-                    <p className="text-[9px] text-amber-300 mt-1">{selectedRun.failureCode}</p>
+                    <p className="text-[9px] text-zinc-500 mt-1">{selectedRun.failureCode}</p>
                   )}
                   <div className="flex gap-2 mt-3 flex-wrap">
                     <button
                       onClick={() => retryFailedRun(selectedRun.id)}
                       disabled={selectedRun.status !== "FAILED"}
-                      className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg bg-[#C8A96E] text-black hover:bg-[#d4b87a] disabled:opacity-40 transition-colors"
+                      className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-green-500/40 bg-green-600 text-white hover:bg-green-500 disabled:opacity-40 transition-colors"
                     >
                       Retry Failed Run
                     </button>
                     <button
                       onClick={() => requeueFailedAlerts(selectedRun.id)}
-                      className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-[#C8A96E]/40 hover:text-[#C8A96E] transition-colors"
+                      className="text-[9px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:border-green-500/30 hover:text-green-300 transition-colors"
                     >
                       Requeue Alerts
                     </button>
@@ -1770,12 +2443,31 @@ export default function Home() {
                                   <span className="text-[9px] font-black text-zinc-200">{plan.style}</span>
                                   {plan.setupFamily && <span className="text-[8px] text-zinc-600">{plan.setupFamily}</span>}
                                   <span className={`px-2 py-0.5 rounded-full border text-[8px] font-bold ${planStatusTone(plan.status)}`}>{plan.status}</span>
+                                  {plan.outcome && (
+                                    <span className={`px-2 py-0.5 rounded-full border text-[8px] font-bold ${outcomeTone(plan.outcome)}`}>
+                                      {outcomeLabel(plan.outcome)}
+                                    </span>
+                                  )}
                                 </div>
                                 <span className="text-[9px] text-zinc-600">{plan.timeframe} · {plan.publicationRank ?? "—"}</span>
                               </div>
                               <p className="text-[9px] text-zinc-700 mt-2">
                                 Entry {fmt(plan.entryMin)} - {fmt(plan.entryMax)} · SL {fmt(plan.stopLoss)} · TP2 {fmt(plan.takeProfit2)} · RR {plan.riskRewardRatio != null ? plan.riskRewardRatio.toFixed(2) : "—"}
                               </p>
+                              <p className="text-[9px] text-zinc-600 mt-1">
+                                Realized {fmtRR(plan.realizedRR)} · MFE {fmtRR(plan.maxFavorableExcursion)} · MAE {fmtRR(plan.maxAdverseExcursion)}
+                              </p>
+                              {(plan.providerAtSignal || plan.providerHealthStateAtSignal) && (
+                                <p className="text-[9px] text-zinc-700 mt-1">
+                                  {plan.providerAtSignal ?? "Unknown provider"} · {plan.providerHealthStateAtSignal ?? "unknown"}
+                                  {plan.providerFallbackUsedAtSignal ? " · fallback" : ""}
+                                </p>
+                              )}
+                              {plan.qualityGateReason && (
+                                <p className="text-[9px] text-zinc-500 mt-1">
+                                  Quality gate: {qualityGateLabel(plan.qualityGateReason)}
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>

@@ -1,8 +1,11 @@
 export type AssetClass = "CRYPTO" | "FOREX" | "COMMODITY";
-export type ProviderName = "Binance" | "Alpha Vantage" | "Twelve Data";
+export type ProviderName = "Binance" | "FCS API" | "Alpha Vantage" | "Twelve Data" | "Finnhub";
 export type MarketStatus = "LIVE" | "DEGRADED" | "UNAVAILABLE";
 export type Timeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1D";
 export type Style = "SCALP" | "INTRADAY" | "SWING";
+export type MarketRequestPriority = "hot" | "warm" | "cold";
+export type CacheSourceType = "fresh" | "cache" | "stale-cache" | "fallback";
+export type FreshnessClass = "fresh" | "stale" | "expired";
 
 export type QuoteResult = {
   symbol: string;
@@ -59,6 +62,13 @@ export type OrchestratedQuote = QuoteResult & {
   freshnessMs: number | null;
   fromCache: boolean;
   circuitState: string | null;
+  providerHealthScore: number | null;
+  degraded: boolean;
+  sourceType: CacheSourceType;
+  freshnessClass: FreshnessClass;
+  fetchedAt: number | null;
+  cacheKey: string | null;
+  priority: MarketRequestPriority;
 };
 
 export type OrchestratedCandles = CandleResult & {
@@ -67,4 +77,11 @@ export type OrchestratedCandles = CandleResult & {
   freshnessMs: number | null;
   fromCache: boolean;
   circuitState: string | null;
+  providerHealthScore: number | null;
+  degraded: boolean;
+  sourceType: CacheSourceType;
+  freshnessClass: FreshnessClass;
+  fetchedAt: number | null;
+  cacheKey: string | null;
+  priority: MarketRequestPriority;
 };

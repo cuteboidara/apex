@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/start-web.mjs",
+    "start:web": "node scripts/start-web.mjs",
     "lint": "eslint",
+    "migrate:deploy": "prisma migrate deploy",
     "worker:signal-cycle": "node --import tsx scripts/signal-cycle-worker.ts",
     "service:scheduler": "node --import tsx scripts/scheduler-service.ts"
   },
@@ -33,9 +35,11 @@
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.27",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }

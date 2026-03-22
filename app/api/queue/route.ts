@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enqueueSignalCycle, getSignalCycleQueue, isQueueConfigured } from "@/lib/queue";
+import { enqueueSignalCycle, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
 import { recordAuditEvent } from "@/lib/audit";
 import { requeueAlerts, setAlertSendingPaused } from "@/lib/telegramService";
 import { prisma } from "@/lib/prisma";
@@ -10,13 +10,14 @@ export async function GET() {
 
   await reconcileStaleRuns();
   const settings = await prisma.telegramSettings.findFirst().catch(() => null as TelegramSettingsRecord);
-  if (!isQueueConfigured()) {
+  if (!queueAvailable) {
     return NextResponse.json({
+      status: "DEGRADED",
+      reason: QUEUE_UNAVAILABLE_REASON,
       paused: true,
       degraded: true,
       alertSendingPaused: settings ? !settings.enabled : false,
       jobs: [],
-      reason: "Queue unavailable: REDIS_URL is not configured.",
     });
   }
 
@@ -63,8 +64,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "retry_job" && body.jobId) {
-    if (!isQueueConfigured()) {
-      return NextResponse.json({ error: "Queue unavailable: REDIS_URL is not configured." }, { status: 503 });
+    if (!queueAvailable) {
+      return NextResponse.json({
+        status: "DEGRADED",
+        reason: QUEUE_UNAVAILABLE_REASON,
+      }, { status: 503 });
     }
     const job = await getSignalCycleQueue().getJob(body.jobId);
     if (!job) {
@@ -82,6 +86,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "enqueue_cycle") {
+    if (!queueAvailable) {
+      return NextResponse.json({
+        status: "DEGRADED",
+        reason: QUEUE_UNAVAILABLE_REASON,
+      }, { status: 503 });
+    }
     const { job, runId } = await enqueueSignalCycle(undefined, {
       actor: "OPERATOR",
       correlationId: null,
@@ -98,6 +108,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "retry_run" && body.runId) {
+    if (!queueAvailable) {
+      return NextResponse.json({
+        status: "DEGRADED",
+        reason: QUEUE_UNAVAILABLE_REASON,
+      }, { status: 503 });
+    }
     const { job, runId } = await enqueueSignalCycle(undefined, {
       actor: "OPERATOR",
       correlationId: body.runId,

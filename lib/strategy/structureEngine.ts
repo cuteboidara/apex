@@ -21,17 +21,24 @@ export function analyzeStructure(snapshot: MarketSnapshot): StructureAssessment 
 
   const range = snapshot.high14d - snapshot.low14d;
   const normalized = (snapshot.currentPrice - snapshot.low14d) / range;
-  const move = snapshot.change24h ?? 0;
-  const displacement = Math.abs(move) >= 0.45;
-  const breakOfStructure = displacement && (normalized >= 0.6 || normalized <= 0.4);
-  const reclaim = Math.abs(normalized - 0.5) <= 0.12;
-  const failedContinuation = Math.abs(move) <= 0.12 && (normalized >= 0.75 || normalized <= 0.25);
+  const clampedNormalized = Math.max(0, Math.min(1, normalized));
+  const impulse = snapshot.change24h ?? 0;
+  const displacement = Math.abs(impulse) >= 0.45;
+  const breakOfStructure = displacement && (clampedNormalized >= 0.6 || clampedNormalized <= 0.4);
+  const reclaim = Math.abs(clampedNormalized - 0.5) <= 0.12;
+  const failedContinuation = Math.abs(impulse) <= 0.12 && (clampedNormalized >= 0.75 || clampedNormalized <= 0.25);
 
-  let bias: StrategyBias | null = null;
-  if ((snapshot.trend === "uptrend" && normalized >= 0.45) || (snapshot.rsi ?? 50) >= 56) bias = "LONG";
-  if ((snapshot.trend === "downtrend" && normalized <= 0.55) || (snapshot.rsi ?? 50) <= 44) {
-    bias = bias === "LONG" ? bias : "SHORT";
-  }
+  const longScore =
+    ((snapshot.trend === "uptrend" && clampedNormalized >= 0.45) ? 2 : 0) +
+    (((snapshot.rsi ?? 50) >= 56 && clampedNormalized <= 0.65) ? 1 : 0) +
+    ((impulse >= 0.35 && clampedNormalized >= 0.5) ? 1 : 0) +
+    (clampedNormalized <= 0.25 ? 1 : 0);
+  const shortScore =
+    ((snapshot.trend === "downtrend" && clampedNormalized <= 0.55) ? 2 : 0) +
+    (((snapshot.rsi ?? 50) <= 44 && clampedNormalized >= 0.35) ? 1 : 0) +
+    ((impulse <= -0.35 && clampedNormalized <= 0.5) ? 1 : 0) +
+    (clampedNormalized >= 0.75 ? 1 : 0);
+  const bias: StrategyBias | null = longScore > shortScore ? "LONG" : shortScore > longScore ? "SHORT" : null;
 
   return {
     score: breakOfStructure ? 20 : reclaim ? 16 : 9,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ensureTradePlansForRun } from "@/lib/tradePlanPersistence";
+import { refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";
 
 export async function GET(
   _req: NextRequest,
@@ -10,6 +11,7 @@ export async function GET(
 
   try {
     await ensureTradePlansForRun(id);
+    await refreshTradePlanDiagnostics({ runIds: [id] });
 
     const run = await prisma.signalRun.findUnique({
       where: { id },

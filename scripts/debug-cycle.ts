@@ -36,11 +36,13 @@ void (async () => {
 
   // ── Single-asset test first ────────────────────────────────────────────────
   const { ASSETS, analyzeAsset } = await import("../lib/apexEngine");
+  const { getStylePerformanceGateState } = await import("../lib/tradePlanDiagnostics");
 
   console.log("\n── Testing single asset: BTCUSDT ──");
   try {
     const btc = ASSETS.find(a => a.symbol === "BTCUSDT")!;
-    const result = await analyzeAsset(btc, "debug-run");
+    const gateState = await getStylePerformanceGateState();
+    const result = await analyzeAsset(btc, "debug-run", gateState, null);
     const signal = result.signal;
     console.log("\n✓ BTCUSDT signal:", JSON.stringify({
       rank:      signal.rank,

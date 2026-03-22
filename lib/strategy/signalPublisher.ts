@@ -7,7 +7,7 @@ import { detectTrap } from "@/lib/strategy/trapDetector";
 import { classifySetup } from "@/lib/strategy/setupClassifier";
 import { planExecution } from "@/lib/strategy/executionPlanner";
 import { validateSetup } from "@/lib/strategy/setupValidator";
-import type { MarketSnapshot, SetupFamily } from "@/lib/strategy/types";
+import type { MarketSnapshot, SetupFamily, StrategyDiagnostic } from "@/lib/strategy/types";
 
 export type PublishedStrategyPlan = {
   style: TradePlanStyle;
@@ -29,6 +29,7 @@ export type PublishedStrategyPlan = {
   thesis: string;
   executionNotes: string;
   status: "ACTIVE" | "NO_SETUP" | "STALE";
+  diagnostics: StrategyDiagnostic[];
   setupScore: number;
   rank: "S" | "A" | "B" | "Silent";
   confidence: number;
@@ -44,53 +45,115 @@ export type PublishedStrategyPlan = {
 };
 
 function toRank(score: number): "S" | "A" | "B" | "Silent" {
-  if (score >= 85) return "S";
-  if (score >= 70) return "A";
-  if (score >= 55) return "B";
+  if (score >= 88) return "S";
+  if (score >= 76) return "A";
+  if (score >= 66) return "B";
   return "Silent";
 }
 
+function blockedPlan(
+  style: TradePlanStyle,
+  snapshot: MarketSnapshot,
+  diagnostics: StrategyDiagnostic[],
+  reason: string,
+  status: "NO_SETUP" | "STALE" = "NO_SETUP"
+): PublishedStrategyPlan {
+  return {
+    style,
+    setupFamily: null,
+    bias: snapshot.preferredBias,
+    timeframe: "Unavailable",
+    entryType: "NONE",
+    entryMin: null,
+    entryMax: null,
+    stopLoss: null,
+    takeProfit1: null,
+    takeProfit2: null,
+    takeProfit3: null,
+    riskRewardRatio: null,
+    invalidationLevel: null,
+    regimeTag: "unclear",
+    liquidityThesis: reason,
+    trapThesis: reason,
+    thesis: reason,
+    executionNotes: `Rejected: ${diagnostics.join(", ")}`,
+    status,
+    diagnostics,
+    setupScore: 0,
+    rank: "Silent",
+    confidence: 0,
+    breakdown: {
+      regimeAlignment: 0,
+      liquidityQuality: 0,
+      structureConfirmation: 0,
+      trapEdge: 0,
+      entryPrecision: 0,
+      riskReward: 0,
+      freshness: 0,
+    },
+  };
+}
+
+function providerPenalty(snapshot: MarketSnapshot) {
+  let penalty = 0;
+
+  if (snapshot.marketStatus && snapshot.marketStatus !== "LIVE") {
+    penalty += 12;
+  }
+
+  if (snapshot.providerFallbackUsed) {
+    penalty += 8;
+  }
+
+  const degradedCandles = Object.values(snapshot.candleProviders ?? {}).filter(provider =>
+    provider != null && (provider.marketStatus !== "LIVE" || provider.fallbackUsed)
+  ).length;
+
+  penalty += Math.min(12, degradedCandles * 3);
+  return penalty;
+}
+
+function isFromTwelveData(snapshot: MarketSnapshot): boolean {
+  const p1m = snapshot.candleProviders?.["1m"];
+  const p5m = snapshot.candleProviders?.["5m"];
+  return (
+    (typeof p1m?.selectedProvider === "string" && p1m.selectedProvider.toLowerCase().includes("twelve")) ||
+    (typeof p5m?.selectedProvider === "string" && p5m.selectedProvider.toLowerCase().includes("twelve")) ||
+    p1m?.freshnessClass === "stale" ||
+    p5m?.freshnessClass === "stale"
+  );
+}
+
 export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnapshot): PublishedStrategyPlan {
+  // If 1m/5m candles came from the Twelve Data fallback (or are stale),
+  // SCALP requires sub-minute precision that fallback data cannot support.
+  if (style === "SCALP" && isFromTwelveData(snapshot)) {
+    return blockedPlan(
+      style,
+      snapshot,
+      ["degraded_data"],
+      "SCALP skipped: 1m/5m candle data sourced from Twelve Data fallback or marked stale."
+    );
+  }
+
   const readiness = snapshot.styleReadiness?.[style];
-  if (readiness && !readiness.ready) {
-    const readinessReason = [
+  const readinessReason = readiness
+    ? [
       readiness.missing.length > 0 ? `missing ${readiness.missing.join(", ")}` : null,
       readiness.stale.length > 0 ? `stale ${readiness.stale.join(", ")}` : null,
-    ].filter(Boolean).join(" · ");
+    ].filter(Boolean).join(" · ")
+    : "";
 
-    return {
+  if (!readiness || !readiness.ready) {
+    return blockedPlan(
       style,
-      setupFamily: null,
-      bias: "LONG",
-      timeframe: "Unavailable",
-      entryType: "NONE",
-      entryMin: null,
-      entryMax: null,
-      stopLoss: null,
-      takeProfit1: null,
-      takeProfit2: null,
-      takeProfit3: null,
-      riskRewardRatio: null,
-      invalidationLevel: null,
-      regimeTag: "unclear",
-      liquidityThesis: "Required timeframe data is not fresh enough for this style.",
-      trapThesis: "Trap detection disabled until required candles are available.",
-      thesis: `No ${style.toLowerCase()} setup published because required timeframe data is unavailable.`,
-      executionNotes: readinessReason ? `Readiness blocked: ${readinessReason}.` : "Readiness blocked.",
-      status: "STALE",
-      setupScore: 0,
-      rank: "Silent",
-      confidence: 0,
-      breakdown: {
-        regimeAlignment: 0,
-        liquidityQuality: 0,
-        structureConfirmation: 0,
-        trapEdge: 0,
-        entryPrecision: 0,
-        riskReward: 0,
-        freshness: 0,
-      },
-    };
+      snapshot,
+      ["degraded_data"],
+      readinessReason
+        ? `Required timeframe data is not publishable for ${style.toLowerCase()} setups: ${readinessReason}.`
+        : `Required timeframe data is not publishable for ${style.toLowerCase()} setups.`,
+      "STALE"
+    );
   }
 
   const timeframe = getTimeframeProfile(style);
@@ -134,12 +197,16 @@ export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnaps
       trap.score +
       (execution?.entryPrecisionScore ?? 0) +
       (execution?.riskRewardScore ?? 0) +
-      validationResult.dataFreshnessScore
+      validationResult.dataFreshnessScore -
+      providerPenalty(snapshot)
     )
   );
   const rank = validationResult.valid ? toRank(setupScore) : "Silent";
   const finalStatus = !validationResult.valid ? validationResult.status : rank === "Silent" ? "NO_SETUP" : "ACTIVE";
-  const bias = setup.bias ?? structure.bias ?? regime.bias ?? "LONG";
+  const bias = setup.bias ?? structure.bias ?? regime.bias ?? snapshot.preferredBias;
+  const executionNotes = validationResult.valid
+    ? `${execution?.executionNotes ?? ""} ${validationResult.reason}`.trim()
+    : validationResult.reason;
 
   return {
     style,
@@ -161,10 +228,9 @@ export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnaps
     thesis: validationResult.valid
       ? `${setup.thesis} ${regime.thesis} ${snapshot.brief}`
       : validationResult.reason,
-    executionNotes: validationResult.valid
-      ? `${execution?.executionNotes ?? ""} ${validationResult.reason}`.trim()
-      : validationResult.reason,
+    executionNotes,
     status: finalStatus,
+    diagnostics: validationResult.valid ? setup.diagnostics : validationResult.diagnostics,
     setupScore,
     rank,
     confidence: Math.min(99, setupScore),

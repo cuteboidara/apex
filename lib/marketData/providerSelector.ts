@@ -5,20 +5,27 @@ import type { AssetClass, ProviderSelection } from "@/lib/marketData/types";
 export async function selectProviders(assetClass: AssetClass): Promise<ProviderSelection> {
   const candidates = providerRegistry[assetClass];
   const scored = await Promise.all(
-    candidates.map(async adapter => ({
+    candidates.map(async (adapter, index) => ({
+      index,
       adapter,
       health: await getProviderHealthScore(adapter.provider, assetClass),
     }))
   );
 
-  scored.sort((a, b) => {
-    const aPenalty = a.health.circuitState === "OPEN" ? 1000 : a.health.circuitState === "HALF_OPEN" ? 100 : 0;
-    const bPenalty = b.health.circuitState === "OPEN" ? 1000 : b.health.circuitState === "HALF_OPEN" ? 100 : 0;
-    return (b.health.score - bPenalty) - (a.health.score - aPenalty);
-  });
+  const primaryCandidate =
+    scored.find(item => item.health.circuitState !== "OPEN") ??
+    scored[0] ??
+    null;
+  const fallbacks = scored
+    .filter(item => item.adapter.provider !== primaryCandidate?.adapter.provider || item.index !== primaryCandidate.index)
+    .sort((a, b) => {
+      const aPenalty = a.health.circuitState === "OPEN" ? 1 : 0;
+      const bPenalty = b.health.circuitState === "OPEN" ? 1 : 0;
+      return aPenalty - bPenalty || a.index - b.index;
+    });
 
   return {
-    primary: scored[0]?.adapter ?? null,
-    fallbacks: scored.slice(1).map(item => item.adapter),
+    primary: primaryCandidate?.adapter ?? null,
+    fallbacks: fallbacks.map(item => item.adapter),
   };
 }

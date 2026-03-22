@@ -2,9 +2,13 @@ import { recordProviderHealth } from "@/lib/providerHealth";
 import { orchestrateCandles } from "@/lib/marketData/candleOrchestrator";
 import { orchestrateQuote } from "@/lib/marketData/quoteOrchestrator";
 import { evaluateStyleReadiness } from "@/lib/marketData/policies/freshnessPolicy";
+import type { MarketRequestContext } from "@/lib/marketData/policies/requestPolicy";
+import { getCachedValue, setCachedValue } from "@/lib/runtime/runtimeCache";
 
 const NEWS_KEY = process.env.NEWS_API_KEY ?? "";
 const FRED_KEY = process.env.FRED_API_KEY ?? "";
+const TWELVE_KEY = process.env.TWELVE_DATA_API_KEY ?? "";
+const TWELVE_BASE = "https://api.twelvedata.com";
 const BINANCE_BASE = "https://api.binance.com/api/v3";
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -143,6 +147,23 @@ export function analyzeSentiment(title: string): "bullish" | "bearish" | "neutra
   return "neutral";
 }
 
+function summarizeCandleProvider(
+  result: Awaited<ReturnType<typeof orchestrateCandles>>
+) {
+  return {
+    selectedProvider: result.selectedProvider ?? result.provider,
+    fallbackUsed: result.fallbackUsed,
+    freshnessMs: result.freshnessMs,
+    circuitState: result.circuitState,
+    marketStatus: result.marketStatus,
+    reason: result.reason,
+    sourceType: result.sourceType,
+    freshnessClass: result.freshnessClass,
+    degraded: result.degraded,
+    providerHealthScore: result.providerHealthScore,
+  };
+}
+
 export async function getBinancePrice(symbol: string): Promise<number | null> {
   const startedAt = Date.now();
   const url = `${BINANCE_BASE}/ticker/price?symbol=${symbol}`;
@@ -214,7 +235,7 @@ export async function getAssetPrice(symbol: string): Promise<AssetPrice | null> 
   }
 
   const assetClass = symbol.endsWith("USDT") ? "CRYPTO" : (symbol.startsWith("XA") ? "COMMODITY" : "FOREX");
-  const quote = await orchestrateQuote(symbol, assetClass);
+  const quote = await orchestrateQuote(symbol, assetClass, { consumer: "dashboard", priority: "warm" });
   return quote.price != null && quote.timestamp != null && !quote.stale && quote.marketStatus === "LIVE"
     ? { symbol, price: quote.price, source: quote.selectedProvider ?? quote.provider, timestamp: quote.timestamp }
     : null;
@@ -246,18 +267,18 @@ export async function getAllAssetPrices(): Promise<Record<string, AssetPrice | n
   }, {});
 }
 
-export async function fetchCryptoData(symbol: string) {
+export async function fetchCryptoData(symbol: string, context?: MarketRequestContext) {
   console.log(`[APEX:crypto] Fetching ${symbol}...`);
   const [quote, dayCandles, readinessCandles, tickerData, fearGreedResponse] = await Promise.all([
-    orchestrateQuote(symbol, "CRYPTO"),
-    orchestrateCandles(symbol, "CRYPTO", "1D"),
+    orchestrateQuote(symbol, "CRYPTO", context),
+    orchestrateCandles(symbol, "CRYPTO", "1D", context),
     Promise.all([
-      orchestrateCandles(symbol, "CRYPTO", "1m"),
-      orchestrateCandles(symbol, "CRYPTO", "5m"),
-      orchestrateCandles(symbol, "CRYPTO", "15m"),
-      orchestrateCandles(symbol, "CRYPTO", "1h"),
-      orchestrateCandles(symbol, "CRYPTO", "4h"),
-      orchestrateCandles(symbol, "CRYPTO", "1D"),
+      orchestrateCandles(symbol, "CRYPTO", "1m", context),
+      orchestrateCandles(symbol, "CRYPTO", "5m", context),
+      orchestrateCandles(symbol, "CRYPTO", "15m", context),
+      orchestrateCandles(symbol, "CRYPTO", "1h", context),
+      orchestrateCandles(symbol, "CRYPTO", "4h", context),
+      orchestrateCandles(symbol, "CRYPTO", "1D", context),
     ]),
     safeFetchJson(`${BINANCE_BASE}/ticker/24hr?symbol=${symbol}`, `binance-ticker-${symbol}`),
     safeFetchJson("https://api.alternative.me/fng/?limit=1", "fear-greed"),
@@ -268,7 +289,7 @@ export async function fetchCryptoData(symbol: string) {
   const highs = dailyCandles.map(row => Number(row.high));
   const lows = dailyCandles.map(row => Number(row.low));
   const fearGreedData = (fearGreedResponse as Record<string, unknown> | null)?.data as Array<Record<string, string>> | undefined;
-  const price = quote.marketStatus === "LIVE" ? quote.price : null;
+  const price = quote.price != null && quote.price > 0 ? quote.price : null;
   const readiness = evaluateStyleReadiness({
     "1m": readinessCandles[0],
     "5m": readinessCandles[1],
@@ -294,7 +315,7 @@ export async function fetchCryptoData(symbol: string) {
     })),
     closes,
     readiness,
-    stale: quote.stale,
+    stale: quote.stale || quote.marketStatus !== "LIVE",
     marketStatus: quote.marketStatus,
     reason: quote.reason,
     updatedAt: quote.timestamp != null ? new Date(quote.timestamp).toISOString() : null,
@@ -302,30 +323,42 @@ export async function fetchCryptoData(symbol: string) {
     fallbackUsed: quote.fallbackUsed,
     freshnessMs: quote.freshnessMs,
     circuitState: quote.circuitState,
+    sourceType: quote.sourceType,
+    freshnessClass: quote.freshnessClass,
+    degraded: quote.degraded,
+    providerHealthScore: quote.providerHealthScore,
+    candleProviders: {
+      "1m": summarizeCandleProvider(readinessCandles[0]),
+      "5m": summarizeCandleProvider(readinessCandles[1]),
+      "15m": summarizeCandleProvider(readinessCandles[2]),
+      "1h": summarizeCandleProvider(readinessCandles[3]),
+      "4h": summarizeCandleProvider(readinessCandles[4]),
+      "1D": summarizeCandleProvider(readinessCandles[5]),
+    },
     fearGreed: fearGreedData?.[0]
       ? { value: fearGreedData[0].value, label: fearGreedData[0].value_classification }
       : null,
   };
 }
 
-async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" | "COMMODITY") {
+async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" | "COMMODITY", context?: MarketRequestContext) {
   const [quote, candles1m, candles5m, candles15m, candles1h, candles4h, candles1d] = await Promise.all([
-    orchestrateQuote(apexSymbol, assetClass),
-    orchestrateCandles(apexSymbol, assetClass, "1m"),
-    orchestrateCandles(apexSymbol, assetClass, "5m"),
-    orchestrateCandles(apexSymbol, assetClass, "15m"),
-    orchestrateCandles(apexSymbol, assetClass, "1h"),
-    orchestrateCandles(apexSymbol, assetClass, "4h"),
-    orchestrateCandles(apexSymbol, assetClass, "1D"),
+    orchestrateQuote(apexSymbol, assetClass, context),
+    orchestrateCandles(apexSymbol, assetClass, "1m", context),
+    orchestrateCandles(apexSymbol, assetClass, "5m", context),
+    orchestrateCandles(apexSymbol, assetClass, "15m", context),
+    orchestrateCandles(apexSymbol, assetClass, "1h", context),
+    orchestrateCandles(apexSymbol, assetClass, "4h", context),
+    orchestrateCandles(apexSymbol, assetClass, "1D", context),
   ]);
 
   const dailyCloses = candles1d.candles.map(candle => Number(candle.close)).filter(value => Number.isFinite(value) && value > 0);
   const dailyHighs = candles1d.candles.map(candle => Number(candle.high)).filter(value => Number.isFinite(value) && value > 0);
   const dailyLows = candles1d.candles.map(candle => Number(candle.low)).filter(value => Number.isFinite(value) && value > 0);
 
-  return {
-    price: quote.marketStatus === "LIVE" && quote.price != null ? quote.price : null,
-    change24h: quote.marketStatus === "LIVE" ? quote.change24h : null,
+  const result = {
+    price: quote.price != null && quote.price > 0 ? quote.price : null,
+    change24h: quote.change24h ?? null,
     high14d: dailyHighs.length ? Math.max(...dailyHighs.slice(0, 14)) : quote.high14d,
     low14d: dailyLows.length ? Math.min(...dailyLows.slice(0, 14)) : quote.low14d,
     closes: dailyCloses,
@@ -337,6 +370,18 @@ async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" |
     fallbackUsed: quote.fallbackUsed,
     freshnessMs: quote.freshnessMs,
     circuitState: quote.circuitState,
+    sourceType: quote.sourceType,
+    freshnessClass: quote.freshnessClass,
+    degraded: quote.degraded,
+    providerHealthScore: quote.providerHealthScore,
+    candleProviders: {
+      "1m": summarizeCandleProvider(candles1m),
+      "5m": summarizeCandleProvider(candles5m),
+      "15m": summarizeCandleProvider(candles15m),
+      "1h": summarizeCandleProvider(candles1h),
+      "4h": summarizeCandleProvider(candles4h),
+      "1D": summarizeCandleProvider(candles1d),
+    },
     readiness: evaluateStyleReadiness({
       "1m": candles1m,
       "5m": candles5m,
@@ -346,18 +391,52 @@ async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" |
       "1D": candles1d,
     }),
   };
+
+  // If orchestrator returned no data, fall back to Twelve Data
+  if ((result.price == null || result.closes.length === 0) && TWELVE_KEY) {
+    const twelve = await fetchTwelveDataAsset(apexSymbol);
+    if (twelve.price != null) result.price = twelve.price;
+    if (twelve.closes.length > 0) result.closes = twelve.closes;
+  }
+
+  return result;
 }
 
-export async function fetchForexData(fromCurrency: string, toCurrency: string) {
+async function fetchTwelveDataAsset(symbol: string): Promise<{ price: number | null; closes: number[] }> {
+  if (!TWELVE_KEY) return { price: null, closes: [] };
+
+  // Twelve Data uses slash format for forex/metals: EUR/USD, XAU/USD
+  const tdSymbol = symbol.length === 6
+    ? `${symbol.slice(0, 3)}/${symbol.slice(3)}`
+    : symbol;
+
+  const [priceRes, seriesRes] = await Promise.all([
+    safeFetchJson(`${TWELVE_BASE}/price?symbol=${tdSymbol}&apikey=${TWELVE_KEY}`, `twelve-price-${symbol}`),
+    safeFetchJson(`${TWELVE_BASE}/time_series?symbol=${tdSymbol}&interval=1day&outputsize=50&apikey=${TWELVE_KEY}`, `twelve-series-${symbol}`),
+  ]);
+
+  const price = toPositiveNumber((priceRes as Record<string, unknown> | null)?.price);
+
+  const values = ((seriesRes as Record<string, unknown> | null)?.values) as Array<Record<string, string>> | undefined;
+  const closes = (values ?? [])
+    .map(v => Number(v.close))
+    .filter(n => Number.isFinite(n) && n > 0)
+    .reverse(); // Twelve Data returns newest first
+
+  console.log(`[APEX:twelve] ${symbol} → price=${price}, closes=${closes.length}`);
+  return { price, closes };
+}
+
+export async function fetchForexData(fromCurrency: string, toCurrency: string, context?: MarketRequestContext) {
   const symbol = `${fromCurrency}${toCurrency}`;
-  const data = await fetchMultiProviderAsset(symbol, "FOREX");
+  const data = await fetchMultiProviderAsset(symbol, "FOREX", context);
   console.log(`[APEX:forex] ${symbol} → price=${data.price}, closes=${data.closes.length}`);
   return data;
 }
 
-export async function fetchCommodityData(fromSymbol: string) {
+export async function fetchCommodityData(fromSymbol: string, context?: MarketRequestContext) {
   const symbol = `${fromSymbol}USD`;
-  const data = await fetchMultiProviderAsset(symbol, "COMMODITY");
+  const data = await fetchMultiProviderAsset(symbol, "COMMODITY", context);
   console.log(`[APEX:commodity] ${symbol} → price=${data.price}, closes=${data.closes.length}`);
   return data;
 }
@@ -377,7 +456,29 @@ function fredTrend(series: Record<string, unknown> | null): "rising" | "falling"
   return "flat";
 }
 
-export async function fetchMacroData() {
+export async function fetchMacroData(context?: MarketRequestContext) {
+  const priority = context?.priority ?? "cold";
+  const freshTtlMs = priority === "hot" ? 10 * 60_000 : priority === "warm" ? 20 * 60_000 : 45 * 60_000;
+  const staleTtlMs = priority === "hot" ? 60 * 60_000 : priority === "warm" ? 3 * 60 * 60_000 : 12 * 60 * 60_000;
+  const cacheKey = "market:macro:fred";
+  const cached = await getCachedValue<{
+    data: {
+      fedFundsRate: string | null;
+      fedTrend: "rising" | "falling" | "flat";
+      cpi: string | null;
+      cpiTrend: "rising" | "falling" | "flat";
+      treasury10y: string | null;
+      gdp: string | null;
+    };
+    fetchedAt: number;
+    freshUntil: number;
+    staleUntil: number;
+  }>(cacheKey);
+  const now = Date.now();
+  if (cached && cached.freshUntil > now) {
+    return cached.data;
+  }
+
   console.log(`[APEX:macro] Fetching FRED data... (FRED_KEY ${FRED_KEY ? "set" : "MISSING"})`);
   const base = "https://api.stlouisfed.org/fred/series/observations";
   const params = `&limit=3&sort_order=desc&api_key=${FRED_KEY}&file_type=json`;
@@ -398,11 +499,47 @@ export async function fetchMacroData() {
     gdp: latestFred(gdp),
   };
 
+  if (result.fedFundsRate || result.cpi || result.treasury10y || result.gdp) {
+    await setCachedValue(cacheKey, {
+      data: result,
+      fetchedAt: now,
+      freshUntil: now + freshTtlMs,
+      staleUntil: now + staleTtlMs,
+    }, staleTtlMs);
+  } else if (cached && cached.staleUntil > now) {
+    return cached.data;
+  }
+
   console.log(`[APEX:macro] → fedFunds=${result.fedFundsRate}, cpi=${result.cpi}, gdp=${result.gdp}`);
   return result;
 }
 
-export async function fetchNews(query: string) {
+export async function fetchNewsBundle(query: string, context?: MarketRequestContext) {
+  const priority = context?.priority ?? "cold";
+  const freshTtlMs = priority === "hot" ? 2 * 60_000 : priority === "warm" ? 10 * 60_000 : 30 * 60_000;
+  const staleTtlMs = priority === "hot" ? 10 * 60_000 : priority === "warm" ? 45 * 60_000 : 6 * 60 * 60_000;
+  const cacheKey = `market:news:${query.toLowerCase()}`;
+  const cached = await getCachedValue<{
+    articles: Array<{ title: string; source: string; publishedAt: string; sentiment: "bullish" | "bearish" | "neutral" }>;
+    fetchedAt: number;
+    freshUntil: number;
+    staleUntil: number;
+  }>(cacheKey);
+  const now = Date.now();
+  const cachedFresh = cached && cached.freshUntil > now;
+  const cachedStale = cached && cached.staleUntil > now;
+
+  if (cachedFresh) {
+    return {
+      articles: cached.articles,
+      status: "LIVE" as const,
+      reason: null,
+      degraded: false,
+      sourceType: "cache" as const,
+      fetchedAt: cached.fetchedAt,
+    };
+  }
+
   console.log(`[APEX:news] Fetching news for "${query}"... (NEWS_KEY ${NEWS_KEY ? "set" : "MISSING"})`);
   const data = await safeFetchJson(
     `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&pageSize=10&language=en&apiKey=${NEWS_KEY}`,
@@ -412,12 +549,55 @@ export async function fetchNews(query: string) {
   const articles = ((data as Record<string, unknown>)?.articles ?? []) as Array<Record<string, unknown>>;
   console.log(`[APEX:news] "${query}" → ${articles.length} articles`);
 
-  return articles.slice(0, 10).map(article => ({
+  const normalized = articles.slice(0, 10).map(article => ({
     title: String(article.title ?? ""),
     source: String((article.source as Record<string, string>)?.name ?? ""),
     publishedAt: String(article.publishedAt ?? ""),
     sentiment: analyzeSentiment(String(article.title ?? "")),
   }));
+
+  if (normalized.length > 0) {
+    await setCachedValue(cacheKey, {
+      articles: normalized,
+      fetchedAt: now,
+      freshUntil: now + freshTtlMs,
+      staleUntil: now + staleTtlMs,
+    }, staleTtlMs);
+
+    return {
+      articles: normalized,
+      status: "LIVE" as const,
+      reason: null,
+      degraded: false,
+      sourceType: cachedStale ? "fresh" as const : "fresh" as const,
+      fetchedAt: now,
+    };
+  }
+
+  if (cachedStale) {
+    return {
+      articles: cached.articles,
+      status: "DEGRADED" as const,
+      reason: "news_unavailable",
+      degraded: true,
+      sourceType: "stale-cache" as const,
+      fetchedAt: cached.fetchedAt,
+    };
+  }
+
+  return {
+    articles: [] as Array<{ title: string; source: string; publishedAt: string; sentiment: "bullish" | "bearish" | "neutral" }>,
+    status: "UNAVAILABLE" as const,
+    reason: "news_unavailable",
+    degraded: true,
+    sourceType: "fallback" as const,
+    fetchedAt: null,
+  };
+}
+
+export async function fetchNews(query: string, context?: MarketRequestContext) {
+  const bundle = await fetchNewsBundle(query, context);
+  return bundle.articles;
 }
 
 export async function fetchTechnicals(symbol: string, assetClass: string, closes?: number[]) {

@@ -19,18 +19,18 @@ export function detectTrap(
   let thesis = "No clean trap or inefficiency edge is present.";
   let score = 6;
 
-  if (liquidity.sweepSide !== "none" && structure.reclaim) {
+  if (liquidity.sweepSide !== "none" && (structure.reclaim || structure.failedContinuation)) {
     setupFamilyHint = "Sweep Reversal";
-    thesis = `A ${liquidity.sweepSide} sweep appears to be reclaiming back into range.`;
+    thesis = `A ${liquidity.sweepSide} sweep appears to be failing back through the edge of the range.`;
     score = 15;
-  } else if (structure.displacement && regime.tag !== "range") {
-    setupFamilyHint = "Displacement Pullback";
-    thesis = "Price expanded with displacement, creating a pullback entry into inefficiency.";
-    score = 13;
-  } else if (structure.breakOfStructure && !lowFollowThrough) {
+  } else if (structure.breakOfStructure && !structure.reclaim && !structure.failedContinuation && !lowFollowThrough) {
     setupFamilyHint = "Breakout Acceptance";
     thesis = "Breakout acceptance is supported by follow-through after the structural break.";
     score = 12;
+  } else if (structure.displacement && regime.tag !== "range" && (structure.reclaim || liquidity.location === "mid")) {
+    setupFamilyHint = "Displacement Pullback";
+    thesis = "Price expanded with displacement, creating a pullback entry into inefficiency.";
+    score = 13;
   } else if (regime.tag === "mean_reversion" && structure.reclaim) {
     setupFamilyHint = "Mean-Reversion Reclaim";
     thesis = "Price is reclaiming back through the midpoint after a mean-reversion flush.";

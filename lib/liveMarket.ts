@@ -20,7 +20,23 @@ export type LiveMarketPrice = {
   selectedProvider: string | null;
   fallbackUsed: boolean;
   freshnessMs: number | null;
+  freshnessClass: "fresh" | "stale" | "expired" | null;
+  sourceType: "fresh" | "cache" | "stale-cache" | "fallback" | null;
+  providerHealthScore: number | null;
+  degraded: boolean;
   circuitState: string | null;
+  candleProviders?: Record<string, {
+    selectedProvider: string | null;
+    fallbackUsed: boolean;
+    freshnessMs: number | null;
+    circuitState: string | null;
+    marketStatus: "LIVE" | "DEGRADED" | "UNAVAILABLE";
+    reason: string | null;
+    sourceType?: "fresh" | "cache" | "stale-cache" | "fallback";
+    freshnessClass?: "fresh" | "stale" | "expired";
+    degraded?: boolean;
+    providerHealthScore?: number | null;
+  }> | null;
   styleReadiness: Record<"SCALP" | "INTRADAY" | "SWING", { ready: boolean; missing: string[]; stale: string[] }> | null;
 };
 
@@ -28,7 +44,7 @@ export async function fetchLiveMarketPrices(): Promise<LiveMarketPrice[]> {
   const settled = await Promise.allSettled(
     SUPPORTED_ASSETS.map(async asset => {
       if (asset.assetClass === "CRYPTO" && asset.binanceSymbol) {
-        const quote = await fetchCryptoData(asset.binanceSymbol);
+        const quote = await fetchCryptoData(asset.binanceSymbol, { consumer: "dashboard", priority: "warm" });
         const currentPrice = quote.price != null && quote.price > 0 ? quote.price : null;
         return {
           symbol: asset.symbol,
@@ -47,7 +63,12 @@ export async function fetchLiveMarketPrices(): Promise<LiveMarketPrice[]> {
           selectedProvider: quote.provider ?? asset.provider,
           fallbackUsed: quote.fallbackUsed ?? false,
           freshnessMs: quote.freshnessMs ?? null,
+          freshnessClass: quote.freshnessClass ?? null,
+          sourceType: quote.sourceType ?? null,
+          providerHealthScore: quote.providerHealthScore ?? null,
+          degraded: quote.degraded ?? quote.marketStatus !== "LIVE",
           circuitState: quote.circuitState ?? null,
+          candleProviders: quote.candleProviders ?? null,
           styleReadiness: quote.readiness ?? null,
         } satisfies LiveMarketPrice;
       }
@@ -55,12 +76,12 @@ export async function fetchLiveMarketPrices(): Promise<LiveMarketPrice[]> {
       const from = asset.symbol.slice(0, 3);
       const to = asset.symbol.slice(3, 6);
       const quote = asset.assetClass === "COMMODITY"
-        ? await fetchCommodityData(from)
-        : await fetchForexData(from, to);
+        ? await fetchCommodityData(from, { consumer: "dashboard", priority: "warm" })
+        : await fetchForexData(from, to, { consumer: "dashboard", priority: "warm" });
       const currentPrice = quote?.price != null && quote.price > 0 ? quote.price : null;
       const updatedAt = quote?.updatedAt ?? new Date().toISOString();
       const marketStatus = quote?.marketStatus ?? (currentPrice != null ? "LIVE" : "UNAVAILABLE");
-      const reason = currentPrice != null ? quote?.reason ?? null : quote?.reason ?? "Alpha Vantage quote unavailable.";
+      const reason = currentPrice != null ? quote?.reason ?? null : quote?.reason ?? "Market quote unavailable.";
 
       return {
         symbol: asset.symbol,
@@ -79,7 +100,12 @@ export async function fetchLiveMarketPrices(): Promise<LiveMarketPrice[]> {
         selectedProvider: quote?.provider ?? asset.provider,
         fallbackUsed: quote?.fallbackUsed ?? false,
         freshnessMs: quote?.freshnessMs ?? null,
+        freshnessClass: quote?.freshnessClass ?? null,
+        sourceType: quote?.sourceType ?? null,
+        providerHealthScore: quote?.providerHealthScore ?? null,
+        degraded: quote?.degraded ?? marketStatus !== "LIVE",
         circuitState: quote?.circuitState ?? null,
+        candleProviders: quote?.candleProviders ?? null,
         styleReadiness: quote?.readiness ?? null,
       } satisfies LiveMarketPrice;
     })
@@ -108,7 +134,12 @@ export async function fetchLiveMarketPrices(): Promise<LiveMarketPrice[]> {
       selectedProvider: asset.provider,
       fallbackUsed: false,
       freshnessMs: null,
+      freshnessClass: null,
+      sourceType: null,
+      providerHealthScore: null,
+      degraded: true,
       circuitState: null,
+      candleProviders: null,
       styleReadiness: null,
     } satisfies LiveMarketPrice;
   });

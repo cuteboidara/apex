@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ensureTradePlansForRun, ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
+import { refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";
 
 export async function GET(req: NextRequest) {
   type SignalRunIdRecord = { id: string };
@@ -13,6 +14,7 @@ export async function GET(req: NextRequest) {
 
   if (runId) {
     await ensureTradePlansForRun(runId);
+    await refreshTradePlanDiagnostics({ runIds: [runId] });
   } else {
     const latestRuns = await prisma.signalRun.findMany({
       where: { status: "COMPLETED" },
@@ -20,7 +22,9 @@ export async function GET(req: NextRequest) {
       take: 5,
       select: { id: true },
     });
-    await ensureTradePlansForRuns(latestRuns.map((run: SignalRunIdRecord) => run.id));
+    const runIds = latestRuns.map((run: SignalRunIdRecord) => run.id);
+    await ensureTradePlansForRuns(runIds);
+    await refreshTradePlanDiagnostics({ runIds });
   }
 
   const tradePlans = await prisma.tradePlan.findMany({

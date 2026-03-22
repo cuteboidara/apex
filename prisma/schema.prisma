@@ -91,39 +91,59 @@ model SignalRun {
 }
 
 model TradePlan {
-  id                String    @id @default(cuid())
-  runId             String
-  run               SignalRun @relation(fields: [runId], references: [id])
-  signalId          String
-  signal            Signal    @relation(fields: [signalId], references: [id])
-  symbol            String
-  assetClass        String
-  style             String
-  setupFamily       String?
-  bias              String
-  confidence        Int
-  timeframe         String
-  entryType         String
-  entryMin          Float?
-  entryMax          Float?
-  stopLoss          Float?
-  takeProfit1       Float?
-  takeProfit2       Float?
-  takeProfit3       Float?
-  riskRewardRatio   Float?
-  invalidationLevel Float?
-  regimeTag         String?
-  liquidityThesis   String?
-  trapThesis        String?
-  setupScore        Int?
-  publicationRank   String?
-  thesis            String
-  executionNotes    String
-  status            String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                         String    @id @default(cuid())
+  runId                      String
+  run                        SignalRun @relation(fields: [runId], references: [id])
+  signalId                   String
+  signal                     Signal    @relation(fields: [signalId], references: [id])
+  symbol                     String
+  assetClass                 String
+  style                      String
+  setupFamily                String?
+  bias                       String
+  confidence                 Int
+  timeframe                  String
+  entryType                  String
+  entryMin                   Float?
+  entryMax                   Float?
+  stopLoss                   Float?
+  takeProfit1                Float?
+  takeProfit2                Float?
+  takeProfit3                Float?
+  riskRewardRatio            Float?
+  invalidationLevel          Float?
+  regimeTag                  String?
+  liquidityThesis            String?
+  trapThesis                 String?
+  setupScore                 Int?
+  publicationRank            String?
+  thesis                     String
+  executionNotes             String
+  status                     String
+  providerAtSignal           String?
+  providerHealthStateAtSignal String?
+  providerMarketStatusAtSignal String?
+  providerFallbackUsedAtSignal Boolean   @default(false)
+  qualityGateReason          String?
+  detectedAt                 DateTime?
+  entryHitAt                 DateTime?
+  stopHitAt                  DateTime?
+  tp1HitAt                   DateTime?
+  tp2HitAt                   DateTime?
+  tp3HitAt                   DateTime?
+  invalidatedAt              DateTime?
+  expiredAt                  DateTime?
+  maxFavorableExcursion      Float?
+  maxAdverseExcursion        Float?
+  realizedRR                 Float?
+  outcome                    String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
   @@unique([signalId, style])
+  @@index([symbol, detectedAt])
+  @@index([style, outcome])
+  @@index([providerHealthStateAtSignal])
 }
 
 model Alert {
@@ -202,4 +222,21 @@ model AuditEvent {
   after         Json?
   correlationId String?
   timestamp     DateTime @default(now())
+}
+
+model ExplanationCache {
+  id            String   @id @default(cuid())
+  fingerprint   String
+  purpose       String
+  status        String
+  provider      String
+  fallbackUsed  Boolean  @default(false)
+  fallbackChain Json?
+  content       String
+  errorMetadata Json?
+  generatedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([fingerprint, purpose])
+  @@index([purpose, updatedAt])
 }

@@ -1,3 +1,5 @@
+import { recordProviderHealth } from "@/lib/providerHealth";
+
 const TWELVE_DATA_BASE = "https://api.twelvedata.com";
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -19,8 +21,18 @@ function getMappedSymbol(apexSymbol: string) {
 
 async function fetchTwelveDataJson(path: string, params: Record<string, string>) {
   const apiKey = process.env.TWELVE_DATA_API_KEY;
+  const requestSymbol = params.symbol ?? "unknown-symbol";
+  const startedAt = Date.now();
   if (!apiKey || apiKey === "PASTE_YOUR_KEY_HERE") {
     console.error("[TwelveData] Missing TWELVE_DATA_API_KEY");
+    await recordProviderHealth({
+      provider: "Twelve Data",
+      requestSymbol,
+      status: "ERROR",
+      latencyMs: Date.now() - startedAt,
+      errorRate: 1,
+      detail: "missing_api_key",
+    });
     return null;
   }
 
@@ -32,12 +44,48 @@ async function fetchTwelveDataJson(path: string, params: Record<string, string>)
     const res = await fetch(url, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS), cache: "no-store" });
     if (!res.ok) {
       console.error(`[TwelveData] HTTP ${res.status} ${res.statusText} for ${params.symbol ?? "unknown-symbol"}`);
+      await recordProviderHealth({
+        provider: "Twelve Data",
+        requestSymbol,
+        status: "ERROR",
+        latencyMs: Date.now() - startedAt,
+        errorRate: 1,
+        detail: `http_${res.status}:${path}`,
+      });
       return null;
     }
 
-    return await res.json() as Record<string, unknown>;
+    const payload = await res.json() as Record<string, unknown>;
+    if ("code" in payload) {
+      await recordProviderHealth({
+        provider: "Twelve Data",
+        requestSymbol,
+        status: "DEGRADED",
+        latencyMs: Date.now() - startedAt,
+        errorRate: 1,
+        detail: String(payload.message ?? payload.code).slice(0, 200),
+      });
+    } else {
+      await recordProviderHealth({
+        provider: "Twelve Data",
+        requestSymbol,
+        status: "OK",
+        latencyMs: Date.now() - startedAt,
+        errorRate: 0,
+        detail: path,
+      });
+    }
+    return payload;
   } catch (error) {
     console.error(`[TwelveData] Request failed for ${params.symbol ?? "unknown-symbol"}:`, error);
+    await recordProviderHealth({
+      provider: "Twelve Data",
+      requestSymbol,
+      status: "ERROR",
+      latencyMs: Date.now() - startedAt,
+      errorRate: 1,
+      detail: `exception:${String(error).slice(0, 160)}`,
+    });
     return null;
   }
 }

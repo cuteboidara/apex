@@ -1,9 +1,9 @@
 export const SUPPORTED_ASSETS = [
-  { symbol: "EURUSD", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "EUR", finnhubSymbol: null, provider: "Alpha Vantage" },
-  { symbol: "GBPUSD", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "GBP", finnhubSymbol: null, provider: "Alpha Vantage" },
-  { symbol: "USDJPY", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "JPY", finnhubSymbol: null, provider: "Alpha Vantage" },
-  { symbol: "XAUUSD", assetClass: "COMMODITY", binanceSymbol: null, alphaSymbol: "XAU", finnhubSymbol: null, provider: "Alpha Vantage" },
-  { symbol: "XAGUSD", assetClass: "COMMODITY", binanceSymbol: null, alphaSymbol: "XAG", finnhubSymbol: null, provider: "Alpha Vantage" },
+  { symbol: "EURUSD", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "EUR", finnhubSymbol: null, provider: "FCS API" },
+  { symbol: "GBPUSD", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "GBP", finnhubSymbol: null, provider: "FCS API" },
+  { symbol: "USDJPY", assetClass: "FOREX", binanceSymbol: null, alphaSymbol: "JPY", finnhubSymbol: null, provider: "FCS API" },
+  { symbol: "XAUUSD", assetClass: "COMMODITY", binanceSymbol: null, alphaSymbol: "XAU", finnhubSymbol: null, provider: "FCS API" },
+  { symbol: "XAGUSD", assetClass: "COMMODITY", binanceSymbol: null, alphaSymbol: "XAG", finnhubSymbol: null, provider: "FCS API" },
   { symbol: "BTCUSDT", assetClass: "CRYPTO", binanceSymbol: "BTCUSDT", alphaSymbol: null, finnhubSymbol: null, provider: "Binance" },
   { symbol: "ETHUSDT", assetClass: "CRYPTO", binanceSymbol: "ETHUSDT", alphaSymbol: null, finnhubSymbol: null, provider: "Binance" },
 ] as const;

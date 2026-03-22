@@ -7,9 +7,9 @@ const QUOTE_FRESHNESS_MS: Record<AssetClass, number> = {
 };
 
 const CANDLE_FRESHNESS_MS: Record<Timeframe, number> = {
-  "1m": 2 * 60_000,
-  "5m": 7 * 60_000,
-  "15m": 20 * 60_000,
+  "1m": 15 * 60_000,
+  "5m": 30 * 60_000,
+  "15m": 60 * 60_000,
   "1h": 75 * 60_000,
   "4h": 5 * 60 * 60_000,
   "1D": 30 * 60 * 60_000,
@@ -66,7 +66,10 @@ export function evaluateStyleReadiness(results: Partial<Record<Timeframe, Pick<C
           continue;
         }
         const freshness = isCandleFresh({ timestamp: result.timestamp ?? null, timeframe });
-        if (!freshness.fresh || result.marketStatus !== "LIVE") {
+        const usableStatus =
+          result.marketStatus === "LIVE" ||
+          result.marketStatus === "DEGRADED";
+        if (!freshness.fresh || !usableStatus) {
           stale.push(timeframe);
         }
       }

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { providerRegistry } from "@/lib/marketData/providerRegistry";
 import { getProviderHealthScore } from "@/lib/marketData/providerHealthEngine";
+import { symbolMatchesAssetClass } from "@/lib/marketData/providerSymbolScope";
 import type { AssetClass } from "@/lib/marketData/types";
 
 type ProviderSummary = {
@@ -30,10 +31,11 @@ export async function getProviderSummaries(): Promise<ProviderSummary[]> {
     const [provider, assetClass] = key.split("::") as [string, AssetClass];
     const [health, latest] = await Promise.all([
       getProviderHealthScore(provider as never, assetClass),
-      prisma.providerHealth.findFirst({
+      prisma.providerHealth.findMany({
         where: { provider },
         orderBy: { recordedAt: "desc" },
-      }).catch(() => null as ProviderHealthRecord | null),
+        take: 20,
+      }).then(rows => rows.find((row: ProviderHealthRecord) => symbolMatchesAssetClass(row.requestSymbol, assetClass)) ?? null).catch(() => null as ProviderHealthRecord | null),
     ]);
 
     return {

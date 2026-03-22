@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { anthropic } from "@/lib/anthropic";
+import { generateReasoningExplanation } from "@/lib/llm/explanationService";
 
 const CRITERIA: Record<string, Array<[number, string]>> = {
   macro: [
@@ -72,16 +72,33 @@ Dimension Scores:
 - Technical Confirmation: ${technical}/20 — ${getActiveCriterion(technical, CRITERIA.technical)}
 - Timing & Sentiment: ${timing}/20 — ${getActiveCriterion(timing, CRITERIA.timing)}${contextLines.length ? "\n\n" + contextLines.join("\n") : ""}`;
 
-  const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 320,
-    system:
-      "You are APEX — a personal trading intelligence engine built for one trader. You write exactly one paragraph, maximum 150 words, plain text only, zero markdown, zero headers, zero bullet points. You write like a sharp senior trader thinking out loud before entering a position. Direct, ruthless, clear. You cover four things in order: (1) what the rank means for conviction and position size, (2) what dimensions are strongest and why they matter for this trade, (3) the weakest link and exact scenario that invalidates this setup, (4) one execution instruction — timing, size, or key level to watch.",
-    messages: [{ role: "user", content: userMessage }],
+  const result = await generateReasoningExplanation({
+    template: {
+      asset,
+      direction,
+      rank,
+      total,
+      macro,
+      structure,
+      zones,
+      technical,
+      timing,
+    },
+    prompt: {
+      system:
+        "You are APEX — a personal trading intelligence engine built for one trader. You write exactly one paragraph, maximum 150 words, plain text only, zero markdown, zero headers, zero bullet points. You write like a sharp senior trader thinking out loud before entering a position. Direct, ruthless, clear. You cover four things in order: (1) what the rank means for conviction and position size, (2) what dimensions are strongest and why they matter for this trade, (3) the weakest link and exact scenario that invalidates this setup, (4) one execution instruction — timing, size, or key level to watch.",
+      user: userMessage,
+      maxTokens: 320,
+      requestId: typeof asset === "string" ? asset : null,
+    },
+    mode: "explicit",
   });
-
-  const reasoning =
-    message.content[0].type === "text" ? message.content[0].text : "";
-
-  return NextResponse.json({ reasoning });
+  return NextResponse.json({
+    reasoning: result.text,
+    provider: result.provider,
+    fallbackUsed: result.fallbackUsed,
+    status: result.status,
+    degradedReason: result.degradedReason,
+    cached: result.cached,
+  });
 }

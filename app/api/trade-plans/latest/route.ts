@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SUPPORTED_ASSETS, TRADE_PLAN_STYLES } from "@/lib/assets";
 import { ensureTradePlansForRuns } from "@/lib/tradePlanPersistence";
+import { buildLatestSetupBreakdown } from "@/lib/setupBreakdown";
+import { refreshTradePlanDiagnostics } from "@/lib/tradePlanDiagnostics";
 
 export async function GET() {
   type TradePlanRecord = Awaited<ReturnType<typeof prisma.tradePlan.findFirst>>;
@@ -14,7 +16,9 @@ export async function GET() {
     select: { id: true },
   });
 
-  await ensureTradePlansForRuns(latestRuns.map((run: SignalRunIdRecord) => run.id));
+  const runIds = latestRuns.map((run: SignalRunIdRecord) => run.id);
+  await ensureTradePlansForRuns(runIds);
+  await refreshTradePlanDiagnostics({ runIds });
 
   const grouped = await Promise.all(
     SUPPORTED_ASSETS.flatMap(asset =>
@@ -41,5 +45,12 @@ export async function GET() {
     payload[plan.symbol][plan.style] = plan;
   });
 
-  return NextResponse.json(payload);
+  const plans = grouped.filter((plan): plan is NonNullable<TradePlanRecord> => Boolean(plan));
+
+  return NextResponse.json({
+    runId: latestRuns[0]?.id ?? null,
+    plans: payload,
+    breakdown: buildLatestSetupBreakdown(plans),
+    timestamp: new Date().toISOString(),
+  });
 }

@@ -1,4 +1,4 @@
-import type { MarketSnapshot, RegimeAssessment, StrategyBias } from "@/lib/strategy/types";
+import type { MarketSnapshot, RegimeAssessment } from "@/lib/strategy/types";
 
 export function detectRegime(snapshot: MarketSnapshot): RegimeAssessment {
   if (
@@ -25,7 +25,6 @@ export function detectRegime(snapshot: MarketSnapshot): RegimeAssessment {
   const momentumBearish = (snapshot.rsi ?? 50) <= 45;
 
   let tag: RegimeAssessment["tag"] = "range";
-  let bias: StrategyBias | null = null;
   let score = 12;
   let clarity: RegimeAssessment["clarity"] = "medium";
 
@@ -47,13 +46,19 @@ export function detectRegime(snapshot: MarketSnapshot): RegimeAssessment {
     clarity = "medium";
   }
 
-  if (trend === "uptrend" || momentumBullish) bias = "LONG";
-  if (trend === "downtrend" || momentumBearish) bias = bias === "LONG" ? bias : "SHORT";
-  if (snapshot.macroBias === "risk_on" && bias == null) bias = "LONG";
-  if (snapshot.macroBias === "risk_off" && bias == null) bias = "SHORT";
+  const longScore =
+    (trend === "uptrend" ? 2 : 0) +
+    (momentumBullish ? 1 : 0) +
+    (snapshot.macroBias === "risk_on" ? 1 : 0);
+  const shortScore =
+    (trend === "downtrend" ? 2 : 0) +
+    (momentumBearish ? 1 : 0) +
+    (snapshot.macroBias === "risk_off" ? 1 : 0);
+  const bias = longScore > shortScore ? "LONG" : shortScore > longScore ? "SHORT" : null;
+
   if (bias == null) {
-    clarity = "low";
-    score = Math.min(score, 8);
+    clarity = clarity === "high" ? "medium" : "low";
+    score = Math.min(score, 12);
   }
 
   return {

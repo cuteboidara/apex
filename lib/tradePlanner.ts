@@ -2,6 +2,7 @@ import type { TradePlanStyle } from "@/lib/assets";
 import { TRADE_PLAN_STYLES } from "@/lib/assets";
 import type { Timeframe } from "@/lib/marketData/types";
 import { publishStrategyPlan } from "@/lib/strategy/signalPublisher";
+import type { StrategyDiagnostic } from "@/lib/strategy/types";
 
 type PlannerSignal = {
   asset: string;
@@ -18,6 +19,15 @@ type PlannerData = {
   trend: string | null;
   rsi: number | null;
   stale: boolean;
+  marketStatus?: "LIVE" | "DEGRADED" | "UNAVAILABLE";
+  providerFallbackUsed?: boolean;
+  candleProviders?: Partial<Record<Timeframe, {
+    selectedProvider: string | null;
+    fallbackUsed: boolean;
+    freshnessMs: number | null;
+    marketStatus: "LIVE" | "DEGRADED" | "UNAVAILABLE";
+    reason: string | null;
+  }>>;
   styleReadiness?: {
     SCALP: { ready: boolean; missing: Timeframe[]; stale: Timeframe[] };
     INTRADAY: { ready: boolean; missing: Timeframe[]; stale: Timeframe[] };
@@ -62,6 +72,7 @@ export type PlannedTrade = {
   thesis: string;
   executionNotes: string;
   status: "ACTIVE" | "NO_SETUP" | "STALE";
+  diagnostics?: StrategyDiagnostic[];
 };
 
 export function buildTradePlans(signal: PlannerSignal, data: PlannerData): PlannedTrade[] {
@@ -69,6 +80,7 @@ export function buildTradePlans(signal: PlannerSignal, data: PlannerData): Plann
     const published = publishStrategyPlan(style, {
       symbol: signal.asset,
       assetClass: signal.assetClass,
+      preferredBias: signal.direction,
       currentPrice: data.currentPrice,
       change24h: data.change24h,
       high14d: data.high14d,
@@ -76,6 +88,9 @@ export function buildTradePlans(signal: PlannerSignal, data: PlannerData): Plann
       trend: data.trend,
       rsi: data.rsi,
       stale: data.stale,
+      marketStatus: data.marketStatus,
+      providerFallbackUsed: data.providerFallbackUsed,
+      candleProviders: data.candleProviders,
       styleReadiness: data.styleReadiness,
       newsSentimentScore: data.newsSentimentScore,
       macroBias: data.macroBias,
@@ -108,6 +123,7 @@ export function buildTradePlans(signal: PlannerSignal, data: PlannerData): Plann
       thesis: published.thesis,
       executionNotes: published.executionNotes,
       status: published.status,
+      diagnostics: published.diagnostics,
     };
   });
 }

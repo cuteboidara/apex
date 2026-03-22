@@ -8,6 +8,10 @@ type LevelInput = {
   volatilityRatio: number;
   style: TradePlanStyle;
   entryType: "LIMIT" | "STOP";
+  localInvalidationLow?: number | null;
+  localInvalidationHigh?: number | null;
+  allowTp2?: boolean;
+  allowTp3?: boolean;
 };
 
 type TradeLevels = {
@@ -39,22 +43,26 @@ export function calculateTradeLevels(input: LevelInput): TradeLevels | null {
   const maxStopDistance = Math.max(atrLikeDistance * factors.max, input.currentPrice * 0.012);
   const zoneDistance = Math.max(atrLikeDistance * factors.zone, input.currentPrice * 0.0006);
   const targetCapacity = range * 0.85;
+  const stopBufferFloor = Math.max(zoneDistance * 0.18, minStopDistance * 0.35);
 
   if (input.bias === "LONG") {
     const entryMin = input.entryType === "LIMIT" ? input.currentPrice - zoneDistance : input.currentPrice + zoneDistance * 0.2;
     const entryMax = input.entryType === "LIMIT" ? input.currentPrice - zoneDistance * 0.15 : input.currentPrice + zoneDistance * 0.65;
     const averageEntry = (entryMin + entryMax) / 2;
-    const structureStop = Math.min(entryMin, input.currentPrice) - Math.max(zoneDistance * 1.2, minStopDistance);
-    const rawRisk = averageEntry - structureStop;
+    const invalidationLevel = Math.max(
+      Math.min(input.localInvalidationLow ?? entryMin, entryMin),
+      averageEntry - maxStopDistance * 0.7
+    );
+    const stopLoss = invalidationLevel - stopBufferFloor;
+    const rawRisk = averageEntry - stopLoss;
 
     if (!Number.isFinite(rawRisk) || rawRisk <= 0 || rawRisk < minStopDistance || rawRisk > maxStopDistance) {
       return null;
     }
 
-    const stopLoss = averageEntry - rawRisk;
     const tp1 = averageEntry + rawRisk * 2;
-    const tp2 = rawRisk * 4 <= targetCapacity ? averageEntry + rawRisk * 4 : null;
-    const tp3 = rawRisk * 6 <= targetCapacity && tp2 != null ? averageEntry + rawRisk * 6 : null;
+    const tp2 = input.allowTp2 && rawRisk * 3.5 <= targetCapacity ? averageEntry + rawRisk * 3.5 : null;
+    const tp3 = input.allowTp3 && rawRisk * 5 <= targetCapacity && tp2 != null ? averageEntry + rawRisk * 5 : null;
 
     return {
       entryMin,
@@ -63,7 +71,7 @@ export function calculateTradeLevels(input: LevelInput): TradeLevels | null {
       takeProfit1: tp1,
       takeProfit2: tp2,
       takeProfit3: tp3,
-      invalidationLevel: Math.min(stopLoss, input.low14d - rawRisk * 0.35),
+      invalidationLevel,
       riskUnit: rawRisk,
     };
   }
@@ -71,17 +79,20 @@ export function calculateTradeLevels(input: LevelInput): TradeLevels | null {
   const entryMin = input.entryType === "LIMIT" ? input.currentPrice + zoneDistance * 0.15 : input.currentPrice - zoneDistance * 0.65;
   const entryMax = input.entryType === "LIMIT" ? input.currentPrice + zoneDistance : input.currentPrice - zoneDistance * 0.2;
   const averageEntry = (entryMin + entryMax) / 2;
-  const structureStop = Math.max(entryMax, input.currentPrice) + Math.max(zoneDistance * 1.2, minStopDistance);
-  const rawRisk = structureStop - averageEntry;
+  const invalidationLevel = Math.min(
+    Math.max(input.localInvalidationHigh ?? entryMax, entryMax),
+    averageEntry + maxStopDistance * 0.7
+  );
+  const stopLoss = invalidationLevel + stopBufferFloor;
+  const rawRisk = stopLoss - averageEntry;
 
   if (!Number.isFinite(rawRisk) || rawRisk <= 0 || rawRisk < minStopDistance || rawRisk > maxStopDistance) {
     return null;
   }
 
-  const stopLoss = averageEntry + rawRisk;
   const tp1 = averageEntry - rawRisk * 2;
-  const tp2 = rawRisk * 4 <= targetCapacity ? averageEntry - rawRisk * 4 : null;
-  const tp3 = rawRisk * 6 <= targetCapacity && tp2 != null ? averageEntry - rawRisk * 6 : null;
+  const tp2 = input.allowTp2 && rawRisk * 3.5 <= targetCapacity ? averageEntry - rawRisk * 3.5 : null;
+  const tp3 = input.allowTp3 && rawRisk * 5 <= targetCapacity && tp2 != null ? averageEntry - rawRisk * 5 : null;
 
   return {
     entryMin,
@@ -90,7 +101,7 @@ export function calculateTradeLevels(input: LevelInput): TradeLevels | null {
     takeProfit1: tp1,
     takeProfit2: tp2,
     takeProfit3: tp3,
-    invalidationLevel: Math.max(stopLoss, input.high14d + rawRisk * 0.35),
+    invalidationLevel,
     riskUnit: rawRisk,
   };
 }

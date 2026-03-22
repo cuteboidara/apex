@@ -1,33 +1,31 @@
-import { anthropic } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
-import { recordProviderHealth } from "@/lib/providerHealth";
 import { recordAuditEvent } from "@/lib/audit";
 import { ENGINE_VERSION, FAILURE_CODES, FEATURE_VERSION, PROMPT_VERSION, type FailureCode } from "@/lib/runConfig";
 import { buildTradePlans } from "@/lib/tradePlanner";
+import { generateSignalNarrative } from "@/lib/llm/explanationService";
 import type { Timeframe } from "@/lib/marketData/types";
+import {
+  applyTradePlanQualityGates,
+  getStylePerformanceGateState,
+  refreshTradePlanDiagnostics,
+  resolveSignalProviderContext,
+  type StylePerformanceGateState,
+} from "@/lib/tradePlanDiagnostics";
 import {
   fetchCryptoData,
   fetchForexData,
   fetchCommodityData,
   fetchMacroData,
-  fetchNews,
+  fetchNewsBundle,
   fetchTechnicals,
 } from "@/lib/marketData";
+import { SUPPORTED_ASSETS, type SupportedAsset } from "@/lib/assets";
 
 // ── Asset universe ────────────────────────────────────────────────────────────
 
-export const ASSETS = [
-  { symbol: "EURUSD",  class: "FOREX"     as const, binanceSymbol: null,       alphaSymbol: "EUR" },
-  { symbol: "GBPUSD",  class: "FOREX"     as const, binanceSymbol: null,       alphaSymbol: "GBP" },
-  { symbol: "USDJPY",  class: "FOREX"     as const, binanceSymbol: null,       alphaSymbol: "JPY" },
-  { symbol: "XAUUSD",  class: "COMMODITY" as const, binanceSymbol: null,       alphaSymbol: "XAU" },
-  { symbol: "XAGUSD",  class: "COMMODITY" as const, binanceSymbol: null,       alphaSymbol: "XAG" },
-  { symbol: "BTCUSDT", class: "CRYPTO"    as const, binanceSymbol: "BTCUSDT",  alphaSymbol: null  },
-  { symbol: "ETHUSDT", class: "CRYPTO"    as const, binanceSymbol: "ETHUSDT",  alphaSymbol: null  },
-] as const;
-
-export type Asset = typeof ASSETS[number];
+export const ASSETS = SUPPORTED_ASSETS;
+export type Asset = SupportedAsset;
 type PersistenceTransaction = {
   signal: typeof prisma.signal;
   tradePlan: typeof prisma.tradePlan;
@@ -78,21 +76,43 @@ function clampScore(value: number): number {
 
 function deriveDirection(data: DataSummary): "LONG" | "SHORT" {
   const trend = data.technicals.trend;
+  const rsi = data.technicals.rsi ?? 50;
   const change = data.price.change24h ?? 0;
   const newsBias = data.newsSentimentScore;
   const sentimentValue = Number(data.sentiment?.value ?? 50);
+  const macdHist = data.technicals.macdHist ?? 0;
 
-  let score = 0;
-  if (trend === "uptrend") score += 2;
-  if (trend === "downtrend") score -= 2;
-  if (change > 0) score += 1;
-  if (change < 0) score -= 1;
-  if (newsBias > 0) score += 1;
-  if (newsBias < 0) score -= 1;
-  if (sentimentValue >= 60) score += 1;
-  if (sentimentValue <= 40) score -= 1;
+  let longScore = 0;
+  let shortScore = 0;
 
-  return score >= 0 ? "LONG" : "SHORT";
+  if (trend === "uptrend") longScore += 2;
+  if (trend === "downtrend") shortScore += 2;
+  if (change > 0) longScore += 1;
+  if (change < 0) shortScore += 1;
+  if (newsBias > 0) longScore += 1;
+  if (newsBias < 0) shortScore += 1;
+  if (sentimentValue >= 60) longScore += 1;
+  if (sentimentValue <= 40) shortScore += 1;
+  if (rsi >= 55) longScore += 1;
+  if (rsi <= 45) shortScore += 1;
+
+  const price = data.price.current;
+  const high = data.price.high14d;
+  const low = data.price.low14d;
+  if (price != null && high != null && low != null && high > low) {
+    const normalized = (price - low) / (high - low);
+    if (normalized <= 0.45) longScore += 1;
+    if (normalized >= 0.55) shortScore += 1;
+  }
+
+  if (longScore > shortScore) return "LONG";
+  if (shortScore > longScore) return "SHORT";
+  if (macdHist > 0) return "LONG";
+  if (macdHist < 0) return "SHORT";
+
+  // Final tie-breaker stays neutral instead of biasing the engine long.
+  const symbolParity = Array.from(data.asset).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return symbolParity % 2 === 0 ? "LONG" : "SHORT";
 }
 
 function scoreMacro(data: DataSummary, direction: "LONG" | "SHORT"): number {
@@ -189,7 +209,12 @@ function classifyFailure(reason: unknown): FailureCode {
 
 // ── Core analysis ─────────────────────────────────────────────────────────────
 
-export async function analyzeAsset(asset: Asset, runId: string) {
+export async function analyzeAsset(
+  asset: Asset,
+  runId: string,
+  gateState: StylePerformanceGateState,
+  macroData: Awaited<ReturnType<typeof fetchMacroData>> | null
+) {
   const assetStartedAt = Date.now();
   const fetchStartedAt = assetStartedAt;
   logEvent({
@@ -202,29 +227,35 @@ export async function analyzeAsset(asset: Asset, runId: string) {
   // ── 1. Fetch all data sources in parallel ──────────────────────────────────
 
   const newsQuery =
-    asset.class === "CRYPTO"    ? asset.symbol.replace("USDT", "") :
-    asset.class === "COMMODITY" ? (asset.alphaSymbol === "XAU" ? "gold" : "silver") :
+    asset.assetClass === "CRYPTO"    ? asset.symbol.replace("USDT", "") :
+    asset.assetClass === "COMMODITY" ? (asset.alphaSymbol === "XAU" ? "gold" : "silver") :
     asset.symbol;
 
-  const [priceResult, macroResult, newsResult] = await Promise.allSettled([
+  const [priceResult, newsResult] = await Promise.allSettled([
     // Price + candles
     // For FOREX: derive from/to from symbol (EURUSD → EUR + USD, USDJPY → USD + JPY)
-    asset.class === "CRYPTO"
-      ? fetchCryptoData(asset.binanceSymbol!)
-      : asset.class === "FOREX"
-        ? fetchForexData(asset.symbol.slice(0, 3), asset.symbol.slice(3, 6))
-        : fetchCommodityData(asset.alphaSymbol!),
-
-    // Macro
-    fetchMacroData(),
+    asset.assetClass === "CRYPTO"
+      ? fetchCryptoData(asset.binanceSymbol!, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
+      : asset.assetClass === "FOREX"
+        ? fetchForexData(asset.symbol.slice(0, 3), asset.symbol.slice(3, 6), { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
+        : fetchCommodityData(asset.alphaSymbol!, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
 
     // News
-    fetchNews(newsQuery),
+    fetchNewsBundle(newsQuery, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
   ]);
 
   const priceData = priceResult.status === "fulfilled" ? priceResult.value : null;
-  const macroData = macroResult.status === "fulfilled" ? macroResult.value : null;
-  const newsData  = newsResult.status  === "fulfilled" ? newsResult.value  : [];
+  const newsBundle = newsResult.status === "fulfilled"
+    ? newsResult.value
+    : {
+        articles: [],
+        status: "UNAVAILABLE" as const,
+        reason: "news_unavailable",
+        degraded: true,
+        sourceType: "fallback" as const,
+        fetchedAt: null,
+      };
+  const newsData = newsBundle.articles;
 
   if (priceResult.status === "rejected") {
     logEvent({
@@ -234,16 +265,6 @@ export async function analyzeAsset(asset: Asset, runId: string) {
       severity: "ERROR",
       message: "Price fetch failed",
       reason: String(priceResult.reason),
-    });
-  }
-  if (macroResult.status === "rejected") {
-    logEvent({
-      runId,
-      asset: asset.symbol,
-      component: "signal-engine",
-      severity: "ERROR",
-      message: "Macro fetch failed",
-      reason: String(macroResult.reason),
     });
   }
   if (newsResult.status === "rejected") {
@@ -266,13 +287,14 @@ export async function analyzeAsset(asset: Asset, runId: string) {
     price: priceVal,
     macroAvailable: Boolean(macroData),
     newsCount: newsData.length,
+    newsStatus: newsBundle.status,
   });
 
   // Technicals (needs closes from price data)
   const closes = (priceData as { closes?: number[] })?.closes ?? [];
   const techData = await fetchTechnicals(
     asset.symbol.replace("USDT", ""),
-    asset.class,
+    asset.assetClass,
     closes,
   ).catch(() => ({ rsi: null, macdSignal: null, macdHist: null, trend: null }));
   const dataFetchDurationMs = Date.now() - fetchStartedAt;
@@ -286,7 +308,7 @@ export async function analyzeAsset(asset: Asset, runId: string) {
 
   const dataSummary: DataSummary = {
     asset:      asset.symbol,
-    assetClass: asset.class,
+    assetClass: asset.assetClass,
     stale: Boolean((priceData as Record<string, unknown> | null)?.stale) || toNullableNumber((priceData as Record<string, unknown>)?.price) == null,
     price: {
       current:  toNullableNumber((priceData as Record<string, unknown>)?.price),
@@ -303,7 +325,7 @@ export async function analyzeAsset(asset: Asset, runId: string) {
     },
     macro: macroData,
     news:  newsData.slice(0, 5),
-    sentiment: asset.class === "CRYPTO"
+    sentiment: asset.assetClass === "CRYPTO"
       ? (() => {
           const raw = (priceData as Record<string, unknown>)?.fearGreed as Record<string, unknown> | null | undefined;
           if (!raw) return null;
@@ -329,16 +351,16 @@ export async function analyzeAsset(asset: Asset, runId: string) {
 
   const scoringStartedAt = Date.now();
   const macroBias =
-    asset.class === "COMMODITY"
+    asset.assetClass === "COMMODITY"
       ? "risk_off"
-      : asset.class === "CRYPTO"
+      : asset.assetClass === "CRYPTO"
         ? (dataSummary.technicals.trend === "uptrend" ? "risk_on" : "neutral")
         : (dataSummary.macro?.fedTrend === "falling" ? "risk_on" : dataSummary.macro?.fedTrend === "rising" ? "risk_off" : "neutral");
 
-  const tradePlans = buildTradePlans(
+  const rawTradePlans = buildTradePlans(
     {
       asset: asset.symbol,
-      assetClass: asset.class,
+      assetClass: asset.assetClass,
       direction: deriveDirection(dataSummary),
       total: 0,
     },
@@ -350,6 +372,15 @@ export async function analyzeAsset(asset: Asset, runId: string) {
       trend: dataSummary.technicals.trend,
       rsi: dataSummary.technicals.rsi,
       stale: dataSummary.stale,
+      marketStatus: ((priceData as Record<string, unknown> | null)?.marketStatus as "LIVE" | "DEGRADED" | "UNAVAILABLE" | undefined),
+      providerFallbackUsed: Boolean((priceData as Record<string, unknown> | null)?.fallbackUsed),
+      candleProviders: ((priceData as Record<string, unknown> | null)?.candleProviders as Partial<Record<Timeframe, {
+        selectedProvider: string | null;
+        fallbackUsed: boolean;
+        freshnessMs: number | null;
+        marketStatus: "LIVE" | "DEGRADED" | "UNAVAILABLE";
+        reason: string | null;
+      }>> | undefined),
       styleReadiness: ((priceData as Record<string, unknown> | null)?.readiness as {
         SCALP: { ready: boolean; missing: Timeframe[]; stale: Timeframe[] };
         INTRADAY: { ready: boolean; missing: Timeframe[]; stale: Timeframe[] };
@@ -360,6 +391,8 @@ export async function analyzeAsset(asset: Asset, runId: string) {
       brief: "",
     }
   );
+  const providerContext = await resolveSignalProviderContext(asset.assetClass, priceData);
+  const tradePlans = applyTradePlanQualityGates(rawTradePlans, providerContext, gateState);
 
   const rankedPlans = [...tradePlans].sort((a, b) => {
     if (a.status === b.status) return b.setupScore - a.setupScore;
@@ -369,14 +402,18 @@ export async function analyzeAsset(asset: Asset, runId: string) {
   });
   const bestPlan = rankedPlans[0];
   const direction = bestPlan?.bias ?? deriveDirection(dataSummary);
+  // Only use plan breakdown scores when the plan is active (setupScore > 0).
+  // Blocked plans have all-zero breakdowns, and ?? does not guard against 0,
+  // so checking setupScore prevents silent zero-scoring on degraded data.
+  const hasActivePlan = (bestPlan?.setupScore ?? 0) > 0;
   const scores = {
-    macro: bestPlan?.scoreBreakdown.regimeAlignment ?? scoreMacro(dataSummary, direction),
-    structure: bestPlan?.scoreBreakdown.liquidityQuality ?? scoreStructure(dataSummary, direction),
-    zones: bestPlan?.scoreBreakdown.structureConfirmation ?? scoreZones(dataSummary, direction),
-    technical: Math.min(20, (bestPlan?.scoreBreakdown.trapEdge ?? 0) + Math.ceil((bestPlan?.scoreBreakdown.entryPrecision ?? 0) / 2)),
-    timing: Math.min(20, (bestPlan?.scoreBreakdown.riskReward ?? 0) + (bestPlan?.scoreBreakdown.freshness ?? 0) + Math.floor((bestPlan?.scoreBreakdown.entryPrecision ?? 0) / 2)),
+    macro:     hasActivePlan ? bestPlan!.scoreBreakdown.regimeAlignment       : scoreMacro(dataSummary, direction),
+    structure: hasActivePlan ? bestPlan!.scoreBreakdown.liquidityQuality      : scoreStructure(dataSummary, direction),
+    zones:     hasActivePlan ? bestPlan!.scoreBreakdown.structureConfirmation : scoreZones(dataSummary, direction),
+    technical: hasActivePlan ? Math.min(20, bestPlan!.scoreBreakdown.trapEdge + Math.ceil(bestPlan!.scoreBreakdown.entryPrecision / 2)) : 0,
+    timing:    hasActivePlan ? Math.min(20, bestPlan!.scoreBreakdown.riskReward + bestPlan!.scoreBreakdown.freshness + Math.floor(bestPlan!.scoreBreakdown.entryPrecision / 2)) : 0,
   };
-  const total = bestPlan?.setupScore ?? Object.values(scores).reduce((a, b) => a + b, 0);
+  const total = hasActivePlan ? bestPlan!.setupScore : Object.values(scores).reduce((a, b) => a + b, 0);
   const rank = bestPlan?.publicationRank ?? getRank(total);
   const levels = {
     entry: bestPlan?.entryMin != null && bestPlan.entryMax != null ? (bestPlan.entryMin + bestPlan.entryMax) / 2 : null,
@@ -388,7 +425,7 @@ export async function analyzeAsset(asset: Asset, runId: string) {
   const scoringDurationMs = Date.now() - scoringStartedAt;
 
   const narrativeStartedAt = Date.now();
-  let brief = fallbackBrief(asset, direction, scores, rank, levels, bestPlan ? {
+  const deterministicBrief = fallbackBrief(asset, direction, scores, rank, levels, bestPlan ? {
     family: bestPlan.setupFamily,
     regimeTag: bestPlan.regimeTag,
     liquidityThesis: bestPlan.liquidityThesis,
@@ -397,7 +434,7 @@ export async function analyzeAsset(asset: Asset, runId: string) {
   const userPrompt = `Write a concise trading brief in plain text only, max 120 words.
 
 Asset: ${asset.symbol}
-Class: ${asset.class}
+Class: ${asset.assetClass}
 Direction: ${direction}
 Rank: ${rank}
 Scores: macro ${scores.macro}, structure ${scores.structure}, zones ${scores.zones}, technical ${scores.technical}, timing ${scores.timing}, total ${total}
@@ -408,49 +445,75 @@ Stop loss: ${levels.stopLoss ?? "n/a"}
 TP1: ${levels.tp1 ?? "n/a"}
 TP2: ${levels.tp2 ?? "n/a"}
 TP3: ${levels.tp3 ?? "n/a"}
+Deterministic context: ${deterministicBrief}
 Market data: ${JSON.stringify(dataSummary)}
 
 Cover conviction, strongest factors, invalidation, and execution discipline.`;
+  const explanation = await generateSignalNarrative({
+    template: {
+      symbol: asset.symbol,
+      assetClass: asset.assetClass,
+      direction,
+      rank,
+      style: bestPlan?.style ?? null,
+      setupFamily: bestPlan?.setupFamily ?? null,
+      regimeTag: bestPlan?.regimeTag ?? null,
+      status: bestPlan?.status ?? "NO_SETUP",
+      diagnostics: bestPlan?.diagnostics ?? [],
+      provider: providerContext.providerAtSignal,
+      providerHealthState: providerContext.providerHealthStateAtSignal,
+      marketStatus: providerContext.providerMarketStatusAtSignal,
+      fallbackUsed: providerContext.providerFallbackUsedAtSignal,
+      freshnessClass: ((priceData as Record<string, unknown> | null)?.freshnessClass as "fresh" | "stale" | "expired" | null | undefined) ?? null,
+      entry: levels.entry,
+      stopLoss: levels.stopLoss,
+      tp1: levels.tp1,
+      tp2: levels.tp2,
+      tp3: levels.tp3,
+      reason: bestPlan?.status === "ACTIVE"
+        ? bestPlan.executionNotes
+        : bestPlan?.executionNotes ?? deterministicBrief,
+    },
+    prompt: {
+      system: "You are APEX. Provide explanation text only. Do not alter the supplied scores or direction.",
+      user: userPrompt,
+      maxTokens: 220,
+      requestId: asset.symbol,
+    },
+    mode: "auto",
+  });
+  const brief = explanation.text || deterministicBrief;
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    const startedAt = Date.now();
-    try {
-      logEvent({
-        runId,
-        asset: asset.symbol,
-        component: "explanation-engine",
-        message: "Calling Claude for narrative explanation",
-      });
-      const msg = await anthropic.messages.create({
-        model: "claude-sonnet-4-6",
-        max_tokens: 220,
-        system: "You are APEX. Provide explanation text only. Do not alter the supplied scores or direction.",
-        messages: [{ role: "user", content: userPrompt }],
-      });
-      const text = msg.content[0].type === "text" ? msg.content[0].text.trim() : "";
-      if (text) brief = text;
-      await recordProviderHealth({
-        provider: "Anthropic",
-        latencyMs: Date.now() - startedAt,
-        status: "OK",
-        errorRate: 0,
-      });
-    } catch (err) {
-      await recordProviderHealth({
-        provider: "Anthropic",
-        latencyMs: Date.now() - startedAt,
-        status: "ERROR",
-        errorRate: 1,
-      });
-      logEvent({
-        runId,
-        asset: asset.symbol,
-        component: "explanation-engine",
-        severity: "WARN",
-        message: "Claude explanation failed; using fallback brief",
-        reason: String(err),
-      });
-    }
+  if (explanation.status === "generated") {
+    logEvent({
+      runId,
+      asset: asset.symbol,
+      component: "explanation-engine",
+      message: "Explanation generated",
+      provider: explanation.provider,
+      cached: explanation.cached,
+    });
+  } else if (explanation.status === "template") {
+    logEvent({
+      runId,
+      asset: asset.symbol,
+      component: "explanation-engine",
+      severity: "WARN",
+      message: "Deterministic explanation template used",
+      provider: explanation.provider,
+      reason: explanation.degradedReason,
+      cached: explanation.cached,
+    });
+  } else {
+    logEvent({
+      runId,
+      asset: asset.symbol,
+      component: "explanation-engine",
+      severity: "WARN",
+      message: "Explanation unavailable after template/LLM fallback",
+      reason: explanation.degradedReason,
+      cached: explanation.cached,
+    });
   }
   const narrativeDurationMs = Date.now() - narrativeStartedAt;
 
@@ -472,7 +535,7 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
   const signalData = {
     runId,
     asset:      asset.symbol,
-    assetClass: asset.class,
+    assetClass: asset.assetClass,
     direction,
     rank,
     total,
@@ -485,6 +548,13 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
     brief,
     rawData:  {
       ...dataSummary,
+      newsMeta: {
+        status: newsBundle.status,
+        reason: newsBundle.reason,
+        degraded: newsBundle.degraded,
+        sourceType: newsBundle.sourceType,
+        fetchedAt: newsBundle.fetchedAt,
+      },
       strategy: {
         selectedStyle: bestPlan?.style ?? null,
         setupFamily: bestPlan?.setupFamily ?? null,
@@ -492,6 +562,23 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
         setupScore: bestPlan?.setupScore ?? total,
         status: bestPlan?.status ?? "NO_SETUP",
         breakdown: bestPlan?.scoreBreakdown ?? null,
+        diagnostics: bestPlan?.diagnostics ?? [],
+        providerContext,
+        qualityGate: {
+          degradedConfidenceFloor: gateState.degradedConfidenceFloor,
+          byStyle: gateState.byStyle,
+          qualityGateReason: bestPlan?.qualityGateReason ?? null,
+        },
+        tradePlans,
+      },
+      explanation: {
+        provider: explanation.provider,
+        fallbackUsed: explanation.fallbackUsed,
+        status: explanation.status,
+        degradedReason: explanation.degradedReason,
+        cached: explanation.cached,
+        fingerprint: explanation.fingerprint,
+        chain: explanation.chain,
       },
     } as object,
   };
@@ -499,6 +586,7 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
   const persistenceStartedAt = Date.now();
   const signal = await prisma.$transaction(async (tx: PersistenceTransaction) => {
     const createdSignal = await tx.signal.create({ data: signalData });
+    const detectedAt = createdSignal.createdAt;
     await tx.tradePlan.createMany({
       data: tradePlans.map((plan: (typeof tradePlans)[number]) => ({
         runId,
@@ -527,6 +615,13 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
         thesis: plan.thesis,
         executionNotes: plan.executionNotes,
         status: plan.status,
+        providerAtSignal: plan.providerAtSignal,
+        providerHealthStateAtSignal: plan.providerHealthStateAtSignal,
+        providerMarketStatusAtSignal: plan.providerMarketStatusAtSignal,
+        providerFallbackUsedAtSignal: plan.providerFallbackUsedAtSignal,
+        qualityGateReason: plan.qualityGateReason,
+        detectedAt,
+        outcome: plan.status === "ACTIVE" ? "PENDING_ENTRY" : null,
       })),
     });
 
@@ -588,7 +683,19 @@ export async function runFullCycle(runId: string) {
   });
 
   const cycleStartedAt = Date.now();
-  const results = await Promise.allSettled(ASSETS.map(a => analyzeAsset(a, runId)));
+  const gateState = await getStylePerformanceGateState();
+  const macroResult = await fetchMacroData({ consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
+    .catch(error => {
+      logEvent({
+        runId,
+        component: "signal-engine",
+        severity: "WARN",
+        message: "Macro fetch failed for cycle; using null macro context",
+        reason: String(error),
+      });
+      return null;
+    });
+  const results = await Promise.allSettled(ASSETS.map(a => analyzeAsset(a, runId, gateState, macroResult)));
 
   const fulfilled = results
     .filter((r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof analyzeAsset>>> =>
@@ -629,6 +736,18 @@ export async function runFullCycle(runId: string) {
     .map((r, i) => ({ r, asset: ASSETS[i]?.symbol }))
     .filter(({ r }) => r.status === "rejected")
     .map(({ r, asset }) => ({ asset, reason: (r as PromiseRejectedResult).reason }));
+
+  try {
+    await refreshTradePlanDiagnostics({ maxPlans: 400 });
+  } catch (error) {
+    logEvent({
+      runId,
+      component: "trade-plan-diagnostics",
+      severity: "WARN",
+      message: "Trade plan diagnostics refresh failed",
+      reason: String(error),
+    });
+  }
 
   if (errors.length > 0) {
     await prisma.signalRun.update({

@@ -1,8 +1,11 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const globalForPrisma = globalThis as typeof globalThis & {
+  __apexPrismaClient?: PrismaClient;
+};
 
 function getDatabaseUrl(): string {
   const url = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL;
@@ -18,6 +21,8 @@ function makePrisma() {
   return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma ?? makePrisma();
+export const prisma = globalForPrisma.__apexPrismaClient ?? makePrisma();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.__apexPrismaClient = prisma;
+}
