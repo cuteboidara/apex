@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { TradingViewChartPanel } from "@/components/TradingViewChartPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1393,6 +1394,8 @@ function MarketIntelPanel({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const { data: session } = useSession();
+
   // ── Existing state ────────────────────────────────────────────────────────
   const [latestSignals, setLatestSignals] = useState<Record<string, Signal>>({});
   const [latestTradePlans, setLatestTradePlans] = useState<Record<string, Record<string, TradePlan>>>({});
@@ -1837,6 +1840,15 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
+            {session?.user?.name && (
+              <span className="hidden sm:block text-[10px] text-zinc-500 font-medium">
+                {session.user.name}
+              </span>
+            )}
+            <button onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-400 hover:border-red-500/30 hover:text-red-400 transition-colors">
+              Sign Out
+            </button>
             <button onClick={() => setShowTelegram(v => !v)}
               className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border transition-all ${
                 showTelegram ? "border-green-500/40 text-green-300 bg-green-500/10" : "border-zinc-800 text-zinc-400 hover:border-green-500/30 hover:text-green-300"

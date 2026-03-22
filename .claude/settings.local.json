@@ -35,7 +35,11 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//c/Users/daram/apex/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find /c/Users/daram/apex -type f -name *auth* -o -name *Auth*)",
+      "Bash(openssl rand:*)",
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''base64''\\)\\)\")",
+      "Bash(cd:*)"
     ]
   }
 }
