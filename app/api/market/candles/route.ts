@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SUPPORTED_ASSETS } from "@/lib/assets";
 import { orchestrateCandles } from "@/lib/marketData/candleOrchestrator";
+import { fetchYahooCandles } from "@/lib/providers/yahooFinance";
 
 export const dynamic = "force-dynamic";
 import type { Timeframe } from "@/lib/marketData/types";
@@ -19,11 +20,11 @@ function parseTimestamp(value: string | null): number | null {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const symbol = searchParams.get("symbol")?.toUpperCase() ?? "";
+  const symbol    = searchParams.get("symbol")?.toUpperCase() ?? "";
   const timeframe = searchParams.get("timeframe") as Timeframe | null;
-  const limit = Math.min(200, Math.max(1, Number.parseInt(searchParams.get("limit") ?? "80", 10) || 80));
-  const from = parseTimestamp(searchParams.get("from"));
-  const to = parseTimestamp(searchParams.get("to"));
+  const limit     = Math.min(200, Math.max(1, Number.parseInt(searchParams.get("limit") ?? "80", 10) || 80));
+  const from      = parseTimestamp(searchParams.get("from"));
+  const to        = parseTimestamp(searchParams.get("to"));
 
   if (!symbol) {
     return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
@@ -38,40 +39,62 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unsupported symbol" }, { status: 400 });
   }
 
-  const result = await orchestrateCandles(symbol, asset.assetClass, timeframe, {
-    consumer: "chart",
-    priority: "hot",
-  });
+  // ── Data source: Yahoo Finance for FOREX/COMMODITY, Binance for CRYPTO ──────
+
+  let result: {
+    candles:             Array<{ timestamp: number; open: number | null; high: number | null; low: number | null; close: number | null; volume: number | null }>;
+    selectedProvider:    string | null;
+    provider:            string;
+    fallbackUsed:        boolean;
+    freshnessMs:         number | null;
+    freshnessClass?:     string;
+    marketStatus:        "LIVE" | "DEGRADED" | "UNAVAILABLE";
+    degraded?:           boolean;
+    stale?:              boolean;
+    reason:              string | null;
+    circuitState?:       string | null;
+    providerHealthScore?: number | null;
+    sourceType?:         string;
+    fromCache?:          boolean;
+    priority?:           string;
+  };
+
+  if (asset.assetClass === "FOREX" || asset.assetClass === "COMMODITY") {
+    result = await fetchYahooCandles(symbol, timeframe);
+  } else {
+    result = await orchestrateCandles(symbol, asset.assetClass, timeframe, {
+      consumer: "chart",
+      priority: "hot",
+    });
+  }
+
   const rangedCandles = result.candles.filter(candle => {
     if (from != null && candle.timestamp < from) return false;
-    if (to != null && candle.timestamp > to) return false;
+    if (to   != null && candle.timestamp > to)   return false;
     return true;
   });
   const candles = rangedCandles.slice(-limit);
 
   return NextResponse.json({
     symbol,
-    assetClass: asset.assetClass,
+    assetClass:          asset.assetClass,
     timeframe,
     candles,
-    selectedProvider: result.selectedProvider ?? result.provider,
-    provider: result.provider,
-    fallbackUsed: result.fallbackUsed,
-    freshnessMs: result.freshnessMs,
-    freshnessClass: result.freshnessClass,
-    marketStatus: result.marketStatus,
-    degraded: result.degraded,
-    stale: result.stale,
-    reason: result.reason,
-    circuitState: result.circuitState,
-    providerHealthScore: result.providerHealthScore,
-    sourceType: result.sourceType,
-    fromCache: result.fromCache,
-    priority: result.priority,
-    requestedLimit: limit,
-    range: {
-      from,
-      to,
-    },
+    selectedProvider:    result.selectedProvider ?? result.provider,
+    provider:            result.provider,
+    fallbackUsed:        result.fallbackUsed,
+    freshnessMs:         result.freshnessMs,
+    freshnessClass:      result.freshnessClass ?? null,
+    marketStatus:        result.marketStatus,
+    degraded:            result.degraded ?? false,
+    stale:               result.stale ?? false,
+    reason:              result.reason,
+    circuitState:        result.circuitState ?? null,
+    providerHealthScore: result.providerHealthScore ?? null,
+    sourceType:          result.sourceType ?? null,
+    fromCache:           result.fromCache ?? false,
+    priority:            result.priority ?? "hot",
+    requestedLimit:      limit,
+    range: { from, to },
   });
 }
