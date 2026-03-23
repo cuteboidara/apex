@@ -10,7 +10,8 @@
     "lint": "eslint",
     "migrate:deploy": "prisma migrate deploy",
     "worker:signal-cycle": "node --import tsx scripts/signal-cycle-worker.ts",
-    "service:scheduler": "node --import tsx scripts/scheduler-service.ts"
+    "service:scheduler": "node --import tsx scripts/scheduler-service.ts",
+    "worker:combined": "node --import tsx scripts/worker-with-scheduler.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
