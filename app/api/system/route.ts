@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { getQueueConfiguration, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
-
-export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 import { classifyProviderStatus } from "@/lib/providerStatusClassifier";
 import { buildLatestSetupBreakdown } from "@/lib/setupBreakdown";
 import { getRuntimeCacheMode } from "@/lib/runtime/runtimeCache";
 import { getRedisConfiguration, isRedisConfigured } from "@/lib/runtime/redis";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   type ProviderHealthRecord = Awaited<ReturnType<typeof prisma.providerHealth.findMany>>[number];
@@ -44,11 +44,7 @@ export async function GET() {
     anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
     openai: Boolean(process.env.OPENAI_API_KEY),
     gemini: Boolean(process.env.GEMINI_API_KEY),
-    fcs: Boolean(process.env.FCS_API_KEY && process.env.FCS_API_KEY !== "PASTE_YOUR_KEY_HERE"),
-    alphaVantage: Boolean(process.env.ALPHA_VANTAGE_API_KEY && process.env.ALPHA_VANTAGE_API_KEY !== "PASTE_YOUR_KEY_HERE"),
-    newsApi: Boolean(process.env.NEWS_API_KEY),
     fred: Boolean(process.env.FRED_API_KEY),
-    finnhub: Boolean(process.env.FINNHUB_API_KEY),
     database: Boolean(process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL),
     telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
     redis: isRedisConfigured(),
@@ -112,23 +108,22 @@ export async function GET() {
     { provider: "Anthropic", fallbackStatus: envFlags.anthropic ? "configured" : "missing", detail: "Primary explanation model" },
     { provider: "OpenAI", fallbackStatus: envFlags.openai ? "configured" : "missing", detail: "Secondary explanation fallback" },
     { provider: "Gemini", fallbackStatus: envFlags.gemini ? "configured" : "missing", detail: "Final explanation fallback" },
-    { provider: "NewsAPI", fallbackStatus: envFlags.newsApi ? "configured" : "missing", detail: "Headline enrichment" },
+    { provider: "RSS", fallbackStatus: "configured", detail: "Free market news feeds" },
     { provider: "FRED", fallbackStatus: envFlags.fred ? "configured" : "missing", detail: "Macro data" },
-    { provider: "Finnhub", fallbackStatus: envFlags.finnhub ? "configured" : "missing", detail: "Market news, calendar, and institutional context" },
     { provider: "Telegram", fallbackStatus: envFlags.telegram ? "configured" : "missing", detail: "Alert delivery" },
     { provider: "Redis", fallbackStatus: queue.status === "online" ? "online" : queue.status, detail: "Signal cycle queue" },
     { provider: "Postgres", fallbackStatus: envFlags.database ? "configured" : "missing", detail: "Primary persistence" },
   ];
   const marketProviderConfig: Record<string, { enabled: boolean; detail: string }> = {
-    "Binance":       { enabled: true, detail: "Primary crypto quotes and candles" },
-    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes — daily OHLC, no API key required" },
+    "Binance": { enabled: true, detail: "Primary crypto quotes and candles" },
+    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes/candles" },
   };
 
   const providerSummaries = await getProviderSummaries();
 
   const systemProviders: ProviderHealthRecord[] = await prisma.providerHealth.findMany({
     where: {
-      provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "OpenAI", "Gemini", "NewsAPI", "FRED", "Finnhub"] },
+      provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "OpenAI", "Gemini", "RSS", "FRED"] },
       requestSymbol: null,
     },
     orderBy: { recordedAt: "desc" },
@@ -136,36 +131,36 @@ export async function GET() {
   }).catch(() => [] as ProviderHealthRecord[]);
 
   const latestSystemProvider = new Map<string, ProviderHealthRecord>();
-  for (const row of systemProviders as ProviderHealthRecord[]) {
+  for (const row of systemProviders) {
     if (!latestSystemProvider.has(row.provider)) latestSystemProvider.set(row.provider, row);
   }
 
   const providerRows: ProviderResponseRow[] = [
-    ...providers.map((item: ProviderConfigRow): ProviderResponseRow => {
-        const latest = latestSystemProvider.get(item.provider);
-        const classified = classifyProviderStatus(latest?.status?.toLowerCase() ?? item.fallbackStatus, latest?.detail ?? item.detail);
-        return {
-          provider: item.provider,
-          assetClass: null,
-          status: latest?.status?.toLowerCase() ?? item.fallbackStatus,
-          detail: latest?.detail
-            ? `${latest.requestSymbol ? `${latest.requestSymbol} · ` : ""}${latest.detail}`
-            : item.detail,
-          latencyMs: latest?.latencyMs ?? null,
-          recordedAt: latest?.recordedAt?.toISOString?.() ?? null,
-          score: null,
-          healthState: null,
-          circuitState: null,
-          cooldownUntil: null,
-          availability: classified.availability,
-          blockedReason: classified.blockedReason,
-        };
-      }),
-    ...providerSummaries.map((summary: (typeof providerSummaries)[number]) => {
+    ...providers.map(item => {
+      const latest = latestSystemProvider.get(item.provider);
+      const classified = classifyProviderStatus(latest?.status?.toLowerCase() ?? item.fallbackStatus, latest?.detail ?? item.detail);
+      return {
+        provider: item.provider,
+        assetClass: null,
+        status: latest?.status?.toLowerCase() ?? item.fallbackStatus,
+        detail: latest?.detail
+          ? `${latest.requestSymbol ? `${latest.requestSymbol} · ` : ""}${latest.detail}`
+          : item.detail,
+        latencyMs: latest?.latencyMs ?? null,
+        recordedAt: latest?.recordedAt?.toISOString?.() ?? null,
+        score: null,
+        healthState: null,
+        circuitState: null,
+        cooldownUntil: null,
+        availability: classified.availability,
+        blockedReason: classified.blockedReason,
+      };
+    }),
+    ...providerSummaries.map(summary => {
       const marketConfig = marketProviderConfig[summary.provider];
       const status = marketConfig && !marketConfig.enabled ? "missing" : summary.status;
       const detail = marketConfig && !marketConfig.enabled
-        ? `missing_api_key · ${marketConfig.detail}`
+        ? `missing_configuration · ${marketConfig.detail}`
         : summary.detail;
       const classified = classifyProviderStatus(status, detail);
       return {

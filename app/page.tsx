@@ -402,7 +402,7 @@ const ASSETS = [
   "BTCUSDT","ETHUSDT",
 ] as const;
 const ASSET_CLASS_ORDER = ["CRYPTO", "FOREX", "COMMODITY"] as const;
-const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "NewsAPI", "FRED", "Finnhub", "Telegram", "Yahoo Finance", "Binance"] as const;
+const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "RSS", "FRED", "Telegram", "Yahoo Finance", "Binance"] as const;
 
 const ASSET_CLASS: Record<string, string> = {
   EURUSD: "FOREX", GBPUSD: "FOREX", USDJPY: "FOREX",
@@ -589,17 +589,15 @@ function compactProviderDetail(detail: string): string {
 
 function providerRole(provider: ProviderStatus): string {
   if (provider.assetClass === "CRYPTO" && provider.provider === "Binance") return "Primary crypto quotes and candles";
-  if (provider.assetClass === "FOREX" && provider.provider === "Yahoo Finance") return "Primary FX daily OHLC — no API key";
-  if (provider.assetClass === "COMMODITY" && provider.provider === "Yahoo Finance") return "Primary metals daily OHLC — no API key";
-  if (provider.provider === "Yahoo Finance") return "Forex and metals price feed";
+  if (provider.assetClass === "FOREX" && provider.provider === "Yahoo Finance") return "Primary FX quotes and candles";
+  if (provider.assetClass === "COMMODITY" && provider.provider === "Yahoo Finance") return "Primary metals quotes and candles";
   if (provider.provider === "Postgres") return "Primary persistence";
   if (provider.provider === "Redis") return "Queue and retries";
   if (provider.provider === "Anthropic") return "Primary reasoning and summaries";
   if (provider.provider === "OpenAI") return "Secondary reasoning fallback";
   if (provider.provider === "Gemini") return "Final reasoning fallback";
-  if (provider.provider === "NewsAPI") return "Headline enrichment";
+  if (provider.provider === "RSS") return "Free market news feeds";
   if (provider.provider === "FRED") return "Macro data";
-  if (provider.provider === "Finnhub") return "Calendar and institutional/news enrichment";
   if (provider.provider === "Telegram") return "Alert delivery";
   return provider.detail;
 }

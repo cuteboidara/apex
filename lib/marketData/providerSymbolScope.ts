@@ -2,7 +2,7 @@ import type { AssetClass } from "@/lib/marketData/types";
 
 const SYMBOL_TOKENS: Record<AssetClass, string[]> = {
   CRYPTO: ["BTCUSDT", "ETHUSDT", "BTCUSD", "ETHUSD"],
-  FOREX: ["EURUSD", "GBPUSD", "USDJPY"],
+  FOREX: ["EURUSD", "GBPUSD", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD", "USDCHF", "EURJPY", "GBPJPY"],
   COMMODITY: ["XAUUSD", "XAGUSD"],
 };
 

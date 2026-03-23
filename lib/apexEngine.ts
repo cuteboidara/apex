@@ -11,6 +11,7 @@ import type { Timeframe } from "@/lib/marketData/types";
 import {
   applyTradePlanQualityGates,
   getStylePerformanceGateState,
+  refreshOutcomeAnalytics,
   refreshTradePlanDiagnostics,
   resolveSignalProviderContext,
   type StylePerformanceGateState,
@@ -146,7 +147,7 @@ export async function analyzeAsset(
 
   const newsQuery =
     asset.assetClass === "CRYPTO"    ? asset.symbol.replace("USDT", "") :
-    asset.assetClass === "COMMODITY" ? (asset.alphaSymbol === "XAU" ? "gold" : "silver") :
+    asset.assetClass === "COMMODITY" ? (asset.symbol.startsWith("XAU") ? "gold" : "silver") :
     asset.symbol;
 
   const [priceResult, newsResult] = await Promise.allSettled([
@@ -156,7 +157,7 @@ export async function analyzeAsset(
       ? fetchCryptoData(asset.binanceSymbol!, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
       : asset.assetClass === "FOREX"
         ? fetchForexData(asset.symbol.slice(0, 3), asset.symbol.slice(3, 6), { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
-        : fetchCommodityData(asset.alphaSymbol!, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
+        : fetchCommodityData(asset.symbol.slice(0, 3), { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
 
     // News
     fetchNewsBundle(newsQuery, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
@@ -789,6 +790,7 @@ export async function runFullCycle(runId: string) {
 
   try {
     await refreshTradePlanDiagnostics({ maxPlans: 400 });
+    await refreshOutcomeAnalytics({ lookbackDays: 60, take: 1500 });
   } catch (error) {
     logEvent({
       runId,

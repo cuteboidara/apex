@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { providerRegistry } from "@/lib/marketData/providerRegistry";
 import { getProviderHealthScore } from "@/lib/marketData/providerHealthEngine";
+import { marketProviderCatalog } from "@/lib/marketData/providerRegistry";
 import { symbolMatchesAssetClass } from "@/lib/marketData/providerSymbolScope";
-import type { AssetClass } from "@/lib/marketData/types";
+import type { AssetClass, ProviderName } from "@/lib/marketData/types";
 
 type ProviderSummary = {
   provider: string;
@@ -17,25 +17,36 @@ type ProviderSummary = {
   recordedAt: string | null;
 };
 
+const DASHBOARD_MARKET_PROVIDERS: Array<{ provider: ProviderName; assetClass: AssetClass }> = Array.from(
+  new Map(
+    marketProviderCatalog.flatMap(adapter =>
+      adapter.capability.assetClasses.map(assetClass => [
+        `${adapter.provider}:${assetClass}`,
+        { provider: adapter.provider, assetClass },
+      ] as const)
+    )
+  ).values()
+);
+
 export async function getProviderSummaries(): Promise<ProviderSummary[]> {
   type ProviderHealthRecord = Awaited<ReturnType<typeof prisma.providerHealth.findMany>>[number];
-  const keys = Array.from(
-    new Set(
-      Object.entries(providerRegistry).flatMap(([assetClass, adapters]) =>
-        adapters.map(adapter => `${adapter.provider}::${assetClass}`)
-      )
-    )
-  );
-
-  return Promise.all(keys.map(async key => {
-    const [provider, assetClass] = key.split("::") as [string, AssetClass];
+  return Promise.all(DASHBOARD_MARKET_PROVIDERS.map(async ({ provider, assetClass }) => {
     const [health, latest] = await Promise.all([
-      getProviderHealthScore(provider as never, assetClass),
+      getProviderHealthScore(provider, assetClass),
       prisma.providerHealth.findMany({
         where: { provider },
         orderBy: { recordedAt: "desc" },
-        take: 20,
-      }).then(rows => rows.find((row: ProviderHealthRecord) => symbolMatchesAssetClass(row.requestSymbol, assetClass)) ?? null).catch(() => null as ProviderHealthRecord | null),
+        take: 40,
+      }).then(rows => {
+        const matching = rows.find((row: ProviderHealthRecord) => symbolMatchesAssetClass(row.requestSymbol, assetClass));
+        if (matching) {
+          return matching;
+        }
+
+        // Binance quote health is sometimes recorded without a requestSymbol in the
+        // direct dashboard fetch path, so fall back to the provider-level row.
+        return rows.find((row: ProviderHealthRecord) => row.requestSymbol == null) ?? null;
+      }).catch(() => null as ProviderHealthRecord | null),
     ]);
 
     return {

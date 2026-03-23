@@ -1,9 +1,19 @@
 import "dotenv/config";
 
 import cron from "node-cron";
+import { printValidationReport, validateRuntimeEnv } from "./validate-env.mjs";
 
 import { logEvent } from "../lib/logging";
 import { enqueueSignalCycle } from "../lib/queue";
+
+const validationReport = validateRuntimeEnv({
+  service: "scheduler",
+  strict: process.env.NODE_ENV === "production" || process.env.APEX_STRICT_STARTUP === "true",
+});
+printValidationReport(validationReport);
+if (validationReport.errors.length > 0) {
+  process.exit(1);
+}
 
 async function scheduleCycle(trigger: string) {
   try {

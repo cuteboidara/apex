@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SUPPORTED_ASSETS } from "@/lib/assets";
 import { orchestrateCandles } from "@/lib/marketData/candleOrchestrator";
-import { fetchYahooCandles } from "@/lib/providers/yahooFinance";
+import { fetchMarketCandles } from "@/lib/marketData/fetchCandles";
 
 export const dynamic = "force-dynamic";
 import type { Timeframe } from "@/lib/marketData/types";
@@ -39,8 +39,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unsupported symbol" }, { status: 400 });
   }
 
-  // ── Data source: Yahoo Finance for FOREX/COMMODITY, Binance for CRYPTO ──────
-
   let result: {
     candles:             Array<{ timestamp: number; open: number | null; high: number | null; low: number | null; close: number | null; volume: number | null }>;
     selectedProvider:    string | null;
@@ -60,7 +58,7 @@ export async function GET(req: NextRequest) {
   };
 
   if (asset.assetClass === "FOREX" || asset.assetClass === "COMMODITY") {
-    result = await fetchYahooCandles(symbol, timeframe);
+    result = await fetchMarketCandles(symbol, asset.assetClass, timeframe);
   } else {
     result = await orchestrateCandles(symbol, asset.assetClass, timeframe, {
       consumer: "chart",

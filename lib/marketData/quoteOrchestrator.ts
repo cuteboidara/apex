@@ -33,7 +33,7 @@ type PersistedSignalRawData = {
   };
 };
 
-const KNOWN_PROVIDERS = new Set<ProviderName>(["Binance", "FCS API", "Alpha Vantage", "Twelve Data", "Finnhub"]);
+const KNOWN_PROVIDERS = new Set<ProviderName>(["Binance", "Yahoo Finance"]);
 
 function toPositiveNumber(value: unknown): number | null {
   const parsed = Number(value);
@@ -235,11 +235,6 @@ async function getPersistedQuoteFallback(
   });
 }
 
-function allowFallbackProvider(provider: ProviderName, input: { allowRareFallback: boolean }) {
-  if (provider !== "Alpha Vantage") return true;
-  return input.allowRareFallback;
-}
-
 async function fetchProviderQuoteWithPolicy(input: {
   symbol: string;
   assetClass: AssetClass;
@@ -373,7 +368,7 @@ export async function orchestrateQuote(
     return finalizeQuote({
       symbol,
       assetClass,
-      provider: "Alpha Vantage",
+      provider: assetClass === "CRYPTO" ? "Binance" : "Yahoo Finance",
       price: null,
       change24h: null,
       high14d: null,
@@ -417,10 +412,6 @@ export async function orchestrateQuote(
     circuitOpen: primaryHealth.circuitState === "OPEN",
   })) {
     for (const fallback of fallbacks) {
-      if (!allowFallbackProvider(fallback.provider, { allowRareFallback: policy.allowRareFallback })) {
-        continue;
-      }
-
       const fallbackHealth = await getProviderHealthScore(fallback.provider, assetClass);
       const fallbackResult = await fetchProviderQuoteWithPolicy({
         symbol,

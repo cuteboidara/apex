@@ -1,11 +1,13 @@
 import { recordProviderHealth } from "@/lib/providerHealth";
 import { orchestrateCandles } from "@/lib/marketData/candleOrchestrator";
 import { orchestrateQuote } from "@/lib/marketData/quoteOrchestrator";
+import { fetchMarketCandles } from "@/lib/marketData/fetchCandles";
+import { fetchMarketQuote } from "@/lib/marketData/fetchQuotes";
 import { evaluateStyleReadiness } from "@/lib/marketData/policies/freshnessPolicy";
 import type { MarketRequestContext } from "@/lib/marketData/policies/requestPolicy";
+import { fetchRssNewsBundle } from "@/lib/providers/newsRss";
 import { getCachedValue, setCachedValue } from "@/lib/runtime/runtimeCache";
 
-const NEWS_KEY = process.env.NEWS_API_KEY ?? "";
 const FRED_KEY = process.env.FRED_API_KEY ?? "";
 const BINANCE_BASE = "https://api.binance.com/api/v3";
 const REQUEST_TIMEOUT_MS = 8000;
@@ -45,7 +47,7 @@ async function safeFetchJson(url: string, label?: string): Promise<Record<string
   const tag = label ?? redactUrl(url).replace(/^https?:\/\/[^/]+/, "").split("?")[0];
   const display = redactUrl(url);
   const provider =
-    url.includes("newsapi.org") ? "NewsAPI" :
+    url.includes("feeds.reuters.com") || url.includes("fxstreet.com/rss") || url.includes("investing.com/rss") ? "RSS" :
     url.includes("stlouisfed.org") ? "FRED" :
     url.includes("binance.com") ? "Binance" :
     url.includes("alternative.me") ? "Alternative.me" :
@@ -232,18 +234,16 @@ export async function getAssetPrice(symbol: string): Promise<AssetPrice | null> 
   }
 
   if (provider === "binance") {
-    const price = await getBinancePrice(symbol);
-    return price != null
-      ? { symbol, price, source: "binance", timestamp: Date.now() }
+    const quote = await fetchMarketQuote(symbol, "CRYPTO");
+    return quote.price != null
+      ? { symbol, price: quote.price, source: quote.selectedProvider ?? quote.provider, timestamp: quote.timestamp ?? Date.now() }
       : null;
   }
 
-  // FOREX/COMMODITY: Yahoo Finance is the sole provider — call it directly
-  // without going through the orchestrators (which previously triggered FCS).
-  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
-  const yahoo = await fetchYahooPrice(symbol);
-  return yahoo.price != null
-    ? { symbol, price: yahoo.price, source: "Yahoo Finance", timestamp: Date.now() }
+  const assetClass = symbol.startsWith("XA") ? "COMMODITY" as const : "FOREX" as const;
+  const quote = await fetchMarketQuote(symbol, assetClass);
+  return quote.price != null
+    ? { symbol, price: quote.price, source: quote.selectedProvider ?? quote.provider, timestamp: quote.timestamp ?? Date.now() }
     : null;
 }
 
@@ -348,54 +348,56 @@ export async function fetchCryptoData(symbol: string, context?: MarketRequestCon
 }
 
 async function fetchMultiProviderAsset(apexSymbol: string, _assetClass: "FOREX" | "COMMODITY", _context?: MarketRequestContext) {
-  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
-  const yahoo = await fetchYahooPrice(apexSymbol);
+  const [quote, minute1, minute5, minute15, hour1, hour4, day1] = await Promise.all([
+    fetchMarketQuote(apexSymbol, _assetClass),
+    fetchMarketCandles(apexSymbol, _assetClass, "1m"),
+    fetchMarketCandles(apexSymbol, _assetClass, "5m"),
+    fetchMarketCandles(apexSymbol, _assetClass, "15m"),
+    fetchMarketCandles(apexSymbol, _assetClass, "1h"),
+    fetchMarketCandles(apexSymbol, _assetClass, "4h"),
+    fetchMarketCandles(apexSymbol, _assetClass, "1D"),
+  ]);
 
-  const isReady = yahoo.price !== null;
-  const yahooProvider = {
-    selectedProvider:    "Yahoo Finance",
-    fallbackUsed:        false,
-    freshnessMs:         0,
-    circuitState:        "closed" as const,
-    marketStatus:        "LIVE"  as const,
-    reason:              null,
-    sourceType:          "fresh"  as const,
-    freshnessClass:      "fresh"  as const,
-    degraded:            false,
-    providerHealthScore: 1,
-  };
+  const dailyCandles = day1.candles;
+  const closes = dailyCandles.map(candle => Number(candle.close)).filter(Number.isFinite);
+  const highs = dailyCandles.map(candle => Number(candle.high)).filter(Number.isFinite);
+  const lows = dailyCandles.map(candle => Number(candle.low)).filter(Number.isFinite);
+  const readiness = evaluateStyleReadiness({
+    "1m": minute1,
+    "5m": minute5,
+    "15m": minute15,
+    "1h": hour1,
+    "4h": hour4,
+    "1D": day1,
+  });
 
   return {
-    price:               yahoo.price,
-    change24h:           yahoo.change24h,
-    high14d:             yahoo.high14d,
-    low14d:              yahoo.low14d,
-    closes:              yahoo.closes,
-    stale:               !isReady,
-    marketStatus:        isReady ? "LIVE" as const : "UNAVAILABLE" as const,
-    reason:              isReady ? null : "yahoo_unavailable",
-    updatedAt:           new Date().toISOString(),
-    provider:            "Yahoo Finance",
-    fallbackUsed:        false,
-    freshnessMs:         0,
-    circuitState:        "closed" as const,
-    sourceType:          "fresh"  as const,
-    freshnessClass:      "fresh"  as const,
-    degraded:            !isReady,
-    providerHealthScore: isReady ? 1 : 0,
+    price: quote.price,
+    change24h: quote.change24h,
+    high14d: quote.high14d ?? (highs.length > 0 ? Math.max(...highs.slice(-14)) : null),
+    low14d: quote.low14d ?? (lows.length > 0 ? Math.min(...lows.slice(-14)) : null),
+    closes,
+    stale: quote.stale,
+    marketStatus: quote.marketStatus,
+    reason: quote.reason,
+    updatedAt: quote.timestamp != null ? new Date(quote.timestamp).toISOString() : new Date().toISOString(),
+    provider: quote.selectedProvider ?? quote.provider,
+    fallbackUsed: quote.fallbackUsed,
+    freshnessMs: quote.freshnessMs,
+    circuitState: quote.circuitState,
+    sourceType: quote.sourceType,
+    freshnessClass: quote.freshnessClass,
+    degraded: quote.degraded,
+    providerHealthScore: quote.providerHealthScore,
     candleProviders: {
-      "1m":  { ...yahooProvider },
-      "5m":  { ...yahooProvider },
-      "15m": { ...yahooProvider },
-      "1h":  { ...yahooProvider },
-      "4h":  { ...yahooProvider },
-      "1D":  { ...yahooProvider },
+      "1m": summarizeCandleProvider(minute1),
+      "5m": summarizeCandleProvider(minute5),
+      "15m": summarizeCandleProvider(minute15),
+      "1h": summarizeCandleProvider(hour1),
+      "4h": summarizeCandleProvider(hour4),
+      "1D": summarizeCandleProvider(day1),
     },
-    readiness: {
-      SCALP:    { ready: false,    missing: ["1m", "5m"] as string[], stale: [] as string[] },
-      INTRADAY: { ready: isReady,  missing: [] as string[],           stale: [] as string[] },
-      SWING:    { ready: isReady,  missing: [] as string[],           stale: [] as string[] },
-    },
+    readiness,
   };
 }
 
@@ -512,21 +514,15 @@ export async function fetchNewsBundle(query: string, context?: MarketRequestCont
     };
   }
 
-  console.log(`[APEX:news] Fetching news for "${query}"... (NEWS_KEY ${NEWS_KEY ? "set" : "MISSING"})`);
-  const data = await safeFetchJson(
-    `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&pageSize=10&language=en&apiKey=${NEWS_KEY}`,
-    `newsapi-${query}`,
-  );
-
-  const articles = ((data as Record<string, unknown>)?.articles ?? []) as Array<Record<string, unknown>>;
-  console.log(`[APEX:news] "${query}" → ${articles.length} articles`);
-
-  const normalized = articles.slice(0, 10).map(article => ({
-    title: String(article.title ?? ""),
-    source: String((article.source as Record<string, string>)?.name ?? ""),
-    publishedAt: String(article.publishedAt ?? ""),
-    sentiment: analyzeSentiment(String(article.title ?? "")),
+  console.log(`[APEX:news] Fetching RSS news for "${query}"...`);
+  const bundle = await fetchRssNewsBundle({ query, limit: 10 });
+  const normalized = bundle.articles.map(article => ({
+    title: article.title,
+    source: article.source,
+    publishedAt: article.publishedAt,
+    sentiment: article.sentiment,
   }));
+  console.log(`[APEX:news] "${query}" → ${normalized.length} RSS articles`);
 
   if (normalized.length > 0) {
     await setCachedValue(cacheKey, {
@@ -538,10 +534,10 @@ export async function fetchNewsBundle(query: string, context?: MarketRequestCont
 
     return {
       articles: normalized,
-      status: "LIVE" as const,
-      reason: null,
-      degraded: false,
-      sourceType: cachedStale ? "fresh" as const : "fresh" as const,
+      status: bundle.status,
+      reason: bundle.reason,
+      degraded: bundle.status !== "LIVE",
+      sourceType: "fresh" as const,
       fetchedAt: now,
     };
   }
@@ -559,11 +555,11 @@ export async function fetchNewsBundle(query: string, context?: MarketRequestCont
 
   return {
     articles: [] as Array<{ title: string; source: string; publishedAt: string; sentiment: "bullish" | "bearish" | "neutral" }>,
-    status: "UNAVAILABLE" as const,
-    reason: "news_unavailable",
-    degraded: true,
-    sourceType: "fallback" as const,
-    fetchedAt: null,
+    status: bundle.status,
+    reason: bundle.reason,
+    degraded: bundle.status !== "LIVE",
+    sourceType: bundle.status === "UNAVAILABLE" ? "fallback" as const : "fresh" as const,
+    fetchedAt: now,
   };
 }
 

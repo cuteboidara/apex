@@ -7,6 +7,7 @@ import "dotenv/config";
 
 import cron from "node-cron";
 import { Worker } from "bullmq";
+import { printValidationReport, validateRuntimeEnv } from "./validate-env.mjs";
 
 import { logEvent } from "../lib/logging";
 import { enqueueSignalCycle, createRedisConnection, SIGNAL_CYCLE_QUEUE } from "../lib/queue";
@@ -14,6 +15,15 @@ import { runCycle } from "../lib/scheduler";
 import { prisma } from "../lib/prisma";
 import { recordAuditEvent } from "../lib/audit";
 import { FAILURE_CODES } from "../lib/runConfig";
+
+const validationReport = validateRuntimeEnv({
+  service: "worker",
+  strict: process.env.NODE_ENV === "production" || process.env.APEX_STRICT_STARTUP === "true",
+});
+printValidationReport(validationReport);
+if (validationReport.errors.length > 0) {
+  process.exit(1);
+}
 
 // ── Worker ────────────────────────────────────────────────────────────────────
 

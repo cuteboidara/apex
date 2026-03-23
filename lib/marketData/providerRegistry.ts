@@ -1,11 +1,9 @@
-import { getAlphaVantageForexQuote, getAlphaVantageMetalQuote } from "@/lib/providers/alphaVantage";
-import { getFcsCandles, getFcsQuote } from "@/lib/providers/fcs";
 import type { AssetClass, CandleResult, ProviderAdapter, QuoteResult, Timeframe } from "@/lib/marketData/types";
-// Note: FCS API is only used as a CRYPTO fallback. Yahoo Finance is the sole
-// provider for FOREX and COMMODITY assets — those classes bypass the orchestrators
-// entirely via fetchMultiProviderAsset / getAssetPrice in lib/marketData.ts.
+import { fetchYahooCandles, fetchYahooPrice } from "@/lib/providers/yahooFinance";
+import type { ProviderAdapterV2, ProviderCandlePayload, ProviderQuotePayload } from "@/lib/providers/types";
 
 const BINANCE_BASE = "https://api.binance.com/api/v3";
+const ALL_TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "1h", "4h", "1D"];
 
 function toPositiveNumber(value: unknown): number | null {
   const num = Number(value);
@@ -66,6 +64,10 @@ async function fetchBinanceQuote(symbol: string): Promise<QuoteResult> {
   }
 }
 
+async function fetchBinanceProviderQuote(symbol: string): Promise<ProviderQuotePayload> {
+  return fetchBinanceQuote(symbol);
+}
+
 async function fetchBinanceCandles(symbol: string, timeframe: Timeframe): Promise<CandleResult> {
   const intervalMap: Record<Timeframe, string> = {
     "1m": "1m",
@@ -91,6 +93,7 @@ async function fetchBinanceCandles(symbol: string, timeframe: Timeframe): Promis
         reason: `HTTP ${res.status}`,
       };
     }
+
     const rows = await res.json() as Array<[number, string, string, string, string, string]>;
     const candles = rows.map(row => ({
       timestamp: row[0],
@@ -100,6 +103,7 @@ async function fetchBinanceCandles(symbol: string, timeframe: Timeframe): Promis
       close: toPositiveNumber(row[4]),
       volume: Number(row[5]) || null,
     }));
+
     return {
       symbol,
       assetClass: "CRYPTO",
@@ -126,107 +130,107 @@ async function fetchBinanceCandles(symbol: string, timeframe: Timeframe): Promis
   }
 }
 
-async function fetchFcsMarketQuote(symbol: string, assetClass: AssetClass): Promise<QuoteResult> {
-  const quote = await getFcsQuote(symbol);
-  return {
-    symbol,
-    assetClass,
-    provider: "FCS API",
-    price: quote.price,
-    change24h: quote.change24h,
-    high14d: quote.high14d,
-    low14d: quote.low14d,
-    volume: quote.volume,
-    timestamp: quote.timestamp,
-    stale: quote.stale,
-    marketStatus: quote.marketStatus,
-    reason: quote.reason,
-  };
+async function fetchBinanceProviderCandles(symbol: string, timeframe: Timeframe): Promise<ProviderCandlePayload> {
+  return fetchBinanceCandles(symbol, timeframe);
 }
 
-async function fetchFcsMarketCandles(symbol: string, assetClass: AssetClass, timeframe: Timeframe): Promise<CandleResult> {
-  const candles = await getFcsCandles(symbol, timeframe);
+async function fetchYahooProviderQuote(symbol: string, assetClass: AssetClass): Promise<ProviderQuotePayload> {
+  const yahoo = await fetchYahooPrice(symbol);
   return {
     symbol,
     assetClass,
-    provider: "FCS API",
-    timeframe,
-    candles: candles.candles,
-    timestamp: candles.timestamp,
-    stale: candles.stale,
-    marketStatus: candles.marketStatus,
-    reason: candles.reason,
-  };
-}
-
-async function fetchAlphaQuote(symbol: string, assetClass: AssetClass): Promise<QuoteResult> {
-  const normalized = assetClass === "FOREX"
-    ? await getAlphaVantageForexQuote(symbol as "EURUSD" | "GBPUSD" | "USDJPY")
-    : await getAlphaVantageMetalQuote(symbol as "XAUUSD" | "XAGUSD");
-  return {
-    symbol,
-    assetClass,
-    provider: "Alpha Vantage",
-    price: normalized.price,
-    change24h: normalized.change24h,
-    high14d: normalized.high14d,
-    low14d: normalized.low14d,
+    provider: "Yahoo Finance",
+    price: yahoo.price,
+    change24h: yahoo.change24h,
+    high14d: yahoo.high14d,
+    low14d: yahoo.low14d,
     volume: null,
-    timestamp: normalized.timestamp,
-    stale: normalized.stale,
-    marketStatus: normalized.marketStatus,
-    reason: normalized.reason,
-    closes: normalized.closes,
+    timestamp: Date.now(),
+    stale: yahoo.price == null,
+    marketStatus: yahoo.price != null ? "LIVE" : "DEGRADED",
+    reason: yahoo.price != null ? null : "Yahoo Finance quote unavailable.",
+    closes: yahoo.closes,
+    requestSymbol: symbol,
+    sourceTimestamp: Date.now(),
+    metadata: null,
   };
 }
 
-async function fetchAlphaCandles(symbol: string, assetClass: AssetClass, timeframe: Timeframe): Promise<CandleResult> {
+async function fetchYahooProviderCandles(symbol: string, assetClass: AssetClass, timeframe: Timeframe): Promise<ProviderCandlePayload> {
+  const yahoo = await fetchYahooCandles(symbol, timeframe);
   return {
     symbol,
     assetClass,
-    provider: "Alpha Vantage",
+    provider: "Yahoo Finance",
     timeframe,
-    candles: [],
-    timestamp: null,
-    stale: true,
-    marketStatus: "UNAVAILABLE",
-    reason: `Alpha Vantage does not provide usable ${timeframe} candles in this fallback path.`,
+    candles: yahoo.candles.map(candle => ({
+      ...candle,
+      sourceTimestamp: candle.timestamp,
+    })),
+    timestamp: yahoo.candles.at(-1)?.timestamp ?? null,
+    stale: yahoo.stale,
+    marketStatus: yahoo.marketStatus,
+    reason: yahoo.reason,
+    requestSymbol: symbol,
+    metadata: null,
   };
+}
+
+export const marketProviderCatalog: ProviderAdapterV2[] = [
+  {
+    provider: "Binance",
+    capability: {
+      provider: "Binance",
+      assetClasses: ["CRYPTO"],
+      timeframes: ALL_TIMEFRAMES,
+      supportsQuotes: true,
+      supportsHistoricalBackfill: true,
+      supportsIntraday: true,
+      degradedFallback: false,
+      primaryPriority: 100,
+      description: "Primary crypto quotes and candles.",
+    },
+    supportsSymbol: (_symbol, assetClass) => assetClass === "CRYPTO",
+    fetchQuote: symbol => fetchBinanceProviderQuote(symbol),
+    fetchCandles: (symbol, _assetClass, timeframe) => fetchBinanceProviderCandles(symbol, timeframe),
+  },
+  {
+    provider: "Yahoo Finance",
+    capability: {
+      provider: "Yahoo Finance",
+      assetClasses: ["FOREX", "COMMODITY"],
+      timeframes: ALL_TIMEFRAMES,
+      supportsQuotes: true,
+      supportsHistoricalBackfill: true,
+      supportsIntraday: true,
+      degradedFallback: false,
+      primaryPriority: 90,
+      description: "Primary FX/metals quotes and candles.",
+    },
+    supportsSymbol: (_symbol, assetClass) => assetClass === "FOREX" || assetClass === "COMMODITY",
+    fetchQuote: (symbol, assetClass) => fetchYahooProviderQuote(symbol, assetClass),
+    fetchCandles: (symbol, assetClass, timeframe) => fetchYahooProviderCandles(symbol, assetClass, timeframe),
+  },
+];
+
+function toLegacyAdapter(adapter: ProviderAdapterV2, assetClass: AssetClass): ProviderAdapter {
+  return {
+    provider: adapter.provider,
+    assetClass,
+    fetchQuote: symbol => adapter.fetchQuote(symbol, assetClass) as Promise<QuoteResult>,
+    fetchCandles: (symbol, timeframe) => adapter.fetchCandles(symbol, assetClass, timeframe) as Promise<CandleResult>,
+  };
+}
+
+export function getProviderAdaptersForAsset(assetClass: AssetClass, timeframe?: Timeframe) {
+  return marketProviderCatalog
+    .filter(adapter => adapter.capability.assetClasses.includes(assetClass))
+    .filter(adapter => timeframe == null || adapter.capability.timeframes.includes(timeframe))
+    .sort((left, right) => right.capability.primaryPriority - left.capability.primaryPriority);
 }
 
 export const providerRegistry: Record<AssetClass, ProviderAdapter[]> = {
-  CRYPTO: [
-    {
-      provider: "Binance",
-      assetClass: "CRYPTO",
-      fetchQuote: fetchBinanceQuote,
-      fetchCandles: fetchBinanceCandles,
-    },
-    {
-      provider: "FCS API",
-      assetClass: "CRYPTO",
-      fetchQuote: symbol => fetchFcsMarketQuote(symbol, "CRYPTO"),
-      fetchCandles: (symbol, timeframe) => fetchFcsMarketCandles(symbol, "CRYPTO", timeframe),
-    },
-  ],
-  // Yahoo Finance is the sole provider for FOREX and COMMODITY — these registries
-  // are kept minimal (Alpha Vantage only, last-resort) since the main data paths
-  // (fetchMultiProviderAsset and getAssetPrice) call Yahoo Finance directly and
-  // never go through the orchestrators for these classes.
-  FOREX: [
-    {
-      provider: "Alpha Vantage",
-      assetClass: "FOREX",
-      fetchQuote: symbol => fetchAlphaQuote(symbol, "FOREX"),
-      fetchCandles: (symbol, timeframe) => fetchAlphaCandles(symbol, "FOREX", timeframe),
-    },
-  ],
-  COMMODITY: [
-    {
-      provider: "Alpha Vantage",
-      assetClass: "COMMODITY",
-      fetchQuote: symbol => fetchAlphaQuote(symbol, "COMMODITY"),
-      fetchCandles: (symbol, timeframe) => fetchAlphaCandles(symbol, "COMMODITY", timeframe),
-    },
-  ],
+  CRYPTO: getProviderAdaptersForAsset("CRYPTO").map(adapter => toLegacyAdapter(adapter, "CRYPTO")),
+  FOREX: getProviderAdaptersForAsset("FOREX").map(adapter => toLegacyAdapter(adapter, "FOREX")),
+  COMMODITY: getProviderAdaptersForAsset("COMMODITY").map(adapter => toLegacyAdapter(adapter, "COMMODITY")),
 };

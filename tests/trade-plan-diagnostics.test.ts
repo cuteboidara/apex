@@ -162,7 +162,7 @@ test("trade plan lifecycle expires cleanly when entry never fills", () => {
 
 test("quality gates suppress degraded low-confidence setups and paused scalp styles", () => {
   const providerContext: SignalProviderContext = {
-    providerAtSignal: "Finnhub",
+    providerAtSignal: "Yahoo Finance",
     providerHealthStateAtSignal: "DEGRADED",
     providerMarketStatusAtSignal: "DEGRADED",
     providerFallbackUsedAtSignal: true,

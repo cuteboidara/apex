@@ -1,20 +1,24 @@
 import { recordProviderHealth } from "@/lib/providerHealth";
 
-const YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart";
+// Try query2 when query1 is blocked (common on cloud/Railway IPs)
+const YAHOO_HOSTS = [
+  "https://query1.finance.yahoo.com",
+  "https://query2.finance.yahoo.com",
+];
 const REQUEST_TIMEOUT_MS = 8000;
 
 export const YAHOO_SYMBOL_MAP: Record<string, string> = {
   EURUSD:  "EURUSD=X",
   GBPUSD:  "GBPUSD=X",
   USDJPY:  "USDJPY=X",
-  XAUUSD:  "GC=F",
-  XAGUSD:  "SI=F",
   USDCAD:  "CAD=X",
   AUDUSD:  "AUDUSD=X",
   NZDUSD:  "NZDUSD=X",
   USDCHF:  "CHF=X",
   EURJPY:  "EURJPY=X",
   GBPJPY:  "GBPJPY=X",
+  XAUUSD:  "GC=F",
+  XAGUSD:  "SI=F",
 };
 
 interface YahooChartResult {
@@ -75,6 +79,66 @@ export type YahooCandleResult = {
   priority:         string;
 };
 
+function candleIntervalMs(timeframe: string) {
+  switch (timeframe) {
+    case "1m": return 60_000;
+    case "5m": return 5 * 60_000;
+    case "15m": return 15 * 60_000;
+    case "1h": return 60 * 60_000;
+    case "4h": return 4 * 60 * 60_000;
+    case "1D": return 24 * 60 * 60_000;
+    default: return 60 * 60_000;
+  }
+}
+
+export function aggregateYahooCandles(candles: YahooCandle[], timeframe: string) {
+  if (timeframe !== "4h") {
+    return candles;
+  }
+
+  const bucketMs = candleIntervalMs("4h");
+  const buckets = new Map<number, YahooCandle[]>();
+
+  for (const candle of candles) {
+    const bucket = Math.floor(candle.timestamp / bucketMs) * bucketMs;
+    if (!buckets.has(bucket)) {
+      buckets.set(bucket, []);
+    }
+    buckets.get(bucket)!.push(candle);
+  }
+
+  return Array.from(buckets.entries())
+    .sort((left, right) => left[0] - right[0])
+    .map(([timestamp, group]) => ({
+      timestamp,
+      open: group[0]?.open ?? group[0]?.close ?? 0,
+      high: Math.max(...group.map(item => item.high)),
+      low: Math.min(...group.map(item => item.low)),
+      close: group.at(-1)?.close ?? group[0]?.close ?? 0,
+      volume: group.reduce<number | null>((sum, item) => sum == null || item.volume == null ? sum ?? item.volume : sum + item.volume, null),
+    }))
+    .filter(candle => candle.open > 0 && candle.high > 0 && candle.low > 0 && candle.close > 0);
+}
+
+/** Fetch from the first host that succeeds (query1 → query2 fallback). */
+async function fetchYahooJson(path: string): Promise<{ res: Response; data: YahooResponse } | null> {
+  for (const host of YAHOO_HOSTS) {
+    try {
+      const res = await fetch(`${host}/v8/finance/chart${path}`, {
+        signal:  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+        cache:   "no-store",
+      });
+      if (!res.ok) continue;
+      const data = await res.json() as YahooResponse;
+      return { res, data };
+    } catch {
+      // try next host
+    }
+  }
+  return null;
+}
+
 export async function fetchYahooCandles(
   apexSymbol: string,
   timeframe: string,
@@ -101,28 +165,22 @@ export async function fetchYahooCandles(
   if (!yahooSymbol) return unavailable;
 
   const params = TIMEFRAME_PARAMS[timeframe] ?? TIMEFRAME_PARAMS["1D"];
-  const url = `${YAHOO_BASE}/${encodeURIComponent(yahooSymbol)}?interval=${params.interval}&range=${params.range}&includePrePost=false`;
+  const path = `/${encodeURIComponent(yahooSymbol)}?interval=${params.interval}&range=${params.range}&includePrePost=false`;
 
   const startedAt = Date.now();
 
   try {
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
-      cache:   "no-store",
-    });
-
-    if (!res.ok) {
+    const fetched = await fetchYahooJson(path);
+    if (!fetched) {
       await recordProviderHealth({
         provider: "Yahoo Finance", requestSymbol: apexSymbol,
         latencyMs: Date.now() - startedAt, status: "ERROR", errorRate: 1,
-        detail: `http_${res.status}`,
+        detail: "all_hosts_failed",
       });
-      return { ...unavailable, reason: `http_${res.status}` };
+      return { ...unavailable, reason: "all_hosts_failed" };
     }
 
-    const data   = await res.json() as YahooResponse;
-    const result = data?.chart?.result?.[0];
+    const result = fetched.data?.chart?.result?.[0];
 
     if (!result) {
       await recordProviderHealth({
@@ -170,25 +228,26 @@ export async function fetchYahooCandles(
       });
     }
 
+    const normalizedCandles = aggregateYahooCandles(candles, timeframe);
     const latencyMs = Date.now() - startedAt;
     await recordProviderHealth({
       provider: "Yahoo Finance", requestSymbol: apexSymbol,
-      latencyMs, status: candles.length > 0 ? "OK" : "DEGRADED",
-      errorRate: candles.length > 0 ? 0 : 1,
-      detail: candles.length > 0 ? undefined : "no_candles",
+      latencyMs, status: normalizedCandles.length > 0 ? "OK" : "DEGRADED",
+      errorRate: normalizedCandles.length > 0 ? 0 : 1,
+      detail: normalizedCandles.length > 0 ? undefined : "no_candles",
     });
 
     return {
-      candles,
+      candles: normalizedCandles,
       selectedProvider:    "Yahoo Finance",
       provider:            "Yahoo Finance",
       fallbackUsed:        false,
       freshnessMs:         latencyMs,
       freshnessClass:      "fresh",
-      marketStatus:        candles.length > 0 ? "LIVE" : "DEGRADED",
-      degraded:            candles.length === 0,
+      marketStatus:        normalizedCandles.length > 0 ? "LIVE" : "DEGRADED",
+      degraded:            normalizedCandles.length === 0,
       stale:               false,
-      reason:              candles.length > 0 ? null : "no_candles",
+      reason:              normalizedCandles.length > 0 ? null : "no_candles",
       circuitState:        null,
       providerHealthScore: null,
       sourceType:          "fresh",
@@ -202,6 +261,129 @@ export async function fetchYahooCandles(
       detail: `exception:${String(err).slice(0, 120)}`,
     });
     return { ...unavailable, reason: `exception:${String(err).slice(0, 80)}` };
+  }
+}
+
+export async function fetchYahooHistoricalCandles(
+  apexSymbol: string,
+  timeframe: string,
+  input: {
+    start: Date;
+    end: Date;
+  }
+): Promise<YahooCandleResult> {
+  const unavailable: YahooCandleResult = {
+    candles: [],
+    selectedProvider: "Yahoo Finance",
+    provider: "Yahoo Finance",
+    fallbackUsed: false,
+    freshnessMs: null,
+    freshnessClass: "expired",
+    marketStatus: "UNAVAILABLE",
+    degraded: true,
+    stale: true,
+    reason: "unavailable",
+    circuitState: null,
+    providerHealthScore: null,
+    sourceType: "fresh",
+    fromCache: false,
+    priority: "warm",
+  };
+
+  const yahooSymbol = YAHOO_SYMBOL_MAP[apexSymbol];
+  if (!yahooSymbol) return unavailable;
+
+  const params = TIMEFRAME_PARAMS[timeframe] ?? TIMEFRAME_PARAMS["1D"];
+  const period1 = Math.floor(input.start.getTime() / 1000);
+  const period2 = Math.floor(input.end.getTime() / 1000);
+  const path = `/${encodeURIComponent(yahooSymbol)}?interval=${params.interval}&period1=${period1}&period2=${period2}&includePrePost=false`;
+
+  const startedAt = Date.now();
+  try {
+    const fetched = await fetchYahooJson(path);
+    if (!fetched) {
+      await recordProviderHealth({
+        provider: "Yahoo Finance",
+        requestSymbol: apexSymbol,
+        latencyMs: Date.now() - startedAt,
+        status: "ERROR",
+        errorRate: 1,
+        detail: "all_hosts_failed",
+      });
+      return { ...unavailable, reason: "all_hosts_failed" };
+    }
+
+    const result = fetched.data?.chart?.result?.[0];
+    if (!result) {
+      await recordProviderHealth({
+        provider: "Yahoo Finance",
+        requestSymbol: apexSymbol,
+        latencyMs: Date.now() - startedAt,
+        status: "DEGRADED",
+        errorRate: 1,
+        detail: "empty_result",
+      });
+      return { ...unavailable, reason: "empty_result" };
+    }
+
+    const timestamps = result.timestamp ?? [];
+    const quote = result.indicators?.quote?.[0] ?? {};
+    const candles = timestamps
+      .map((timestamp, index) => {
+        const open = quote.open?.[index];
+        const high = quote.high?.[index];
+        const low = quote.low?.[index];
+        const close = quote.close?.[index];
+        const volume = quote.volume?.[index] ?? null;
+        if (
+          timestamp == null ||
+          open == null || !Number.isFinite(open) || open <= 0 ||
+          high == null || !Number.isFinite(high) || high <= 0 ||
+          low == null || !Number.isFinite(low) || low <= 0 ||
+          close == null || !Number.isFinite(close) || close <= 0
+        ) {
+          return null;
+        }
+
+        return {
+          timestamp: timestamp * 1000,
+          open,
+          high,
+          low,
+          close,
+          volume: typeof volume === "number" && Number.isFinite(volume) ? volume : null,
+        } satisfies YahooCandle;
+      })
+      .filter((candle): candle is YahooCandle => candle != null);
+
+    const normalizedCandles = aggregateYahooCandles(candles, timeframe);
+    return {
+      candles: normalizedCandles,
+      selectedProvider: "Yahoo Finance",
+      provider: "Yahoo Finance",
+      fallbackUsed: false,
+      freshnessMs: Date.now() - startedAt,
+      freshnessClass: "fresh",
+      marketStatus: normalizedCandles.length > 0 ? "LIVE" : "DEGRADED",
+      degraded: normalizedCandles.length === 0,
+      stale: false,
+      reason: normalizedCandles.length > 0 ? null : "no_candles",
+      circuitState: null,
+      providerHealthScore: null,
+      sourceType: "fresh",
+      fromCache: false,
+      priority: "warm",
+    };
+  } catch (error) {
+    await recordProviderHealth({
+      provider: "Yahoo Finance",
+      requestSymbol: apexSymbol,
+      latencyMs: Date.now() - startedAt,
+      status: "ERROR",
+      errorRate: 1,
+      detail: `exception:${String(error).slice(0, 160)}`,
+    });
+    return { ...unavailable, reason: `exception:${String(error).slice(0, 80)}` };
   }
 }
 
@@ -220,28 +402,23 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
   const startedAt = Date.now();
 
   try {
-    const url = `${YAHOO_BASE}/${encodeURIComponent(yahooSymbol)}?interval=1d&range=60d&includePrePost=false`;
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
-      cache:   "no-store",
-    });
+    const path = `/${encodeURIComponent(yahooSymbol)}?interval=1d&range=60d&includePrePost=false`;
+    const fetched = await fetchYahooJson(path);
 
-    if (!res.ok) {
-      console.error(`[APEX:yahoo] HTTP ${res.status} for ${apexSymbol} (${yahooSymbol})`);
+    if (!fetched) {
+      console.error(`[APEX:yahoo] All hosts failed for ${apexSymbol} (${yahooSymbol})`);
       await recordProviderHealth({
         provider:      "Yahoo Finance",
         requestSymbol: apexSymbol,
         latencyMs:     Date.now() - startedAt,
         status:        "ERROR",
         errorRate:     1,
-        detail:        `http_${res.status}`,
+        detail:        "all_hosts_failed",
       });
       return empty;
     }
 
-    const data   = await res.json() as YahooResponse;
-    const result = data?.chart?.result?.[0];
+    const result = fetched.data?.chart?.result?.[0];
 
     if (!result) {
       console.error(`[APEX:yahoo] No chart result for ${apexSymbol}`);

@@ -8,7 +8,12 @@
     "start": "node scripts/start-web.mjs",
     "start:web": "node scripts/start-web.mjs",
     "lint": "eslint",
+    "env:validate": "node scripts/validate-env.mjs --service=web",
+    "env:validate:worker": "node scripts/validate-env.mjs --service=worker --strict",
+    "env:validate:scheduler": "node scripts/validate-env.mjs --service=scheduler --strict",
+    "validate:rollout": "node scripts/validate-rollout.mjs",
     "migrate:deploy": "prisma migrate deploy",
+    "backfill:market": "node --import tsx scripts/backfill-market-data.ts",
     "worker:signal-cycle": "node --import tsx scripts/signal-cycle-worker.ts",
     "service:scheduler": "node --import tsx scripts/scheduler-service.ts",
     "worker:combined": "node --import tsx scripts/worker-with-scheduler.ts"

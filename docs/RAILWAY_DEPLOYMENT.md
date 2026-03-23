@@ -47,11 +47,7 @@ Use Railway reference variables so all three app services share the same databas
 ### Provider and alerting variables
 
 - `ANTHROPIC_API_KEY`
-- `ALPHA_VANTAGE_API_KEY`
-- `TWELVE_DATA_API_KEY`
-- `NEWS_API_KEY`
 - `FRED_API_KEY`
-- `FINNHUB_API_KEY`
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 

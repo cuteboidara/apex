@@ -1,6 +1,7 @@
 import { JobsOptions, Queue } from "bullmq";
 import { prisma } from "@/lib/prisma";
 import { recordAuditEvent } from "@/lib/audit";
+import { recordOperationalMetric } from "@/lib/observability/metrics";
 import { ENGINE_VERSION, FEATURE_VERSION, PROMPT_VERSION } from "@/lib/runConfig";
 import { createRedisConnectionOptions, getRedisConfiguration, isRedisConfigured } from "@/lib/runtime/redis";
 
@@ -75,9 +76,24 @@ export async function enqueueSignalCycle(
       requestedAt: new Date().toISOString(),
       runId: run.id,
       retryOfRunId: meta?.retryOfRunId ?? null,
+      correlationId: meta?.correlationId ?? run.id,
     },
     jobOptions
   );
+
+  await recordOperationalMetric({
+    metric: "cycle_enqueued",
+    category: "queue",
+    severity: "INFO",
+    count: 1,
+    runId: run.id,
+    detail: "Signal cycle queued",
+    tags: {
+      queueName: SIGNAL_CYCLE_QUEUE,
+      jobId: String(job.id),
+      retryOfRunId: meta?.retryOfRunId ?? null,
+    },
+  });
 
   await recordAuditEvent({
     actor: meta?.actor ?? "SYSTEM",

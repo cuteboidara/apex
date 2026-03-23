@@ -1,5 +1,5 @@
 export type AssetClass = "CRYPTO" | "FOREX" | "COMMODITY";
-export type ProviderName = "Binance" | "FCS API" | "Alpha Vantage" | "Twelve Data" | "Finnhub";
+export type ProviderName = "Binance" | "Yahoo Finance";
 export type MarketStatus = "LIVE" | "DEGRADED" | "UNAVAILABLE";
 export type Timeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1D";
 export type Style = "SCALP" | "INTRADAY" | "SWING";

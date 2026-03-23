@@ -6,14 +6,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const marketProviderConfig: Record<string, { enabled: boolean; detail: string }> = {
-    "Binance":       { enabled: true, detail: "Primary crypto quotes and candles" },
-    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes — daily OHLC, no API key required" },
+    "Binance": { enabled: true, detail: "Primary crypto quotes and candles" },
+    "Yahoo Finance": { enabled: true, detail: "Primary forex and metals quotes and candles" },
   };
+
   const providers = (await getProviderSummaries()).map(provider => {
     const config = marketProviderConfig[provider.provider];
-    const status = config && !config.enabled ? "missing" : provider.status;
-    const detail = config && !config.enabled
-      ? `missing_api_key · ${config.detail}`
+    const status = config?.enabled === false ? "missing" : provider.status;
+    const detail = config?.enabled === false
+      ? `missing_configuration · ${config.detail}`
       : provider.detail;
     const classified = classifyProviderStatus(status, detail);
 
@@ -21,13 +22,14 @@ export async function GET() {
       ...provider,
       status,
       detail,
-      score: config && !config.enabled ? null : provider.score,
-      healthState: config && !config.enabled ? null : provider.healthState,
-      circuitState: config && !config.enabled ? null : provider.circuitState,
+      score: config?.enabled === false ? null : provider.score,
+      healthState: config?.enabled === false ? null : provider.healthState,
+      circuitState: config?.enabled === false ? null : provider.circuitState,
       availability: classified.availability,
       blockedReason: classified.blockedReason,
     };
   });
+
   return NextResponse.json({
     providers,
     timestamp: new Date().toISOString(),

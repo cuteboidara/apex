@@ -30,6 +30,15 @@ export type RegimeTag =
   | "post_news_volatility"
   | "unclear";
 
+export type RegimeFamily =
+  | "trending"
+  | "ranging"
+  | "volatile"
+  | "quiet"
+  | "breakout"
+  | "mean_reverting"
+  | "unclear";
+
 export type MarketSnapshot = {
   symbol: string;
   assetClass: string;
@@ -66,11 +75,14 @@ export type TimeframeProfile = {
 
 export type RegimeAssessment = {
   tag: RegimeTag;
+  family: RegimeFamily;
   score: number;
   bias: StrategyBias | null;
   thesis: string;
   rangePct: number | null;
   clarity: "high" | "medium" | "low";
+  volatilityScore?: number | null;
+  breakoutBias?: StrategyBias | null;
 };
 
 export type LiquidityAssessment = {

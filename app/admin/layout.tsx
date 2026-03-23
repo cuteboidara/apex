@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { label: "USERS",     href: "/admin/users",     icon: "👤" },
   { label: "SIGNALS",   href: "/admin/signals",   icon: "📡" },
   { label: "ASSETS",    href: "/admin/assets",    icon: "📊" },
+  { label: "BACKTESTS", href: "/admin/backtests", icon: "🧪" },
+  { label: "EXECUTION", href: "/admin/execution", icon: "🧾" },
   { label: "SYSTEM",    href: "/admin/system",    icon: "⚙️" },
   { label: "TELEGRAM",  href: "/admin/telegram",  icon: "✈️" },
 ];

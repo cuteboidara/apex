@@ -53,11 +53,11 @@ function makeSnapshot(overrides: Partial<MarketSnapshot>): MarketSnapshot {
   };
 }
 
-test("SCALP publication is disabled", () => {
+test("SCALP publication is no longer hard-disabled when intraday data is live", () => {
   const plan = publishStrategyPlan("SCALP", makeSnapshot({}));
 
   assert.equal(plan.status, "NO_SETUP");
-  assert.deepEqual(plan.diagnostics, ["style_disabled"]);
+  assert.ok(!plan.diagnostics.includes("style_disabled"));
   assert.equal(plan.entryType, "NONE");
 });
 

@@ -164,11 +164,6 @@ async function getPersistedCandleFallback(
   });
 }
 
-function allowFallbackProvider(provider: ProviderName, input: { allowRareFallback: boolean }) {
-  if (provider !== "Alpha Vantage") return true;
-  return input.allowRareFallback;
-}
-
 async function fetchProviderCandlesWithPolicy(input: {
   symbol: string;
   assetClass: AssetClass;
@@ -303,7 +298,7 @@ export async function orchestrateCandles(
       symbol,
       assetClass,
       timeframe,
-      provider: "Alpha Vantage",
+      provider: assetClass === "CRYPTO" ? "Binance" : "Yahoo Finance",
       candles: [],
       timestamp: null,
       stale: true,
@@ -343,10 +338,6 @@ export async function orchestrateCandles(
     circuitOpen: primaryHealth.circuitState === "OPEN",
   })) {
     for (const fallback of fallbacks) {
-      if (!allowFallbackProvider(fallback.provider, { allowRareFallback: policy.allowRareFallback })) {
-        continue;
-      }
-
       const fallbackHealth = await getProviderHealthScore(fallback.provider, assetClass);
       const fallbackResult = await fetchProviderCandlesWithPolicy({
         symbol,

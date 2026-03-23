@@ -1,13 +1,25 @@
 import "dotenv/config";
 
 import { Worker } from "bullmq";
+import { printValidationReport, validateRuntimeEnv } from "./validate-env.mjs";
 
 import { logEvent } from "../lib/logging";
 import { createRedisConnection, SIGNAL_CYCLE_QUEUE } from "../lib/queue";
+import { persistDeadLetterJob } from "../lib/queue/deadLetter";
 import { runCycle } from "../lib/scheduler";
 import { prisma } from "../lib/prisma";
 import { recordAuditEvent } from "../lib/audit";
+import { recordOperationalMetric } from "../lib/observability/metrics";
 import { FAILURE_CODES } from "../lib/runConfig";
+
+const validationReport = validateRuntimeEnv({
+  service: "worker",
+  strict: process.env.NODE_ENV === "production" || process.env.APEX_STRICT_STARTUP === "true",
+});
+printValidationReport(validationReport);
+if (validationReport.errors.length > 0) {
+  process.exit(1);
+}
 
 const connection = createRedisConnection();
 
@@ -32,6 +44,8 @@ worker.on("ready", () => {
 });
 
 worker.on("completed", (job, result) => {
+  const queuedAt = typeof job.data?.requestedAt === "string" ? Date.parse(job.data.requestedAt) : NaN;
+  const lagMs = Number.isFinite(queuedAt) ? Math.max(0, Date.now() - queuedAt) : null;
   logEvent({
     component: "signal-cycle-worker",
     message: "Signal cycle job completed",
@@ -39,10 +53,26 @@ worker.on("completed", (job, result) => {
     runId: result.runId,
     signalCount: result.count,
   });
+  void recordOperationalMetric({
+    metric: "cycle_completed",
+    category: "queue",
+    severity: "INFO",
+    count: 1,
+    runId: result.runId,
+    value: lagMs,
+    unit: "ms",
+    detail: "Signal cycle worker completed job",
+    tags: {
+      queueName: job.queueName,
+      jobId: String(job.id),
+      signalCount: result.count,
+    },
+  });
 });
 
 worker.on("failed", (job, err) => {
   const runId = typeof job?.data?.runId === "string" ? job.data.runId : null;
+  const correlationId = typeof job?.data?.correlationId === "string" ? job.data.correlationId : runId;
   logEvent({
     component: "signal-cycle-worker",
     severity: "ERROR",
@@ -50,6 +80,32 @@ worker.on("failed", (job, err) => {
     jobId: job?.id,
     runId,
     reason: String(err),
+  });
+  void persistDeadLetterJob({
+    queueName: job?.queueName ?? SIGNAL_CYCLE_QUEUE,
+    jobId: String(job?.id ?? `${SIGNAL_CYCLE_QUEUE}-unknown`),
+    runId,
+    attemptsMade: job?.attemptsMade ?? 0,
+    reason: String(err),
+    payload: (job?.data ?? null) as Record<string, unknown> | null,
+    correlationId,
+    metadata: {
+      failedReason: job?.failedReason ?? null,
+      stacktrace: err instanceof Error ? err.stack ?? null : null,
+    },
+  });
+  void recordOperationalMetric({
+    metric: "cycle_failed",
+    category: "queue",
+    severity: "ERROR",
+    count: 1,
+    runId,
+    detail: String(err).slice(0, 500),
+    tags: {
+      queueName: job?.queueName ?? SIGNAL_CYCLE_QUEUE,
+      jobId: String(job?.id ?? "unknown"),
+      attemptsMade: job?.attemptsMade ?? 0,
+    },
   });
   if (runId) {
     void prisma.signalRun.update({
@@ -69,7 +125,7 @@ worker.on("failed", (job, err) => {
         status: "FAILED",
         failureCode: FAILURE_CODES.UNKNOWN_ERROR,
       },
-      correlationId: runId,
+      correlationId,
     })).catch(updateErr => {
       logEvent({
         component: "signal-cycle-worker",

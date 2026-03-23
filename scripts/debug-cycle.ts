@@ -25,10 +25,7 @@ void (async () => {
   // ── Env check ──────────────────────────────────────────────────────────────
   const env: Record<string, string> = {
     ANTHROPIC_API_KEY:     process.env.ANTHROPIC_API_KEY     ? "✓ set" : "✗ MISSING",
-    ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY ? "✓ set" : "✗ MISSING",
-    NEWS_API_KEY:          process.env.NEWS_API_KEY           ? "✓ set" : "✗ MISSING",
     FRED_API_KEY:          process.env.FRED_API_KEY           ? "✓ set" : "✗ MISSING",
-    FINNHUB_API_KEY:       process.env.FINNHUB_API_KEY        ? "✓ set" : "✗ MISSING",
     DIRECT_DATABASE_URL:   process.env.DIRECT_DATABASE_URL    ? "✓ set" : "✗ MISSING",
   };
   console.log("\n── Env vars ──");

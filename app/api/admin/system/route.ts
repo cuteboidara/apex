@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { validateRuntimeEnv } from "@/scripts/validate-env.mjs";
 
 export const dynamic = "force-dynamic";
 
 const ENV_KEYS = [
   "DATABASE_URL",
+  "DIRECT_DATABASE_URL",
   "REDIS_URL",
   "UPSTASH_REDIS_REST_URL",
   "ANTHROPIC_API_KEY",
   "OPENAI_API_KEY",
   "GEMINI_API_KEY",
   "TELEGRAM_BOT_TOKEN",
-  "NEWS_API_KEY",
   "FRED_API_KEY",
-  "TWELVE_DATA_API_KEY",
   "RESEND_API_KEY",
   "NEXTAUTH_SECRET",
+  "APEX_EVIDENCE_GATE_MIN_SAMPLE_SIZE",
+  "APEX_EVIDENCE_GATE_MIN_WIN_RATE",
+  "APEX_EVIDENCE_GATE_MIN_EXPECTANCY",
 ] as const;
 
 export async function GET() {
@@ -50,10 +53,18 @@ export async function GET() {
     dbStatus = "ERROR";
   }
 
+  const envChecks = {
+    web: validateRuntimeEnv({ service: "web", strict: process.env.NODE_ENV === "production" }),
+    worker: validateRuntimeEnv({ service: "worker", strict: process.env.NODE_ENV === "production" }),
+    scheduler: validateRuntimeEnv({ service: "scheduler", strict: process.env.NODE_ENV === "production" }),
+    backfill: validateRuntimeEnv({ service: "backfill", strict: process.env.NODE_ENV === "production" }),
+  };
+
   return NextResponse.json({
     latestRun,
     queue: { pending: pendingAlerts, failed: failedAlerts },
     envStatus,
+    envChecks,
     dbStatus,
     providerHealth: recentProviderHealth,
   });

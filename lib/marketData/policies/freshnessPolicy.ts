@@ -1,19 +1,5 @@
 import type { AssetClass, CandleResult, QuoteResult, Style, Timeframe } from "@/lib/marketData/types";
-
-const QUOTE_FRESHNESS_MS: Record<AssetClass, number> = {
-  CRYPTO: 30_000,
-  FOREX: 60_000,
-  COMMODITY: 60_000,
-};
-
-const CANDLE_FRESHNESS_MS: Record<Timeframe, number> = {
-  "1m": 15 * 60_000,
-  "5m": 30 * 60_000,
-  "15m": 60 * 60_000,
-  "1h": 75 * 60_000,
-  "4h": 5 * 60 * 60_000,
-  "1D": 30 * 60 * 60_000,
-};
+import { getCandleStalenessWindowMs, getQuoteStalenessWindowMs } from "@/lib/marketData/staleness";
 
 const STYLE_REQUIREMENTS: Record<Style, Timeframe[]> = {
   SCALP: ["1m", "5m"],
@@ -22,11 +8,11 @@ const STYLE_REQUIREMENTS: Record<Style, Timeframe[]> = {
 };
 
 export function getQuoteFreshnessMs(assetClass: AssetClass): number {
-  return QUOTE_FRESHNESS_MS[assetClass];
+  return getQuoteStalenessWindowMs(assetClass);
 }
 
 export function getCandleFreshnessMs(timeframe: Timeframe): number {
-  return CANDLE_FRESHNESS_MS[timeframe];
+  return getCandleStalenessWindowMs(timeframe);
 }
 
 export function isQuoteFresh(quote: Pick<QuoteResult, "assetClass" | "timestamp" | "price">): { fresh: boolean; freshnessMs: number | null } {
@@ -36,7 +22,7 @@ export function isQuoteFresh(quote: Pick<QuoteResult, "assetClass" | "timestamp"
 
   const freshnessMs = Date.now() - quote.timestamp;
   return {
-    fresh: freshnessMs <= QUOTE_FRESHNESS_MS[quote.assetClass],
+    fresh: freshnessMs <= getQuoteStalenessWindowMs(quote.assetClass),
     freshnessMs,
   };
 }
@@ -48,7 +34,7 @@ export function isCandleFresh(candles: Pick<CandleResult, "timestamp" | "timefra
 
   const freshnessMs = Date.now() - candles.timestamp;
   return {
-    fresh: freshnessMs <= CANDLE_FRESHNESS_MS[candles.timeframe],
+    fresh: freshnessMs <= getCandleStalenessWindowMs(candles.timeframe),
     freshnessMs,
   };
 }

@@ -8,7 +8,10 @@ export async function requireAdmin(): Promise<
   | { ok: false; response: NextResponse }
 > {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
+  const isAdmin =
+    Boolean(session?.user?.email && session.user.email === ADMIN_EMAIL) ||
+    (session?.user ? ((session.user as { role?: string }).role === "ADMIN") : false);
+  if (!isAdmin) {
     return { ok: false, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
   return { ok: true };

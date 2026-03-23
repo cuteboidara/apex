@@ -288,3 +288,464 @@ model ExplanationCache {
   @@unique([fingerprint, purpose])
   @@index([purpose, updatedAt])
 }
+
+model Candle {
+  id              String   @id @default(cuid())
+  symbol          String
+  assetClass      String
+  timeframe       String
+  provider        String
+  requestSymbol   String?
+  sourceTimestamp DateTime
+  recordedAt      DateTime @default(now())
+  open            Float
+  high            Float
+  low             Float
+  close           Float
+  volume          Float?
+  quality         String   @default("LIVE")
+  metadata        Json?
+
+  @@unique([symbol, timeframe, provider, sourceTimestamp])
+  @@index([symbol, timeframe, sourceTimestamp])
+  @@index([provider, sourceTimestamp])
+}
+
+model QuoteSnapshot {
+  id              String   @id @default(cuid())
+  symbol          String
+  assetClass      String
+  provider        String
+  requestSymbol   String?
+  sourceTimestamp DateTime
+  recordedAt      DateTime @default(now())
+  price           Float
+  bid             Float?
+  ask             Float?
+  change24h       Float?
+  high14d         Float?
+  low14d          Float?
+  volume          Float?
+  freshnessMs     Int?
+  marketStatus    String
+  reason          String?
+  metadata        Json?
+
+  @@unique([symbol, provider, sourceTimestamp])
+  @@index([symbol, sourceTimestamp])
+  @@index([provider, sourceTimestamp])
+}
+
+model RegimeSnapshot {
+  id              String   @id @default(cuid())
+  symbol          String
+  assetClass      String
+  timeframe       String
+  regimeTag       String
+  bias            String?
+  score           Int
+  clarity         String
+  rangePct        Float?
+  sourceTimestamp DateTime
+  runId           String?
+  signalId        String?
+  tradePlanId     String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([symbol, timeframe, sourceTimestamp])
+  @@index([runId])
+  @@index([tradePlanId])
+}
+
+model TradeOutcome {
+  id                         String   @id @default(cuid())
+  tradePlanId                String   @unique
+  signalId                   String
+  runId                      String
+  symbol                     String
+  assetClass                 String
+  style                      String
+  setupFamily                String?
+  bias                       String
+  confidence                 Int
+  providerAtSignal           String?
+  providerHealthStateAtSignal String?
+  regimeTag                  String?
+  outcome                    String
+  entryPrice                 Float?
+  exitPrice                  Float?
+  realizedPnl                Float?
+  realizedRR                 Float?
+  maxFavorableExcursion      Float?
+  maxAdverseExcursion        Float?
+  openedAt                   DateTime?
+  closedAt                   DateTime?
+  metadata                   Json?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([symbol, closedAt])
+  @@index([style, outcome])
+  @@index([regimeTag])
+  @@index([providerAtSignal, providerHealthStateAtSignal])
+}
+
+model StrategyPerformanceWindow {
+  id                  String   @id @default(cuid())
+  scopeType           String
+  symbol              String?
+  assetClass          String?
+  style               String?
+  setupFamily         String?
+  regimeTag           String?
+  provider            String?
+  providerHealthState String?
+  lookbackDays        Int
+  sampleSize          Int
+  winRate             Float?
+  averageRR           Float?
+  expectancy          Float?
+  maxDrawdown         Float?
+  confidenceMean      Float?
+  generatedAt         DateTime @default(now())
+
+  @@index([scopeType, generatedAt])
+  @@index([symbol, style, generatedAt])
+  @@index([setupFamily, regimeTag, generatedAt])
+}
+
+model ConfidenceCalibrationBucket {
+  id          String   @id @default(cuid())
+  scopeType   String
+  symbol      String?
+  assetClass  String?
+  style       String?
+  setupFamily String?
+  regimeTag   String?
+  provider    String?
+  confidenceMin Int
+  confidenceMax Int
+  sampleSize  Int
+  winRate     Float?
+  averageRR   Float?
+  expectancy  Float?
+  generatedAt DateTime @default(now())
+
+  @@index([scopeType, generatedAt])
+  @@index([symbol, style, generatedAt])
+  @@index([setupFamily, regimeTag, generatedAt])
+}
+
+model PaperAccount {
+  id              String   @id @default(cuid())
+  ownerUserId     String?
+  teamId          String?
+  name            String
+  currency        String   @default("USD")
+  startingBalance Float    @default(10000)
+  cashBalance     Float    @default(10000)
+  equity          Float    @default(10000)
+  status          String   @default("ACTIVE")
+  isDefault       Boolean  @default(false)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ownerUserId, status])
+  @@index([teamId, status])
+}
+
+model PaperPosition {
+  id              String   @id @default(cuid())
+  accountId       String
+  tradePlanId     String?
+  signalId        String?
+  symbol          String
+  assetClass      String
+  status          String
+  direction       String
+  quantity        Float
+  entryPrice      Float
+  stopLoss        Float?
+  takeProfit1     Float?
+  takeProfit2     Float?
+  takeProfit3     Float?
+  currentPrice    Float?
+  unrealizedPnl   Float?
+  realizedPnl     Float    @default(0)
+  openedAt        DateTime @default(now())
+  closedAt        DateTime?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([accountId, status])
+  @@index([symbol, status])
+  @@index([tradePlanId])
+}
+
+model ExecutionFill {
+  id          String   @id @default(cuid())
+  accountId   String
+  positionId  String?
+  tradePlanId String?
+  signalId    String?
+  symbol      String
+  assetClass  String
+  side        String
+  quantity    Float
+  price       Float
+  fee         Float?   @default(0)
+  slippageBps Float?
+  spreadBps   Float?
+  mode        String   @default("PAPER")
+  venue       String?
+  provider    String?
+  occurredAt  DateTime @default(now())
+  metadata    Json?
+
+  @@index([accountId, occurredAt])
+  @@index([positionId, occurredAt])
+  @@index([tradePlanId])
+}
+
+model AlertDeliveryAttempt {
+  id                String   @id @default(cuid())
+  alertId           String
+  channel           String
+  recipient         String
+  status            String
+  latencyMs         Int?
+  providerMessageId String?
+  providerResponse  String?
+  detail            String?
+  attemptedAt       DateTime @default(now())
+
+  @@index([alertId, attemptedAt])
+  @@index([channel, attemptedAt])
+}
+
+model DeadLetterJob {
+  id            String   @id @default(cuid())
+  queueName     String
+  jobId         String   @unique
+  runId         String?
+  status        String   @default("FAILED")
+  attemptsMade  Int      @default(0)
+  reason        String
+  payload       Json?
+  correlationId String?
+  failedAt      DateTime @default(now())
+  replayedAt    DateTime?
+  replayStatus  String?
+  metadata      Json?
+
+  @@index([queueName, failedAt])
+  @@index([runId])
+}
+
+model OperationalMetric {
+  id         String   @id @default(cuid())
+  metric     String
+  category   String
+  severity   String?
+  unit       String?
+  value      Float?
+  count      Int?
+  provider   String?
+  symbol     String?
+  assetClass String?
+  runId      String?
+  detail     String?
+  tags       Json?
+  recordedAt DateTime @default(now())
+
+  @@index([metric, recordedAt])
+  @@index([category, recordedAt])
+  @@index([provider, recordedAt])
+  @@index([symbol, recordedAt])
+}
+
+model BacktestRun {
+  id                String   @id @default(cuid())
+  name              String
+  requestedByUserId String?
+  symbol            String?
+  assetClass        String?
+  timeframe         String
+  status            String   @default("QUEUED")
+  config            Json
+  summary           Json?
+  failureReason     String?
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+
+  @@index([status, startedAt])
+  @@index([symbol, startedAt])
+}
+
+model BacktestTrade {
+  id                   String   @id @default(cuid())
+  backtestRunId        String
+  symbol               String
+  assetClass           String
+  style                String
+  signalTimestamp      DateTime
+  entryTimestamp       DateTime?
+  exitTimestamp        DateTime?
+  provider             String?
+  regimeTag            String?
+  setupFamily          String?
+  confidence           Int?
+  outcome              String
+  entryPrice           Float?
+  exitPrice            Float?
+  realizedPnl          Float?
+  realizedRR           Float?
+  maxFavorableExcursion Float?
+  maxAdverseExcursion  Float?
+  metadata             Json?
+
+  @@index([backtestRunId, signalTimestamp])
+  @@index([symbol, outcome])
+  @@index([setupFamily, regimeTag])
+}
+
+model SubscriptionPlan {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  tier             String
+  active           Boolean  @default(true)
+  monthlyPriceCents Int?
+  annualPriceCents Int?
+  features         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model UserSubscription {
+  id                    String   @id @default(cuid())
+  userId                String
+  planId                String
+  status                String   @default("TRIAL")
+  seatCount             Int      @default(1)
+  billingCustomerId     String?
+  billingSubscriptionId String?
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  trialEndsAt           DateTime?
+  featureOverrides      Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([billingCustomerId])
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  ownerUserId String
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String   @default("MEMBER")
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, userId])
+  @@index([userId, status])
+}
+
+model ApiToken {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  tokenHash String   @unique
+  scopes    String[] @default([])
+  lastUsedAt DateTime?
+  expiresAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, revokedAt])
+}
+
+model WebhookEndpoint {
+  id             String   @id @default(cuid())
+  userId         String?
+  teamId         String?
+  name           String
+  url            String
+  secretHash     String?
+  events         String[] @default([])
+  status         String   @default("ACTIVE")
+  lastDeliveredAt DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([teamId, status])
+}
+
+model ExportJob {
+  id         String   @id @default(cuid())
+  userId     String?
+  teamId     String?
+  format     String
+  status     String   @default("QUEUED")
+  scope      String
+  filter     Json?
+  filePath   String?
+  error      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([teamId, status])
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model WatchlistAsset {
+  id         String   @id @default(cuid())
+  watchlistId String
+  symbol     String
+  createdAt  DateTime @default(now())
+
+  @@unique([watchlistId, symbol])
+}
+
+model UserPreference {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  timezone               String?
+  quietHoursStart        Int?
+  quietHoursEnd          Int?
+  stylePreferences       String[] @default([])
+  subscribedSymbols      String[] @default([])
+  subscribedAssetClasses String[] @default([])
+  alertsEnabled          Boolean  @default(true)
+  emailDigestEnabled     Boolean  @default(false)
+  webhookAlertsEnabled   Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}

@@ -1,5 +1,13 @@
 import type { TradePlanStyle } from "@/lib/assets";
 import { TRADE_PLAN_STYLES } from "@/lib/assets";
+import {
+  buildConfidenceCalibrationBuckets,
+  buildEvidenceGateRules,
+  buildStrategyPerformanceWindows,
+  type CalibrationBucket,
+  type CalibrationOutcomeRecord,
+  type EvidenceGateRule,
+} from "@/lib/analysis/confidenceCalibration";
 import type { PlannedTrade } from "@/lib/tradePlanner";
 import { prisma } from "@/lib/prisma";
 import { getProviderHealthScore } from "@/lib/marketData/providerHealthEngine";
@@ -43,6 +51,8 @@ type StyleGate = {
 export type StylePerformanceGateState = {
   degradedConfidenceFloor: number;
   byStyle: Record<TradePlanStyle, StyleGate>;
+  evidenceRules?: EvidenceGateRule[];
+  calibrationBuckets?: CalibrationBucket[];
 };
 
 export type LifecycleTradePlan = {
@@ -143,6 +153,8 @@ export type PerformanceReport = {
     byRegime: PerformanceBucket[];
     byProviderHealthState: PerformanceBucket[];
   };
+  calibration: CalibrationBucket[];
+  suppressedScopes: EvidenceGateRule[];
   worstPerformers: {
     setupFamilies: PerformanceBucket[];
     symbols: PerformanceBucket[];
@@ -155,11 +167,8 @@ export type PerformanceReport = {
 };
 
 const KNOWN_PROVIDER_NAMES = new Set<ProviderName>([
-  "Alpha Vantage",
   "Binance",
-  "FCS API",
-  "Finnhub",
-  "Twelve Data",
+  "Yahoo Finance",
 ]);
 
 const KNOWN_ASSET_CLASSES = new Set<AssetClass>(["FOREX", "COMMODITY", "CRYPTO"]);
@@ -174,6 +183,9 @@ const STYLE_GATE_MINIMUM_SAMPLE_SIZE = clampInt(process.env.APEX_STYLE_GATE_MIN_
 const SCALP_GATE_MIN_WIN_RATE = clampFloat(process.env.APEX_SCALP_GATE_MIN_WIN_RATE, 0.35);
 const SCALP_GATE_MIN_AVERAGE_RR = clampFloat(process.env.APEX_SCALP_GATE_MIN_AVERAGE_RR, 0);
 const SCALP_GATE_ENABLED = !["0", "false", "off"].includes((process.env.APEX_AUTO_DISABLE_SCALP ?? "true").toLowerCase());
+const EVIDENCE_GATE_MIN_SAMPLE_SIZE = clampInt(process.env.APEX_EVIDENCE_GATE_MIN_SAMPLE_SIZE, 8);
+const EVIDENCE_GATE_MIN_WIN_RATE = clampFloat(process.env.APEX_EVIDENCE_GATE_MIN_WIN_RATE, 0.4);
+const EVIDENCE_GATE_MIN_EXPECTANCY = clampFloat(process.env.APEX_EVIDENCE_GATE_MIN_EXPECTANCY, 0);
 
 function clampInt(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -272,7 +284,50 @@ export async function resolveSignalProviderContext(
 function describeQualityGate(reason: string) {
   if (reason === "degraded_low_confidence") return "Low-confidence setup suppressed because the market-data stack was degraded.";
   if (reason === "style_disabled_poor_performance") return "Style suppressed because recent tracked performance is below threshold.";
+  if (reason === "evidence_gated") return "Setup suppressed because recent realized performance is weak for this symbol, setup, regime, or provider scope.";
   return "Setup suppressed by diagnostics quality gate.";
+}
+
+function toCalibrationOutcomeRecord(plan: {
+  symbol: string;
+  assetClass: string;
+  style: string;
+  setupFamily: string | null;
+  regimeTag: string | null;
+  providerAtSignal: string | null;
+  providerHealthStateAtSignal: string | null;
+  confidence: number;
+  realizedRR: number | null;
+  updatedAt?: Date;
+  tp3HitAt?: Date | null;
+  stopHitAt?: Date | null;
+  expiredAt?: Date | null;
+}): CalibrationOutcomeRecord {
+  return {
+    symbol: plan.symbol,
+    assetClass: plan.assetClass,
+    style: plan.style,
+    setupFamily: plan.setupFamily,
+    regimeTag: plan.regimeTag,
+    provider: plan.providerAtSignal,
+    providerHealthState: plan.providerHealthStateAtSignal,
+    confidence: plan.confidence,
+    realizedRR: plan.realizedRR,
+    closedAt: plan.updatedAt ?? plan.tp3HitAt ?? plan.stopHitAt ?? plan.expiredAt ?? null,
+  };
+}
+
+function matchesEvidenceRule(
+  rule: EvidenceGateRule,
+  plan: PlannedTrade,
+  providerContext: SignalProviderContext
+) {
+  if (rule.style && rule.style !== plan.style) return false;
+  if (rule.symbol && rule.symbol !== plan.symbol) return false;
+  if (rule.setupFamily && rule.setupFamily !== plan.setupFamily) return false;
+  if (rule.regimeTag && rule.regimeTag !== plan.regimeTag) return false;
+  if (rule.provider && rule.provider !== providerContext.providerAtSignal) return false;
+  return true;
 }
 
 export function applyTradePlanQualityGates(
@@ -283,6 +338,7 @@ export function applyTradePlanQualityGates(
   return plans.map(plan => {
     let qualityGateReason: string | null = null;
     const styleGate = gateState.byStyle[plan.style];
+    const evidenceRule = gateState.evidenceRules?.find(rule => matchesEvidenceRule(rule, plan, providerContext)) ?? null;
     const degradedSignal =
       providerContext.providerHealthStateAtSignal !== "HEALTHY" ||
       providerContext.providerMarketStatusAtSignal !== "LIVE" ||
@@ -292,6 +348,8 @@ export function applyTradePlanQualityGates(
       qualityGateReason = "style_disabled_poor_performance";
     } else if (plan.status === "ACTIVE" && degradedSignal && plan.confidence < gateState.degradedConfidenceFloor) {
       qualityGateReason = "degraded_low_confidence";
+    } else if (plan.status === "ACTIVE" && evidenceRule) {
+      qualityGateReason = "evidence_gated";
     }
 
     if (!qualityGateReason) {
@@ -307,7 +365,9 @@ export function applyTradePlanQualityGates(
       ...providerContext,
       status: "NO_SETUP",
       publicationRank: "Silent",
-      executionNotes: `${plan.executionNotes} Quality gate: ${describeQualityGate(qualityGateReason)}`.trim(),
+      executionNotes: `${plan.executionNotes} Quality gate: ${describeQualityGate(qualityGateReason)}${
+        evidenceRule ? ` Recent scope weakness: ${evidenceRule.reason}.` : ""
+      }`.trim(),
       qualityGateReason,
     };
   });
@@ -331,9 +391,39 @@ export async function getStylePerformanceGateState(): Promise<StylePerformanceGa
   ) as Record<TradePlanStyle, StyleGate>;
 
   if (!SCALP_GATE_ENABLED) {
+    const resolvedPlans = await prisma.tradePlan.findMany({
+      where: {
+        run: { status: "COMPLETED" },
+        status: "ACTIVE",
+        realizedRR: { not: null },
+      },
+      select: {
+        symbol: true,
+        assetClass: true,
+        style: true,
+        setupFamily: true,
+        regimeTag: true,
+        providerAtSignal: true,
+        providerHealthStateAtSignal: true,
+        confidence: true,
+        realizedRR: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 500,
+    });
+    const outcomeRecords = resolvedPlans.map(toCalibrationOutcomeRecord);
     return {
       degradedConfidenceFloor: DEGRADED_CONFIDENCE_FLOOR,
       byStyle,
+      evidenceRules: buildEvidenceGateRules(outcomeRecords, {
+        minimumSampleSize: EVIDENCE_GATE_MIN_SAMPLE_SIZE,
+        minimumWinRate: EVIDENCE_GATE_MIN_WIN_RATE,
+        minimumExpectancy: EVIDENCE_GATE_MIN_EXPECTANCY,
+      }),
+      calibrationBuckets: buildConfidenceCalibrationBuckets(outcomeRecords, {
+        scopeType: "GLOBAL",
+      }),
     };
   }
 
@@ -387,9 +477,47 @@ export async function getStylePerformanceGateState(): Promise<StylePerformanceGa
     minimumSampleSize: STYLE_GATE_MINIMUM_SAMPLE_SIZE,
   };
 
+  const resolvedPlans = await prisma.tradePlan.findMany({
+    where: {
+      run: { status: "COMPLETED" },
+      status: "ACTIVE",
+      realizedRR: { not: null },
+      OR: [
+        { detectedAt: { gte: cutoff } },
+        {
+          detectedAt: null,
+          createdAt: { gte: cutoff },
+        },
+      ],
+    },
+    select: {
+      symbol: true,
+      assetClass: true,
+      style: true,
+      setupFamily: true,
+      regimeTag: true,
+      providerAtSignal: true,
+      providerHealthStateAtSignal: true,
+      confidence: true,
+      realizedRR: true,
+      updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 1000,
+  });
+  const outcomeRecords = resolvedPlans.map(toCalibrationOutcomeRecord);
+
   return {
     degradedConfidenceFloor: DEGRADED_CONFIDENCE_FLOOR,
     byStyle,
+    evidenceRules: buildEvidenceGateRules(outcomeRecords, {
+      minimumSampleSize: EVIDENCE_GATE_MIN_SAMPLE_SIZE,
+      minimumWinRate: EVIDENCE_GATE_MIN_WIN_RATE,
+      minimumExpectancy: EVIDENCE_GATE_MIN_EXPECTANCY,
+    }),
+    calibrationBuckets: buildConfidenceCalibrationBuckets(outcomeRecords, {
+      scopeType: "GLOBAL",
+    }),
   };
 }
 
@@ -731,6 +859,171 @@ export async function refreshTradePlanDiagnostics(input?: {
   };
 }
 
+export async function refreshOutcomeAnalytics(input?: {
+  lookbackDays?: number;
+  take?: number;
+}) {
+  const lookbackDays = input?.lookbackDays ?? 60;
+  const cutoff = new Date(Date.now() - lookbackDays * 24 * 60 * 60_000);
+  const plans = await prisma.tradePlan.findMany({
+    where: {
+      run: { status: "COMPLETED" },
+      status: "ACTIVE",
+      realizedRR: { not: null },
+      OR: [
+        { detectedAt: { gte: cutoff } },
+        {
+          detectedAt: null,
+          createdAt: { gte: cutoff },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      signalId: true,
+      runId: true,
+      symbol: true,
+      assetClass: true,
+      style: true,
+      setupFamily: true,
+      bias: true,
+      confidence: true,
+      providerAtSignal: true,
+      providerHealthStateAtSignal: true,
+      regimeTag: true,
+      entryMin: true,
+      entryMax: true,
+      stopLoss: true,
+      takeProfit1: true,
+      takeProfit2: true,
+      takeProfit3: true,
+      invalidationLevel: true,
+      maxFavorableExcursion: true,
+      maxAdverseExcursion: true,
+      realizedRR: true,
+      outcome: true,
+      detectedAt: true,
+      stopHitAt: true,
+      tp1HitAt: true,
+      tp2HitAt: true,
+      tp3HitAt: true,
+      expiredAt: true,
+      updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: input?.take ?? 1500,
+  });
+
+  if (plans.length === 0) {
+    return { tradeOutcomeCount: 0, performanceWindows: 0, calibrationBuckets: 0 };
+  }
+
+  const generatedAt = new Date();
+  const outcomeRecords = plans.map(toCalibrationOutcomeRecord);
+  const windows = buildStrategyPerformanceWindows(outcomeRecords);
+  const calibrationBuckets = buildConfidenceCalibrationBuckets(outcomeRecords, {
+    scopeType: "GLOBAL",
+  });
+
+  await Promise.all(
+    plans.map(plan =>
+      prisma.tradeOutcome.upsert({
+        where: { tradePlanId: plan.id },
+        create: {
+          tradePlanId: plan.id,
+          signalId: plan.signalId,
+          runId: plan.runId,
+          symbol: plan.symbol,
+          assetClass: plan.assetClass,
+          style: plan.style,
+          setupFamily: plan.setupFamily,
+          bias: plan.bias,
+          confidence: plan.confidence,
+          providerAtSignal: plan.providerAtSignal,
+          providerHealthStateAtSignal: plan.providerHealthStateAtSignal,
+          regimeTag: plan.regimeTag,
+          outcome: plan.outcome ?? "OPEN",
+          entryPrice: entryMidpoint(plan),
+          exitPrice:
+            plan.outcome === "TP3" ? plan.takeProfit3 :
+            plan.outcome === "TP2" || plan.outcome === "STOP_AFTER_TP2" ? plan.takeProfit2 :
+            plan.outcome === "TP1" || plan.outcome === "STOP_AFTER_TP1" ? plan.takeProfit1 :
+            plan.outcome === "STOP" ? stopLevel(plan) :
+            null,
+          realizedPnl: plan.realizedRR,
+          realizedRR: plan.realizedRR,
+          maxFavorableExcursion: plan.maxFavorableExcursion,
+          maxAdverseExcursion: plan.maxAdverseExcursion,
+          openedAt: plan.detectedAt,
+          closedAt: plan.updatedAt,
+        },
+        update: {
+          outcome: plan.outcome ?? "OPEN",
+          entryPrice: entryMidpoint(plan),
+          exitPrice:
+            plan.outcome === "TP3" ? plan.takeProfit3 :
+            plan.outcome === "TP2" || plan.outcome === "STOP_AFTER_TP2" ? plan.takeProfit2 :
+            plan.outcome === "TP1" || plan.outcome === "STOP_AFTER_TP1" ? plan.takeProfit1 :
+            plan.outcome === "STOP" ? stopLevel(plan) :
+            null,
+          realizedPnl: plan.realizedRR,
+          realizedRR: plan.realizedRR,
+          maxFavorableExcursion: plan.maxFavorableExcursion,
+          maxAdverseExcursion: plan.maxAdverseExcursion,
+          openedAt: plan.detectedAt,
+          closedAt: plan.updatedAt,
+        },
+      })
+    )
+  );
+
+  await prisma.strategyPerformanceWindow.createMany({
+    data: windows.map(window => ({
+      scopeType: window.scopeType,
+      symbol: window.symbol,
+      assetClass: window.assetClass,
+      style: window.style,
+      setupFamily: window.setupFamily,
+      regimeTag: window.regimeTag,
+      provider: window.provider,
+      providerHealthState: window.providerHealthState,
+      lookbackDays,
+      sampleSize: window.sampleSize,
+      winRate: window.winRate,
+      averageRR: window.averageRR,
+      expectancy: window.expectancy,
+      maxDrawdown: window.maxDrawdown,
+      confidenceMean: window.confidenceMean,
+      generatedAt,
+    })),
+  }).catch(() => undefined);
+
+  await prisma.confidenceCalibrationBucket.createMany({
+    data: calibrationBuckets.map(bucket => ({
+      scopeType: bucket.scopeType,
+      symbol: bucket.symbol,
+      assetClass: bucket.assetClass,
+      style: bucket.style,
+      setupFamily: bucket.setupFamily,
+      regimeTag: bucket.regimeTag,
+      provider: bucket.provider,
+      confidenceMin: bucket.confidenceMin,
+      confidenceMax: bucket.confidenceMax,
+      sampleSize: bucket.sampleSize,
+      winRate: bucket.winRate,
+      averageRR: bucket.averageRR,
+      expectancy: bucket.expectancy,
+      generatedAt,
+    })),
+  }).catch(() => undefined);
+
+  return {
+    tradeOutcomeCount: plans.length,
+    performanceWindows: windows.length,
+    calibrationBuckets: calibrationBuckets.length,
+  };
+}
+
 function createAccumulator(key: string, label: string): PerformanceAccumulator {
   return {
     key,
@@ -863,11 +1156,14 @@ export async function buildPerformanceReport(input?: {
     },
     select: {
       symbol: true,
+      assetClass: true,
       style: true,
       setupFamily: true,
       bias: true,
       regimeTag: true,
+      providerAtSignal: true,
       providerHealthStateAtSignal: true,
+      confidence: true,
       entryHitAt: true,
       tp1HitAt: true,
       tp2HitAt: true,
@@ -878,6 +1174,19 @@ export async function buildPerformanceReport(input?: {
     orderBy: { createdAt: "desc" },
     take: 1500,
   });
+  const outcomeRecords = plans
+    .filter(plan => typeof plan.realizedRR === "number" && Number.isFinite(plan.realizedRR))
+    .map(plan => toCalibrationOutcomeRecord({
+      symbol: plan.symbol,
+      assetClass: plan.assetClass,
+      style: plan.style,
+      setupFamily: plan.setupFamily,
+      regimeTag: plan.regimeTag,
+      providerAtSignal: plan.providerAtSignal,
+      providerHealthStateAtSignal: plan.providerHealthStateAtSignal,
+      confidence: plan.confidence,
+      realizedRR: plan.realizedRR,
+    }));
 
   const summary = createAccumulator("all", `Last ${lookbackDays}d`);
   const bySymbol = new Map<string, PerformanceAccumulator>();
@@ -905,6 +1214,12 @@ export async function buildPerformanceReport(input?: {
   const styleGateState = await getStylePerformanceGateState();
   const setupFamilies = finalizeBuckets(bySetupFamily);
   const symbols = finalizeBuckets(bySymbol);
+  const calibration = buildConfidenceCalibrationBuckets(outcomeRecords, { scopeType: "GLOBAL" });
+  const suppressedScopes = buildEvidenceGateRules(outcomeRecords, {
+    minimumSampleSize: EVIDENCE_GATE_MIN_SAMPLE_SIZE,
+    minimumWinRate: EVIDENCE_GATE_MIN_WIN_RATE,
+    minimumExpectancy: EVIDENCE_GATE_MIN_EXPECTANCY,
+  });
 
   const rankWorst = (items: PerformanceBucket[]) =>
     [...items]
@@ -927,6 +1242,8 @@ export async function buildPerformanceReport(input?: {
       byRegime: finalizeBuckets(byRegime),
       byProviderHealthState: finalizeBuckets(byProviderHealthState),
     },
+    calibration,
+    suppressedScopes,
     worstPerformers: {
       setupFamilies: rankWorst(setupFamilies),
       symbols: rankWorst(symbols),
