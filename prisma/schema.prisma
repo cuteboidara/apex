@@ -189,6 +189,25 @@ model Alert {
   createdAt      DateTime @default(now())
 }
 
+model TelegramSubscriber {
+  id            String    @id @default(cuid())
+  chatId        String    @unique
+  username      String?
+  firstName     String?
+  lastName      String?
+  languageCode  String?
+  tier          String    @default("FREE")
+  status        String    @default("ACTIVE")
+  alertsEnabled Boolean   @default(true)
+  alertAssets   String[]  @default([])
+  alertRanks    String[]  @default(["S", "A", "B"])
+  startedAt     DateTime  @default(now())
+  lastActiveAt  DateTime  @default(now())
+  messageCount  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 model ProviderHealth {
   id             String   @id @default(cuid())
   provider       String

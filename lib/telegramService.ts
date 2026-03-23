@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
+import { sendSignalAlert } from "@/lib/telegram/bot";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? "";
 const CHAT_ID   = process.env.TELEGRAM_CHAT_ID ?? "";
@@ -174,9 +175,37 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
 
   const message = formatSignalMessage(signal);
   const attemptedAt = new Date();
-  const sent = await postToTelegram(message);
 
-  if (sent) {
+  // Fan out to channel + all active subscribers in parallel
+  const subscribers = await prisma.telegramSubscriber.findMany({
+    where: { status: "ACTIVE", alertsEnabled: true },
+    select: { chatId: true, alertAssets: true, alertRanks: true },
+  });
+
+  const RANK_ORDER: Record<string, number> = { S: 3, A: 2, B: 1, Silent: 0 };
+
+  // Filter subscribers by their personal asset/rank prefs
+  const eligibleSubs = subscribers.filter(sub => {
+    if (sub.alertAssets.length > 0 && !sub.alertAssets.includes(signal.asset)) return false;
+    const minRank = sub.alertRanks.length > 0
+      ? sub.alertRanks.reduce((best, r) => (RANK_ORDER[r] ?? 0) < (RANK_ORDER[best] ?? 0) ? r : best, sub.alertRanks[0])
+      : "B";
+    return (RANK_ORDER[signal.rank] ?? 0) >= (RANK_ORDER[minRank] ?? 0);
+  });
+
+  // Send to channel + eligible subscribers concurrently
+  const [channelSent, ...subResults] = await Promise.allSettled([
+    postToTelegram(message),
+    ...eligibleSubs.map(sub => sendSignalAlert(sub.chatId, signal)),
+  ]);
+
+  const sent = channelSent.status === "fulfilled" && channelSent.value;
+  const subsSent = subResults.filter(r => r.status === "fulfilled" && (r as PromiseFulfilledResult<boolean>).value).length;
+
+  if (subsSent > 0 || sent) {
+    if (subsSent > 0) {
+      console.log(`[APEX:telegram] Fan-out delivered to ${subsSent}/${eligibleSubs.length} subscribers for ${signal.asset}`);
+    }
     await prisma.alert.update({
       where: { id: queuedAlert.id },
       data: {
@@ -193,7 +222,7 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
       component: "alert-worker",
       runId: signal.runId,
       asset: signal.asset,
-      message: "Telegram alert delivered",
+      message: `Telegram alert delivered (channel: ${sent}, subscribers: ${subsSent}/${eligibleSubs.length})`,
       signalId: signal.id,
     });
     await recordAuditEvent({
@@ -201,7 +230,7 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
       action: "alert_sent",
       entityType: "Alert",
       entityId: queuedAlert.id,
-      after: { signalId: signal.id, status: "DELIVERED" },
+      after: { signalId: signal.id, status: "DELIVERED", subsSent },
       correlationId: signal.runId,
     });
     return;
