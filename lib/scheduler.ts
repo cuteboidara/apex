@@ -20,11 +20,11 @@ export async function runCycle(runId: string) {
     signalCount: signals.length,
   });
 
-  // Send Telegram for A and S rank — fired in parallel, individual failures don't abort others
+  // Send Telegram for B, A, and S rank — fired in parallel, individual failures don't abort others
   const alertStartedAt = Date.now();
   let fired = 0;
   try {
-    const alertSignals = signals.filter(s => s.rank === "S" || s.rank === "A");
+    const alertSignals = signals.filter(s => s.rank === "S" || s.rank === "A" || s.rank === "B");
     const alertResults = await Promise.allSettled(alertSignals.map(s => sendSignal(s)));
     fired = alertResults.filter(r => r.status === "fulfilled").length;
     for (const result of alertResults) {

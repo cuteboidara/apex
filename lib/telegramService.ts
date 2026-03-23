@@ -110,6 +110,7 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
     correlationId: signal.runId,
   });
 
+  // Master kill-switch: if Telegram is globally disabled, skip everything
   if (!settings.enabled) {
     await prisma.alert.update({
       where: { id: queuedAlert.id },
@@ -118,63 +119,19 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
     return;
   }
 
-  // Rank filter
-  if (!rankMeetsMinimum(signal.rank, settings.minRank)) {
-    await prisma.alert.update({
-      where: { id: queuedAlert.id },
-      data: { status: "SKIPPED", failureReason: `Rank ${signal.rank} below minimum ${settings.minRank}` },
-    });
-    return;
-  }
-
-  // Asset filter
-  if (settings.allowedAssets !== "ALL") {
-    const allowed = settings.allowedAssets.split(",").map(s => s.trim());
-    if (!allowed.includes(signal.asset)) {
-      await prisma.alert.update({
-        where: { id: queuedAlert.id },
-        data: { status: "SKIPPED", failureReason: `${signal.asset} not in allowed asset list` },
-      });
-      return;
-    }
-  }
-
-  // Weekend rule
-  if (settings.weekendCryptoOnly) {
-    const day = new Date().getDay(); // 0 = Sunday, 6 = Saturday
-    if (day === 0 || day === 6) {
-      if (!WEEKEND_CRYPTO.has(signal.asset)) {
-        await prisma.alert.update({
-          where: { id: queuedAlert.id },
-          data: { status: "SKIPPED", failureReason: "Weekend mode only allows crypto assets" },
-        });
-        return;
-      }
-    }
-  }
-
-  if (!BOT_TOKEN || !CHAT_ID) {
-    await prisma.alert.update({
-      where: { id: queuedAlert.id },
-      data: {
-        status: "FAILED",
-        attemptedAt: new Date(),
-        failureReason: "Telegram credentials missing",
-      },
-    });
-    await recordAuditEvent({
-      actor: "SYSTEM",
-      action: "alert_failed",
-      entityType: "Alert",
-      entityId: queuedAlert.id,
-      after: { reason: "Telegram credentials missing" },
-      correlationId: signal.runId,
-    });
-    return;
-  }
-
   const message = formatSignalMessage(signal);
   const attemptedAt = new Date();
+
+  // Determine whether the signal passes the CHANNEL-level admin filters.
+  // These only gate the channel broadcast — subscribers use their own per-user alertRanks.
+  const channelRankOk   = rankMeetsMinimum(signal.rank, settings.minRank);
+  const channelAssetOk  = settings.allowedAssets === "ALL" ||
+    settings.allowedAssets.split(",").map(s => s.trim()).includes(signal.asset);
+  const channelWeekendOk = !settings.weekendCryptoOnly || (() => {
+    const day = new Date().getDay();
+    return (day !== 0 && day !== 6) || WEEKEND_CRYPTO.has(signal.asset);
+  })();
+  const channelEligible = channelRankOk && channelAssetOk && channelWeekendOk;
 
   // Fan out to channel + all active subscribers in parallel
   const subscribers = await prisma.telegramSubscriber.findMany({
@@ -193,9 +150,13 @@ export async function sendSignal(signal: SignalRecord): Promise<void> {
     return (RANK_ORDER[signal.rank] ?? 0) >= (RANK_ORDER[minRank] ?? 0);
   });
 
-  // Send to channel + eligible subscribers concurrently
+  // Send to channel (if it passes channel-level filters) + eligible subscribers concurrently
+  const channelPromise = channelEligible && BOT_TOKEN && CHAT_ID
+    ? postToTelegram(message)
+    : Promise.resolve(false);
+
   const [channelSent, ...subResults] = await Promise.allSettled([
-    postToTelegram(message),
+    channelPromise,
     ...eligibleSubs.map(sub => sendSignalAlert(sub.chatId, signal)),
   ]);
 

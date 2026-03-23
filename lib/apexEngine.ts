@@ -361,12 +361,15 @@ export async function analyzeAsset(
     : smcScores;
 
   const smcTotal = Object.values(smcScores).reduce((a, b) => a + b, 0);
-  const total = hasActivePlan ? bestPlan!.setupScore : smcTotal;
+  // Always use the 5-dim SMC total (max 100) as the canonical signal score.
+  // bestPlan.setupScore is the strategy engine's internal score on a different scale
+  // and must NOT be used here — it would under-rank strong signals (e.g. 80/100 → Silent).
+  const total = smcTotal;
 
   // SMC publication threshold: must meet minimum criteria for non-Silent rank
   const passesThreshold = hasActivePlan || meetsPublicationThreshold(smcScores);
-  const rankFromScore = bestPlan?.publicationRank ?? getRank(total);
-  const rank = passesThreshold ? rankFromScore : "Silent";
+  // Always derive signal rank from the SMC total, never from the plan's setupScore/publicationRank.
+  const rank = passesThreshold ? getRank(total) : "Silent";
   const levels = {
     entry: bestPlan?.entryMin != null && bestPlan.entryMax != null ? (bestPlan.entryMin + bestPlan.entryMax) / 2 : null,
     stopLoss: bestPlan?.stopLoss ?? null,
