@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 type BacktestRun = {
   id: string;
@@ -20,6 +21,10 @@ type BacktestRun = {
   } | null;
 };
 
+type BacktestsResponse = {
+  runs?: BacktestRun[];
+};
+
 const DEFAULT_FORM = {
   symbol: "EURUSD",
   assetClass: "FOREX",
@@ -33,23 +38,25 @@ export default function AdminBacktestsPage() {
   const [runs, setRuns] = useState<BacktestRun[]>([]);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
-  const loadRuns = () => {
-    fetch("/api/backtest")
-      .then(res => res.json())
-      .then(data => setRuns(data.runs ?? []))
-      .catch(err => setError(String(err)));
+  const loadRuns = async () => {
+    setIsLoading(true);
+    const result = await fetchJsonResponse<BacktestsResponse>("/api/backtest");
+    setRuns(result.data?.runs ?? []);
+    setError(result.ok ? null : formatApiError(result, "Unable to load backtest runs."));
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    loadRuns();
+    void loadRuns();
   }, []);
 
   const runBacktest = () => {
     setError(null);
     startTransition(async () => {
-      const response = await fetch("/api/backtest", {
+      const result = await fetchJsonResponse<{ runId?: string }>("/api/backtest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,12 +68,13 @@ export default function AdminBacktestsPage() {
           confidenceFloor: Number(form.confidenceFloor),
         }),
       });
-      const payload = await response.json();
-      if (!response.ok) {
-        setError(payload.error ?? "Backtest failed.");
+
+      if (!result.ok) {
+        setError(formatApiError(result, "Backtest failed."));
         return;
       }
-      loadRuns();
+
+      await loadRuns();
     });
   };
 
@@ -116,6 +124,7 @@ export default function AdminBacktestsPage() {
           {isPending ? "Running..." : "Run Replay"}
         </button>
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
+        {!error && isLoading ? <p className="text-sm text-zinc-500">Loading backtest history...</p> : null}
       </section>
 
       <section className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
@@ -144,6 +153,13 @@ export default function AdminBacktestsPage() {
                 <td className="px-4 py-3 text-zinc-300">{run.summary?.maxDrawdown != null ? `${run.summary.maxDrawdown.toFixed(2)}R` : "—"}</td>
               </tr>
             ))}
+            {runs.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-center text-zinc-500">
+                  {isLoading ? "Loading backtest runs..." : "No backtest runs available yet."}
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </section>

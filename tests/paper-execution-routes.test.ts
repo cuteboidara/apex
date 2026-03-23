@@ -71,3 +71,72 @@ test("paper execution positions route records audit history for trade execution"
   assert.equal(payload.position.id, "pos_1");
   assert.deepEqual(audits, ["paper_trade_executed"]);
 });
+
+test("paper execution accounts route returns structured migration errors", async () => {
+  const route = createExecutionAccountsRouteHandlers({
+    getSession: async () => ({ user: { id: "user_1" } }) as never,
+    listPaperAccounts: async () => {
+      const error = new Error("The table `PaperAccount` does not exist in the current database.") as Error & { code?: string };
+      error.code = "P2021";
+      throw error;
+    },
+    getOrCreatePaperAccount: async () => {
+      throw new Error("not used");
+    },
+    recordAuditEvent: async () => undefined,
+  });
+
+  const response = await route.GET();
+  const payload = await response.json() as {
+    error: string;
+    code: string;
+    likelyMigrationIssue: boolean;
+    hint: string | null;
+  };
+
+  assert.equal(response.status, 503);
+  assert.equal(payload.code, "MIGRATION_REQUIRED");
+  assert.equal(payload.likelyMigrationIssue, true);
+  assert.match(payload.error, /paper trading accounts/i);
+  assert.match(payload.hint ?? "", /migrate:deploy/i);
+});
+
+test("paper execution positions route returns structured migration errors on load", async () => {
+  const route = createExecutionPositionsRouteHandlers({
+    getSession: async () => ({ user: { id: "user_1" } }) as never,
+    prisma: {
+      paperPosition: {
+        findMany: async () => {
+          const error = new Error("The table `PaperPosition` does not exist in the current database.") as Error & { code?: string };
+          error.code = "P2021";
+          throw error;
+        },
+      },
+    } as never,
+    listPaperAccounts: async () => ([{ id: "acct_1" }]) as never,
+    openPaperPositionFromTradePlan: async () => {
+      throw new Error("not used");
+    },
+    markPaperPosition: async () => {
+      throw new Error("not used");
+    },
+    closePaperPosition: async () => {
+      throw new Error("not used");
+    },
+    recordAuditEvent: async () => undefined,
+  });
+
+  const response = await route.GET(new Request("http://localhost/api/execution/positions") as never);
+  const payload = await response.json() as {
+    error: string;
+    code: string;
+    likelyMigrationIssue: boolean;
+    hint: string | null;
+  };
+
+  assert.equal(response.status, 503);
+  assert.equal(payload.code, "MIGRATION_REQUIRED");
+  assert.equal(payload.likelyMigrationIssue, true);
+  assert.match(payload.error, /paper trading positions/i);
+  assert.match(payload.hint ?? "", /migrate:deploy/i);
+});

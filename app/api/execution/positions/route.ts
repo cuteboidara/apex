@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { recordAuditEvent } from "@/lib/audit";
+import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { closePaperPosition, markPaperPosition, openPaperPositionFromTradePlan, listPaperAccounts } from "@/lib/execution/paperBroker";
 
 export const dynamic = "force-dynamic";
@@ -20,48 +21,60 @@ type ExecutionPositionsRouteDependencies = {
 export function createExecutionPositionsRouteHandlers(deps: ExecutionPositionsRouteDependencies) {
   return {
     GET: async (req: NextRequest) => {
-      const session = await deps.getSession();
-      const ownerUserId = session?.user ? ((session.user as { id?: string }).id ?? null) : null;
-      const { searchParams } = new URL(req.url);
-      const status = searchParams.get("status");
-      const accounts = await deps.listPaperAccounts(ownerUserId);
+      try {
+        const session = await deps.getSession();
+        const ownerUserId = session?.user ? ((session.user as { id?: string }).id ?? null) : null;
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get("status");
+        const accounts = await deps.listPaperAccounts(ownerUserId);
 
-      const positions = await deps.prisma.paperPosition.findMany({
-        where: {
-          accountId: { in: accounts.map(account => account.id) },
-          ...(status ? { status } : {}),
-        },
-        orderBy: { openedAt: "desc" },
-        take: 100,
-      });
+        const positions = await deps.prisma.paperPosition.findMany({
+          where: {
+            accountId: { in: accounts.map(account => account.id) },
+            ...(status ? { status } : {}),
+          },
+          orderBy: { openedAt: "desc" },
+          take: 100,
+        });
 
-      return NextResponse.json({ positions });
+        return NextResponse.json({ positions });
+      } catch (error) {
+        return buildRouteErrorResponse(error, {
+          publicMessage: "Unable to load paper trading positions.",
+        });
+      }
     },
 
     POST: async (req: NextRequest) => {
-      const session = await deps.getSession();
-      const ownerUserId = session?.user ? ((session.user as { id?: string }).id ?? null) : null;
-      const actorId = ownerUserId ?? "anonymous";
-      const body = await req.json().catch(() => null) as
-        | {
-            action?: "execute_trade_plan" | "mark_to_market" | "close_position";
-            tradePlanId?: string;
-            accountId?: string | null;
-            positionId?: string;
-            quantity?: number | null;
-            riskFraction?: number;
-            spreadBps?: number;
-            slippageBps?: number;
-            currentPrice?: number;
-            exitPrice?: number;
-          }
-        | null;
-
-      if (!body?.action) {
-        return NextResponse.json({ error: "Missing action" }, { status: 400 });
-      }
-
       try {
+        const session = await deps.getSession();
+        const ownerUserId = session?.user ? ((session.user as { id?: string }).id ?? null) : null;
+        const actorId = ownerUserId ?? "anonymous";
+        const body = await req.json().catch(() => null) as
+          | {
+              action?: "execute_trade_plan" | "mark_to_market" | "close_position";
+              tradePlanId?: string;
+              accountId?: string | null;
+              positionId?: string;
+              quantity?: number | null;
+              riskFraction?: number;
+              spreadBps?: number;
+              slippageBps?: number;
+              currentPrice?: number;
+              exitPrice?: number;
+            }
+          | null;
+
+        if (!body?.action) {
+          return NextResponse.json({
+            error: "Missing action",
+            code: "BAD_REQUEST",
+            details: "Execution requests require an action value.",
+            likelyMigrationIssue: false,
+            hint: null,
+          }, { status: 400 });
+        }
+
         if (body.action === "execute_trade_plan" && body.tradePlanId) {
           const result = await deps.openPaperPositionFromTradePlan({
             tradePlanId: body.tradePlanId,
@@ -123,9 +136,18 @@ export function createExecutionPositionsRouteHandlers(deps: ExecutionPositionsRo
           return NextResponse.json({ position });
         }
 
-        return NextResponse.json({ error: "Unsupported execution action or missing parameters" }, { status: 400 });
+        return NextResponse.json({
+          error: "Unsupported execution action or missing parameters",
+          code: "BAD_REQUEST",
+          details: "Provide the required identifiers and prices for the requested execution action.",
+          likelyMigrationIssue: false,
+          hint: null,
+        }, { status: 400 });
       } catch (error) {
-        return NextResponse.json({ error: String(error) }, { status: 400 });
+        return buildRouteErrorResponse(error, {
+          publicMessage: "Unable to process the paper trading action.",
+          fallbackStatus: 400,
+        });
       }
     },
   };

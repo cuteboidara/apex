@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 type PaperAccount = {
   id: string;
@@ -23,6 +24,14 @@ type PaperPosition = {
   status: string;
 };
 
+type AccountsResponse = {
+  accounts?: PaperAccount[];
+};
+
+type PositionsResponse = {
+  positions?: PaperPosition[];
+};
+
 export default function AdminExecutionPage() {
   const [accounts, setAccounts] = useState<PaperAccount[]>([]);
   const [positions, setPositions] = useState<PaperPosition[]>([]);
@@ -30,35 +39,50 @@ export default function AdminExecutionPage() {
   const [closePrice, setClosePrice] = useState("");
   const [selectedPositionId, setSelectedPositionId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
 
-  const refresh = () => {
-    Promise.all([
-      fetch("/api/execution/accounts").then(res => res.json()),
-      fetch("/api/execution/positions").then(res => res.json()),
-    ])
-      .then(([accountPayload, positionPayload]) => {
-        setAccounts(accountPayload.accounts ?? []);
-        setPositions(positionPayload.positions ?? []);
-      })
-      .catch(err => setError(String(err)));
+  const refresh = async () => {
+    setIsLoading(true);
+
+    const [accountResult, positionResult] = await Promise.all([
+      fetchJsonResponse<AccountsResponse>("/api/execution/accounts"),
+      fetchJsonResponse<PositionsResponse>("/api/execution/positions"),
+    ]);
+
+    setAccounts(accountResult.data?.accounts ?? []);
+    setPositions(positionResult.data?.positions ?? []);
+
+    const failures = [
+      !accountResult.ok ? `Accounts: ${formatApiError(accountResult, "Unable to load paper trading accounts.")}` : null,
+      !positionResult.ok ? `Positions: ${formatApiError(positionResult, "Unable to load paper trading positions.")}` : null,
+    ].filter(Boolean);
+
+    setError(failures.length > 0 ? failures.join(" ") : null);
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, []);
 
   const createAccount = () => {
+    setError(null);
     startTransition(async () => {
-      await fetch("/api/execution/accounts", { method: "POST" });
-      refresh();
+      const result = await fetchJsonResponse<{ account?: PaperAccount }>("/api/execution/accounts", { method: "POST" });
+      if (!result.ok) {
+        setError(formatApiError(result, "Unable to create or load a paper trading account."));
+        return;
+      }
+
+      await refresh();
     });
   };
 
   const executeTradePlan = () => {
     setError(null);
     startTransition(async () => {
-      const response = await fetch("/api/execution/positions", {
+      const result = await fetchJsonResponse<{ position?: PaperPosition }>("/api/execution/positions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -66,20 +90,21 @@ export default function AdminExecutionPage() {
           tradePlanId,
         }),
       });
-      const payload = await response.json();
-      if (!response.ok) {
-        setError(payload.error ?? "Execution failed.");
+
+      if (!result.ok) {
+        setError(formatApiError(result, "Execution failed."));
         return;
       }
+
       setTradePlanId("");
-      refresh();
+      await refresh();
     });
   };
 
   const closePosition = () => {
     setError(null);
     startTransition(async () => {
-      const response = await fetch("/api/execution/positions", {
+      const result = await fetchJsonResponse<{ position?: PaperPosition }>("/api/execution/positions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,13 +113,15 @@ export default function AdminExecutionPage() {
           exitPrice: Number(closePrice),
         }),
       });
-      const payload = await response.json();
-      if (!response.ok) {
-        setError(payload.error ?? "Close failed.");
+
+      if (!result.ok) {
+        setError(formatApiError(result, "Close failed."));
         return;
       }
+
       setClosePrice("");
-      refresh();
+      setSelectedPositionId("");
+      await refresh();
     });
   };
 
@@ -138,6 +165,7 @@ export default function AdminExecutionPage() {
           </div>
         </div>
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
+        {!error && isLoading ? <p className="text-sm text-zinc-500">Loading paper trading data...</p> : null}
       </section>
 
       <section className="grid lg:grid-cols-2 gap-6">
@@ -159,6 +187,13 @@ export default function AdminExecutionPage() {
                   <td className="px-4 py-3 text-zinc-300">{account.equity.toFixed(2)} {account.currency}</td>
                 </tr>
               ))}
+              {accounts.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-4 py-6 text-center text-zinc-500">
+                    {isLoading ? "Loading accounts..." : "No paper trading accounts available."}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
@@ -186,6 +221,13 @@ export default function AdminExecutionPage() {
                   </td>
                 </tr>
               ))}
+              {positions.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-4 py-6 text-center text-zinc-500">
+                    {isLoading ? "Loading positions..." : "No paper positions available."}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
