@@ -51,7 +51,6 @@ export async function generateOpenAiText(input: LlmPromptInput): Promise<LlmProv
       },
       body: JSON.stringify({
         model: OPENAI_MODEL,
-        reasoning: { effort: "low" },
         max_output_tokens: input.maxTokens,
         input: [
           { role: "developer", content: input.system },
