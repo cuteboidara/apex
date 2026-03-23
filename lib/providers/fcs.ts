@@ -273,6 +273,10 @@ export async function getFcsQuote(symbol: string): Promise<FcsNormalizedQuote> {
   if (!config) {
     return unavailableQuote(symbol, "FCS symbol mapping unavailable.");
   }
+  // Yahoo Finance is the sole provider for FOREX and COMMODITY — never call FCS for those.
+  if (config.assetClass === "FOREX" || config.assetClass === "COMMODITY") {
+    return unavailableQuote(symbol, "FCS not used for FOREX/COMMODITY — Yahoo Finance handles these.");
+  }
 
   const startedAt = Date.now();
   const response = await fetchFcsJson<FcsLatestEnvelope>(
@@ -387,6 +391,10 @@ export async function getFcsCandles(symbol: string, timeframe: Timeframe): Promi
   const config = getFcsSymbolConfig(symbol);
   if (!config) {
     return unavailableCandles(symbol, timeframe, "FCS symbol mapping unavailable.");
+  }
+  // Yahoo Finance is the sole provider for FOREX and COMMODITY — never call FCS for those.
+  if (config.assetClass === "FOREX" || config.assetClass === "COMMODITY") {
+    return unavailableCandles(symbol, timeframe, "FCS not used for FOREX/COMMODITY — Yahoo Finance handles these.");
   }
 
   const startedAt = Date.now();

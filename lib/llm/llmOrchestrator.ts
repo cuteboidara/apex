@@ -8,17 +8,29 @@ const EXPLANATION_UNAVAILABLE = "Explanation unavailable";
 
 const PROVIDER_CHAIN: Array<{
   provider: LlmProvider;
+  envKey: string;
   generate: (input: LlmPromptInput) => Promise<{ text: string; provider: LlmProvider }>;
 }> = [
-  { provider: "anthropic", generate: generateAnthropicText },
-  { provider: "openai", generate: generateOpenAiText },
-  { provider: "gemini", generate: generateGeminiText },
+  { provider: "anthropic", envKey: "ANTHROPIC_API_KEY", generate: generateAnthropicText },
+  { provider: "openai",    envKey: "OPENAI_API_KEY",    generate: generateOpenAiText    },
+  { provider: "gemini",    envKey: "GEMINI_API_KEY",    generate: generateGeminiText    },
 ];
 
 export async function generateLlmText(input: LlmPromptInput): Promise<LlmOrchestratorResponse> {
   const chain: LlmOrchestratorResponse["chain"] = [];
 
   for (const [index, candidate] of PROVIDER_CHAIN.entries()) {
+    // Skip cleanly if API key is not configured — no cooldown, no health error.
+    if (!process.env[candidate.envKey]) {
+      console.log(`[APEX:llm] ${candidate.provider} key missing (${candidate.envKey}) — skipping`);
+      chain.push({
+        provider: candidate.provider,
+        status: "skipped",
+        reason: "missing_api_key",
+      });
+      continue;
+    }
+
     const cooldown = await getProviderCooldown(candidate.provider);
     if (cooldown) {
       chain.push({
@@ -54,6 +66,11 @@ export async function generateLlmText(input: LlmPromptInput): Promise<LlmOrchest
         reason: classified.reason,
       });
     } catch (error) {
+      // Missing-key errors are configuration issues, not runtime failures — skip cleanly.
+      if ((error as { skipHealthRecord?: boolean }).skipHealthRecord) {
+        chain.push({ provider: candidate.provider, status: "skipped", reason: "missing_api_key" });
+        continue;
+      }
       const classified = classifyLlmFailure(error);
       await setProviderCooldown(candidate.provider, classified.reason, classified.cooldownMs);
       chain.push({

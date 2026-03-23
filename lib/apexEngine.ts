@@ -725,18 +725,23 @@ export async function runFullCycle(runId: string) {
   });
 
   const cycleStartedAt = Date.now();
-  const gateState = await getStylePerformanceGateState();
-  const macroResult = await fetchMacroData({ consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
-    .catch(error => {
-      logEvent({
-        runId,
-        component: "signal-engine",
-        severity: "WARN",
-        message: "Macro fetch failed for cycle; using null macro context",
-        reason: String(error),
-      });
-      return null;
-    });
+
+  // Fetch gate state and macro data in parallel — both are independent of assets
+  const [gateState, macroResult] = await Promise.all([
+    getStylePerformanceGateState(),
+    fetchMacroData({ consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false })
+      .catch(error => {
+        logEvent({
+          runId,
+          component: "signal-engine",
+          severity: "WARN",
+          message: "Macro fetch failed for cycle; using null macro context",
+          reason: String(error),
+        });
+        return null;
+      }),
+  ]);
+
   const results = await Promise.allSettled(assetsToRun.map(a => analyzeAsset(a, runId, gateState, macroResult)));
 
   const fulfilled = results

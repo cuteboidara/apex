@@ -266,6 +266,35 @@ export async function orchestrateCandles(
   timeframe: Timeframe,
   context?: MarketRequestContext
 ): Promise<OrchestratedCandles> {
+  // FOREX and COMMODITY are served exclusively by Yahoo Finance via fetchMultiProviderAsset —
+  // they must never reach the orchestrator (which would try FCS/AlphaVantage).
+  if (assetClass === "FOREX" || assetClass === "COMMODITY") {
+    console.warn(`[APEX:orchestrator] orchestrateCandles called for ${assetClass} ${symbol} — short-circuiting, Yahoo Finance handles these`);
+    const policy = resolveCandleRequestPolicy(timeframe, context);
+    return finalizeCandles({
+      symbol,
+      assetClass,
+      timeframe,
+      provider: "Yahoo Finance" as ProviderName,
+      candles: [],
+      timestamp: null,
+      stale: true,
+      marketStatus: "UNAVAILABLE",
+      reason: "FOREX/COMMODITY routed to Yahoo Finance — orchestrator bypassed.",
+    }, {
+      selectedProvider: null,
+      fallbackUsed: false,
+      fromCache: false,
+      circuitState: null,
+      providerHealthScore: null,
+      sourceType: "fallback",
+      freshnessClass: "expired",
+      fetchedAt: null,
+      cacheKey: null,
+      priority: policy.priority,
+    });
+  }
+
   const policy = resolveCandleRequestPolicy(timeframe, context);
   const { primary, fallbacks } = await selectProviders(assetClass);
 

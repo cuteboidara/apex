@@ -105,6 +105,10 @@ type Gpt4Output = {
 };
 
 async function runStage1(input: SignalAnalysisInput): Promise<Gpt4Output | null> {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log(`[APEX:ai] OpenAI key missing — skipping stage 1 (GPT-4) for ${input.asset}`);
+    return null;
+  }
   const headlines = input.newsHeadlines.slice(0, 3).join(" | ") || "No recent headlines";
   const session   = getSessionName(input.sessionUTC);
   const rsi       = input.rsi != null ? input.rsi.toFixed(1) : "N/A";
@@ -231,6 +235,10 @@ async function runStage3(
   stage1: Gpt4Output | null,
   stage2: ClaudeOutput | null,
 ): Promise<GeminiOutput | null> {
+  if (!process.env.GEMINI_API_KEY) {
+    console.log(`[APEX:ai] Gemini key missing — skipping stage 3 (Gemini) for ${input.asset}`);
+    return null;
+  }
   const gpt4Section = stage1
     ? `GPT-4 LEAD ANALYSIS:
 ${stage1.explanation}

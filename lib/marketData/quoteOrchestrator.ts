@@ -333,6 +333,39 @@ export async function orchestrateQuote(
   assetClass: AssetClass,
   context?: MarketRequestContext
 ): Promise<OrchestratedQuote> {
+  // FOREX and COMMODITY are served exclusively by Yahoo Finance via fetchMultiProviderAsset
+  // and getAssetPrice — they must never reach the orchestrator (which would try FCS/AlphaVantage).
+  if (assetClass === "FOREX" || assetClass === "COMMODITY") {
+    console.warn(`[APEX:orchestrator] orchestrateQuote called for ${assetClass} ${symbol} — short-circuiting, Yahoo Finance handles these`);
+    const policy = resolveQuoteRequestPolicy(assetClass, context);
+    return finalizeQuote({
+      symbol,
+      assetClass,
+      provider: "Yahoo Finance" as ProviderName,
+      price: null,
+      change24h: null,
+      high14d: null,
+      low14d: null,
+      volume: null,
+      timestamp: null,
+      stale: true,
+      marketStatus: "UNAVAILABLE",
+      reason: "FOREX/COMMODITY routed to Yahoo Finance — orchestrator bypassed.",
+      closes: [],
+    }, {
+      selectedProvider: null,
+      fallbackUsed: false,
+      fromCache: false,
+      circuitState: null,
+      providerHealthScore: null,
+      sourceType: "fallback",
+      freshnessClass: "expired",
+      fetchedAt: null,
+      cacheKey: null,
+      priority: policy.priority,
+    });
+  }
+
   const policy = resolveQuoteRequestPolicy(assetClass, context);
   const { primary, fallbacks } = await selectProviders(assetClass);
 

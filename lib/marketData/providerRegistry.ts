@@ -1,6 +1,9 @@
 import { getAlphaVantageForexQuote, getAlphaVantageMetalQuote } from "@/lib/providers/alphaVantage";
 import { getFcsCandles, getFcsQuote } from "@/lib/providers/fcs";
 import type { AssetClass, CandleResult, ProviderAdapter, QuoteResult, Timeframe } from "@/lib/marketData/types";
+// Note: FCS API is only used as a CRYPTO fallback. Yahoo Finance is the sole
+// provider for FOREX and COMMODITY assets — those classes bypass the orchestrators
+// entirely via fetchMultiProviderAsset / getAssetPrice in lib/marketData.ts.
 
 const BINANCE_BASE = "https://api.binance.com/api/v3";
 
@@ -206,13 +209,11 @@ export const providerRegistry: Record<AssetClass, ProviderAdapter[]> = {
       fetchCandles: (symbol, timeframe) => fetchFcsMarketCandles(symbol, "CRYPTO", timeframe),
     },
   ],
+  // Yahoo Finance is the sole provider for FOREX and COMMODITY — these registries
+  // are kept minimal (Alpha Vantage only, last-resort) since the main data paths
+  // (fetchMultiProviderAsset and getAssetPrice) call Yahoo Finance directly and
+  // never go through the orchestrators for these classes.
   FOREX: [
-    {
-      provider: "FCS API",
-      assetClass: "FOREX",
-      fetchQuote: symbol => fetchFcsMarketQuote(symbol, "FOREX"),
-      fetchCandles: (symbol, timeframe) => fetchFcsMarketCandles(symbol, "FOREX", timeframe),
-    },
     {
       provider: "Alpha Vantage",
       assetClass: "FOREX",
@@ -221,12 +222,6 @@ export const providerRegistry: Record<AssetClass, ProviderAdapter[]> = {
     },
   ],
   COMMODITY: [
-    {
-      provider: "FCS API",
-      assetClass: "COMMODITY",
-      fetchQuote: symbol => fetchFcsMarketQuote(symbol, "COMMODITY"),
-      fetchCandles: (symbol, timeframe) => fetchFcsMarketCandles(symbol, "COMMODITY", timeframe),
-    },
     {
       provider: "Alpha Vantage",
       assetClass: "COMMODITY",

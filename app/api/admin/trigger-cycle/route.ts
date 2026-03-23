@@ -8,8 +8,11 @@ import { logEvent } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { ENGINE_VERSION, FEATURE_VERSION, PROMPT_VERSION } from "@/lib/runConfig";
 import { runCycle } from "@/lib/scheduler";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export async function POST() {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const run = await prisma.signalRun.create({
     data: {
       queuedAt: new Date(),

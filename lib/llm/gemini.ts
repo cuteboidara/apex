@@ -30,7 +30,9 @@ function extractGeminiText(payload: GeminiResponse | null) {
 export async function generateGeminiText(input: LlmPromptInput): Promise<LlmProviderResponse> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("missing_api_key");
+    // Throw a typed sentinel so the orchestrator skips without recording a health failure.
+    // The orchestrator now guards this before calling, but keep as defence-in-depth.
+    throw Object.assign(new Error("missing_api_key"), { skipHealthRecord: true });
   }
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;

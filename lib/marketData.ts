@@ -238,10 +238,12 @@ export async function getAssetPrice(symbol: string): Promise<AssetPrice | null> 
       : null;
   }
 
-  const assetClass = symbol.endsWith("USDT") ? "CRYPTO" : (symbol.startsWith("XA") ? "COMMODITY" : "FOREX");
-  const quote = await orchestrateQuote(symbol, assetClass, { consumer: "dashboard", priority: "warm" });
-  return quote.price != null && quote.timestamp != null && !quote.stale && quote.marketStatus === "LIVE"
-    ? { symbol, price: quote.price, source: quote.selectedProvider ?? quote.provider, timestamp: quote.timestamp }
+  // FOREX/COMMODITY: Yahoo Finance is the sole provider — call it directly
+  // without going through the orchestrators (which previously triggered FCS).
+  const { fetchYahooPrice } = await import("@/lib/providers/yahooFinance");
+  const yahoo = await fetchYahooPrice(symbol);
+  return yahoo.price != null
+    ? { symbol, price: yahoo.price, source: "Yahoo Finance", timestamp: Date.now() }
     : null;
 }
 

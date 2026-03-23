@@ -3,7 +3,7 @@ import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
 import { FAILURE_CODES } from "@/lib/runConfig";
 
-const STALE_RUN_THRESHOLD_MS = 2 * 60 * 1000;
+const STALE_RUN_THRESHOLD_MS = 5 * 60 * 1000; // 300 000 ms — matches Railway maxDuration
 
 function getRunAgeMs(run: { startedAt: Date | null; queuedAt: Date }) {
   const baseline = run.startedAt ?? run.queuedAt;
