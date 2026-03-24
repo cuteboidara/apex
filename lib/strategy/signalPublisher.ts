@@ -115,8 +115,11 @@ function providerPenalty(snapshot: MarketSnapshot) {
 
 function isYahooDailyOnly(snapshot: MarketSnapshot, style: TradePlanStyle): boolean {
   if (style !== "SCALP") return false;
-  const provider = snapshot.candleProviders?.["1m"]?.selectedProvider ?? "";
-  return provider.includes("Yahoo") || provider === "";
+  const candle = snapshot.candleProviders?.["1m"];
+  const provider = candle?.selectedProvider ?? "";
+  const readiness = snapshot.styleReadiness?.SCALP;
+  const intradayReady = readiness?.ready === true && candle?.marketStatus === "LIVE" && candle?.fallbackUsed !== true;
+  return (provider.includes("Yahoo") || provider === "") && !intradayReady;
 }
 
 export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnapshot): PublishedStrategyPlan {

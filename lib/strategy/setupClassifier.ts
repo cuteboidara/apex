@@ -65,8 +65,18 @@ function styleThreshold(style: TradePlanStyle, dailyOnly: boolean): number {
   }
 }
 
-function isDailyOnlyProvider(snapshot: MarketSnapshot): boolean {
-  const provider = snapshot.candleProviders?.["1m"]?.selectedProvider ?? "";
+function isDailyOnlyProvider(style: TradePlanStyle, snapshot: MarketSnapshot): boolean {
+  if (snapshot.styleReadiness?.[style]?.ready) {
+    return false;
+  }
+
+  const provider =
+    style === "SCALP"
+      ? snapshot.candleProviders?.["1m"]?.selectedProvider ?? ""
+      : style === "INTRADAY"
+        ? snapshot.candleProviders?.["5m"]?.selectedProvider ?? snapshot.candleProviders?.["15m"]?.selectedProvider ?? ""
+        : snapshot.candleProviders?.["1h"]?.selectedProvider ?? snapshot.candleProviders?.["4h"]?.selectedProvider ?? "";
+
   return provider.includes("Yahoo") || (provider === "" && !snapshot.stale);
 }
 
@@ -98,7 +108,7 @@ export function classifySetup(input: {
     };
   }
 
-  const dailyOnly = isDailyOnlyProvider(snapshot);
+  const dailyOnly = isDailyOnlyProvider(style, snapshot);
   const bias = chooseBias(snapshot, regime, structure, liquidity, trap);
 
   const alignment =

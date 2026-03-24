@@ -8,10 +8,11 @@ import type { MarketSnapshot } from "@/lib/strategy/types";
 
 function providerState(
   marketStatus: "LIVE" | "DEGRADED" | "UNAVAILABLE" = "LIVE",
-  fallbackUsed = false
+  fallbackUsed = false,
+  selectedProvider = "Test"
 ) {
   return {
-    selectedProvider: "Test",
+    selectedProvider,
     fallbackUsed,
     freshnessMs: 1_000,
     marketStatus,
@@ -53,11 +54,21 @@ function makeSnapshot(overrides: Partial<MarketSnapshot>): MarketSnapshot {
   };
 }
 
-test("SCALP publication is no longer hard-disabled when intraday data is live", () => {
-  const plan = publishStrategyPlan("SCALP", makeSnapshot({}));
+test("SCALP publication is no longer hard-disabled when Yahoo intraday data is live", () => {
+  const plan = publishStrategyPlan("SCALP", makeSnapshot({
+    candleProviders: {
+      "1m": providerState("LIVE", false, "Yahoo Finance"),
+      "5m": providerState("LIVE", false, "Yahoo Finance"),
+      "15m": providerState("LIVE", false, "Yahoo Finance"),
+      "1h": providerState("LIVE", false, "Yahoo Finance"),
+      "4h": providerState("LIVE", false, "Yahoo Finance"),
+      "1D": providerState("LIVE", false, "Yahoo Finance"),
+    },
+  }));
 
   assert.equal(plan.status, "NO_SETUP");
   assert.ok(!plan.diagnostics.includes("style_disabled"));
+  assert.doesNotMatch(plan.thesis, /daily only/i);
   assert.equal(plan.entryType, "NONE");
 });
 
@@ -121,6 +132,31 @@ test("weak mid-range setup is rejected", () => {
 
   assert.equal(plan.status, "NO_SETUP");
   assert.ok(plan.diagnostics.includes("weak_location") || plan.diagnostics.includes("no_confirmation"));
+  assert.equal(plan.entryType, "NONE");
+});
+
+test("Yahoo intraday-ready data does not promote a daily-only fallback setup without confirmation", () => {
+  const plan = publishStrategyPlan("INTRADAY", makeSnapshot({
+    preferredBias: "LONG",
+    currentPrice: 91.2,
+    high14d: 97,
+    low14d: 90,
+    change24h: 0.2,
+    trend: "uptrend",
+    rsi: 57,
+    macroBias: "risk_on",
+    candleProviders: {
+      "1m": providerState("LIVE", false, "Yahoo Finance"),
+      "5m": providerState("LIVE", false, "Yahoo Finance"),
+      "15m": providerState("LIVE", false, "Yahoo Finance"),
+      "1h": providerState("LIVE", false, "Yahoo Finance"),
+      "4h": providerState("LIVE", false, "Yahoo Finance"),
+      "1D": providerState("LIVE", false, "Yahoo Finance"),
+    },
+  }));
+
+  assert.equal(plan.status, "NO_SETUP");
+  assert.ok(plan.diagnostics.includes("no_confirmation"));
   assert.equal(plan.entryType, "NONE");
 });
 

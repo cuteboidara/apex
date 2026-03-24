@@ -409,10 +409,7 @@ export async function analyzeAsset(
   const bestPlan = rankedPlans[0];
   const direction = bestPlan?.bias ?? smcDirection;
 
-  // Only use plan breakdown scores when the plan is active (setupScore > 0).
-  // Blocked plans have all-zero breakdowns, and ?? does not guard against 0,
-  // so checking setupScore prevents silent zero-scoring on degraded data.
-  const hasActivePlan = (bestPlan?.setupScore ?? 0) > 0;
+  const hasActivePlan = bestPlan?.status === "ACTIVE" && bestPlan.publicationRank !== "Silent";
 
   // ── SMC fallback scoring (Path A: no active plan) ─────────────────────────
   const smcRsi = dataSummary.technicals.rsi ?? calcRSI(dataSummary.closes);
@@ -437,15 +434,10 @@ export async function analyzeAsset(
     : smcScores;
 
   const smcTotal = Object.values(smcScores).reduce((a, b) => a + b, 0);
-  // Always use the 5-dim SMC total (max 100) as the canonical signal score.
-  // bestPlan.setupScore is the strategy engine's internal score on a different scale
-  // and must NOT be used here — it would under-rank strong signals (e.g. 80/100 → Silent).
-  const total = smcTotal;
+  const total = hasActivePlan ? bestPlan!.setupScore : smcTotal;
 
-  // SMC publication threshold: must meet minimum criteria for non-Silent rank
   const passesThreshold = hasActivePlan || meetsPublicationThreshold(smcScores);
-  // Always derive signal rank from the SMC total, never from the plan's setupScore/publicationRank.
-  const rank = hasActivePlan ? bestPlan!.publicationRank : getRank(total);
+  const rank = hasActivePlan ? bestPlan!.publicationRank : (passesThreshold ? getRank(total) : "Silent");
   const levels = {
     entry: bestPlan?.entryMin != null && bestPlan.entryMax != null ? (bestPlan.entryMin + bestPlan.entryMax) / 2 : null,
     stopLoss: bestPlan?.stopLoss ?? null,
