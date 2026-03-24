@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
@@ -7,6 +8,7 @@ import { ENGINE_VERSION, FAILURE_CODES, FEATURE_VERSION, PROMPT_VERSION, type Fa
 import { buildTradePlans } from "@/lib/tradePlanner";
 import { generateSignalNarrative } from "@/lib/llm/explanationService";
 import { runSignalAnalysisPipeline, type SignalAnalysisInput } from "@/lib/ai/signalAnalysisPipeline";
+import { ensureSignalRunRecord, updateSignalRunWithRecovery } from "@/lib/runLifecycle";
 import type { Timeframe } from "@/lib/marketData/types";
 import {
   applyTradePlanQualityGates,
@@ -694,19 +696,29 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
 
 // ── Batch analysis ────────────────────────────────────────────────────────────
 
-export async function runFullCycle(runId: string) {
-  await prisma.signalRun.update({
-    where: { id: runId },
-    data: {
-      startedAt: new Date(),
-      engineVersion: ENGINE_VERSION,
-      featureVersion: FEATURE_VERSION,
-      promptVersion: PROMPT_VERSION,
-      status: "RUNNING",
-      failureCode: null,
-      failureReason: null,
-      failureDetails: undefined,
-    },
+export async function runFullCycle(requestedRunId?: string | null) {
+  const startedAt = new Date();
+  const runRecord = await ensureSignalRunRecord(requestedRunId, {
+    status: "RUNNING",
+    queuedAt: startedAt,
+    startedAt,
+  });
+  const runId = runRecord.id;
+
+  await updateSignalRunWithRecovery(runId, {
+    startedAt,
+    engineVersion: ENGINE_VERSION,
+    featureVersion: FEATURE_VERSION,
+    promptVersion: PROMPT_VERSION,
+    status: "RUNNING",
+    failureCode: null,
+    failureReason: null,
+    failureDetails: Prisma.JsonNull,
+  }, {
+    id: runId,
+    queuedAt: runRecord.queuedAt,
+    startedAt,
+    status: "RUNNING",
   });
 
   const activeSymbols  = getActiveAssetSymbols();
@@ -802,23 +814,25 @@ export async function runFullCycle(runId: string) {
   }
 
   if (errors.length > 0) {
-    await prisma.signalRun.update({
-      where: { id: runId },
-      data: {
-        status: "FAILED",
-        completedAt: new Date(),
-        totalDurationMs: Date.now() - cycleStartedAt,
-        dataFetchDurationMs: metrics.dataFetchDurationMs,
-        scoringDurationMs: metrics.scoringDurationMs,
-        persistenceDurationMs: metrics.persistenceDurationMs,
-        failureCode: classifyFailure(errors[0]?.reason),
-        failureReason: errors.map(e => `${e.asset}: ${String(e.reason)}`).join(" | ").slice(0, 1000),
-        failureDetails: errors.map(e => ({
-          asset: e.asset,
-          failureCode: classifyFailure(e.reason),
-          reason: String(e.reason),
-        })),
-      },
+    await updateSignalRunWithRecovery(runId, {
+      status: "FAILED",
+      completedAt: new Date(),
+      totalDurationMs: Date.now() - cycleStartedAt,
+      dataFetchDurationMs: metrics.dataFetchDurationMs,
+      scoringDurationMs: metrics.scoringDurationMs,
+      persistenceDurationMs: metrics.persistenceDurationMs,
+      failureCode: classifyFailure(errors[0]?.reason),
+      failureReason: errors.map(e => `${e.asset}: ${String(e.reason)}`).join(" | ").slice(0, 1000),
+      failureDetails: errors.map(e => ({
+        asset: e.asset,
+        failureCode: classifyFailure(e.reason),
+        reason: String(e.reason),
+      })),
+    }, {
+      id: runId,
+      queuedAt: runRecord.queuedAt,
+      startedAt: runRecord.startedAt ?? startedAt,
+      status: "FAILED",
     });
 
     for (const e of errors) {
@@ -847,16 +861,18 @@ export async function runFullCycle(runId: string) {
     throw new Error(`Signal cycle failed for ${errors.length} asset(s)`);
   }
 
-  await prisma.signalRun.update({
-    where: { id: runId },
-    data: {
-      status: "COMPLETED",
-      completedAt: new Date(),
-      totalDurationMs: persistencePhaseCompletedAt - cycleStartedAt,
-      dataFetchDurationMs: metrics.dataFetchDurationMs,
-      scoringDurationMs: metrics.scoringDurationMs,
-      persistenceDurationMs: metrics.persistenceDurationMs,
-    },
+  await updateSignalRunWithRecovery(runId, {
+    status: "COMPLETED",
+    completedAt: new Date(),
+    totalDurationMs: persistencePhaseCompletedAt - cycleStartedAt,
+    dataFetchDurationMs: metrics.dataFetchDurationMs,
+    scoringDurationMs: metrics.scoringDurationMs,
+    persistenceDurationMs: metrics.persistenceDurationMs,
+  }, {
+    id: runId,
+    queuedAt: runRecord.queuedAt,
+    startedAt: runRecord.startedAt ?? startedAt,
+    status: "COMPLETED",
   });
 
   logEvent({

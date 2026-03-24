@@ -52,8 +52,10 @@ type BacktestRouteDependencies = {
 
 function jsonBadRequest(error: string, details: string) {
   return NextResponse.json({
-    error,
+    ok: false,
+    error: true,
     code: "BAD_REQUEST",
+    message: error,
     details,
     likelyMigrationIssue: false,
     hint: null,
@@ -182,8 +184,10 @@ export function createBacktestRouteHandlers(deps: BacktestRouteDependencies) {
           });
 
           return NextResponse.json({
-            error: "Insufficient replay coverage after preparation.",
+            ok: false,
+            error: true,
             code: "INSUFFICIENT_REPLAY_COVERAGE",
+            message: "Insufficient replay coverage after preparation.",
             details: JSON.stringify(coverageSummary),
             likelyMigrationIssue: false,
             hint: body.prepareData === false

@@ -6,8 +6,10 @@ type RouteErrorInput = {
 };
 
 export type RouteErrorPayload = {
-  error: string;
+  ok: false;
+  error: true;
   code: "BAD_REQUEST" | "INTERNAL_ERROR" | "MIGRATION_REQUIRED";
+  message: string;
   details: string;
   likelyMigrationIssue: boolean;
   hint: string | null;
@@ -43,8 +45,10 @@ export function buildRouteErrorResponse(error: unknown, input: RouteErrorInput) 
 
   if (isLikelyMigrationIssue(error)) {
     const payload: RouteErrorPayload = {
-      error: `${input.publicMessage} is unavailable because required database tables or columns are missing.`,
+      ok: false,
+      error: true,
       code: "MIGRATION_REQUIRED",
+      message: `${input.publicMessage} is unavailable because required database tables or columns are missing.`,
       details,
       likelyMigrationIssue: true,
       hint: "Run `npm run migrate:deploy` to apply prisma/migrations/20260323140000_add_signal_product_foundations.",
@@ -53,8 +57,10 @@ export function buildRouteErrorResponse(error: unknown, input: RouteErrorInput) 
   }
 
   const payload: RouteErrorPayload = {
-    error: input.publicMessage,
+    ok: false,
+    error: true,
     code: input.fallbackStatus === 400 ? "BAD_REQUEST" : "INTERNAL_ERROR",
+    message: input.publicMessage,
     details,
     likelyMigrationIssue: false,
     hint: null,

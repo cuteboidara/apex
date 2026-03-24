@@ -55,14 +55,14 @@ test("backtest route returns structured migration errors when runs cannot be loa
   const payload = await response.json() as {
     code: string;
     likelyMigrationIssue: boolean;
-    error: string;
+    message: string;
     hint: string | null;
   };
 
   assert.equal(response.status, 503);
   assert.equal(payload.code, "MIGRATION_REQUIRED");
   assert.equal(payload.likelyMigrationIssue, true);
-  assert.match(payload.error, /backtest runs/i);
+  assert.match(payload.message, /backtest runs/i);
   assert.match(payload.hint ?? "", /migrate:deploy/i);
 });
 
@@ -76,14 +76,14 @@ test("backtest route returns JSON for invalid request bodies", async () => {
   }) as never);
   const payload = await response.json() as {
     code: string;
-    error: string;
+    message: string;
     likelyMigrationIssue: boolean;
   };
 
   assert.equal(response.status, 400);
   assert.equal(payload.code, "BAD_REQUEST");
   assert.equal(payload.likelyMigrationIssue, false);
-  assert.match(payload.error, /invalid backtest request body/i);
+  assert.match(payload.message, /invalid backtest request body/i);
 });
 
 test("backtest route returns structured migration errors when run creation fails", async () => {
@@ -116,13 +116,13 @@ test("backtest route returns structured migration errors when run creation fails
   const payload = await response.json() as {
     code: string;
     likelyMigrationIssue: boolean;
-    error: string;
+    message: string;
     hint: string | null;
   };
 
   assert.equal(response.status, 503);
   assert.equal(payload.code, "MIGRATION_REQUIRED");
   assert.equal(payload.likelyMigrationIssue, true);
-  assert.match(payload.error, /replay backtest/i);
+  assert.match(payload.message, /replay backtest/i);
   assert.match(payload.hint ?? "", /migrate:deploy/i);
 });

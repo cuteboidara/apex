@@ -8,9 +8,9 @@ const globalForPrisma = globalThis as typeof globalThis & {
 };
 
 function getDatabaseUrl(): string {
-  const url = process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL ?? process.env.DIRECT_DATABASE_URL;
   if (!url) {
-    throw new Error("Database configuration missing. Set DIRECT_DATABASE_URL or DATABASE_URL.");
+    throw new Error("Database configuration missing. Set DATABASE_URL or DIRECT_DATABASE_URL.");
   }
   return url;
 }

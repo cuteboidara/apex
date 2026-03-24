@@ -1,12 +1,30 @@
-export type ProviderAvailability = "available" | "blocked" | "degraded" | "missing";
+export type ProviderAvailability = "available" | "blocked" | "degraded" | "offline";
 export type ProviderBlockedReason = "credits" | "rate_limit" | "permissions" | "configuration" | null;
 
-export function classifyProviderStatus(status: string, detail: string | null | undefined): {
+export function classifyProviderStatus(
+  status: string,
+  detail: string | null | undefined,
+  provider?: string | null
+): {
   availability: ProviderAvailability;
   blockedReason: ProviderBlockedReason;
+  displayStatus: "available" | "degraded" | "offline";
 } {
   const normalizedStatus = status.toLowerCase();
   const normalizedDetail = String(detail ?? "").toLowerCase();
+  const normalizedProvider = String(provider ?? "").toLowerCase();
+
+  if (
+    normalizedProvider === "binance" &&
+    (
+      normalizedDetail.includes("451") ||
+      normalizedDetail.includes("region") ||
+      normalizedDetail.includes("restricted location") ||
+      normalizedDetail.includes("unavailable from a restricted location")
+    )
+  ) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
+  }
 
   const blockedReason: ProviderBlockedReason =
     normalizedDetail.includes("credit balance is too low") ||
@@ -39,20 +57,28 @@ export function classifyProviderStatus(status: string, detail: string | null | u
             : null;
 
   if (normalizedStatus === "missing") {
-    return { availability: "missing", blockedReason };
+    return { availability: "offline", blockedReason: null, displayStatus: "offline" };
+  }
+
+  if (normalizedProvider === "yahoo finance" && blockedReason) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
   }
 
   if (blockedReason) {
-    return { availability: "blocked", blockedReason };
+    return { availability: "blocked", blockedReason, displayStatus: "offline" };
   }
 
   if (["configured", "online", "healthy", "live", "ok"].includes(normalizedStatus)) {
-    return { availability: "available", blockedReason: null };
+    return { availability: "available", blockedReason: null, displayStatus: "available" };
   }
 
-  if (["offline", "error", "degraded", "unavailable"].includes(normalizedStatus)) {
-    return { availability: "degraded", blockedReason: null };
+  if (["degraded"].includes(normalizedStatus)) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
   }
 
-  return { availability: "available", blockedReason: null };
+  if (["offline", "error", "unavailable", "unhealthy"].includes(normalizedStatus)) {
+    return { availability: "offline", blockedReason: null, displayStatus: "offline" };
+  }
+
+  return { availability: "available", blockedReason: null, displayStatus: "available" };
 }

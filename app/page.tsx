@@ -1606,7 +1606,10 @@ export default function Home() {
       setFailureBreakdown(payload.failureBreakdown ?? {});
     }
     if (alertsRes.status === "fulfilled") setAlerts(alertsRes.value ?? []);
-    if (systemRes.status === "fulfilled") setSystem(systemRes.value ?? null);
+    if (systemRes.status === "fulfilled") {
+      const payload = systemRes.value as Partial<SystemStatus> | null;
+      setSystem(payload && Array.isArray(payload.providers) ? payload as SystemStatus : null);
+    }
     if (queueRes.status === "fulfilled") {
       const payload = queueRes.value as QueueResponse;
       setQueueJobs(Array.isArray(payload.jobs) ? payload.jobs : []);
@@ -1704,7 +1707,7 @@ export default function Home() {
       const body = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(body?.error ?? "Failed to run cycle");
+        throw new Error(body?.message ?? body?.error ?? "Failed to run cycle");
       }
 
       if (body?.mode === "direct") {
@@ -1773,7 +1776,7 @@ export default function Home() {
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(body?.error ?? "Failed to enqueue cycle");
+        throw new Error(body?.message ?? body?.error ?? "Failed to enqueue cycle");
       }
       setCycleNotice({
         tone: "info",

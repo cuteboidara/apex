@@ -6,9 +6,10 @@ const REST_REDIS_KEYS = ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "
 const requirementSets = {
   shared: {
     required: [
-      ["DATABASE_URL|DIRECT_DATABASE_URL", "Primary database connection"],
+      ["DATABASE_URL", "Primary database connection used by Prisma and runtime services"],
     ],
     warnings: [
+      ["DIRECT_DATABASE_URL", "Optional direct database connection mirror is not configured"],
       ["TELEGRAM_BOT_TOKEN", "Telegram alert delivery will be unavailable"],
       ["RESEND_API_KEY", "Signup/admin email notifications will be unavailable"],
     ],

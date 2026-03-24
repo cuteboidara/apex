@@ -11,8 +11,9 @@ import { printValidationReport, validateRuntimeEnv } from "./validate-env.mjs";
 
 import { logEvent } from "../lib/logging";
 import { enqueueSignalCycle, createRedisConnection, SIGNAL_CYCLE_QUEUE } from "../lib/queue";
+import { ensureSignalRunRecord, updateSignalRunWithRecovery } from "../lib/runLifecycle";
+import { createSignalCycleFailureHandler, createSignalCycleJobProcessor } from "../lib/signalCycleJob";
 import { runCycle } from "../lib/scheduler";
-import { prisma } from "../lib/prisma";
 import { recordAuditEvent } from "../lib/audit";
 import { FAILURE_CODES } from "../lib/runConfig";
 
@@ -29,13 +30,16 @@ if (validationReport.errors.length > 0) {
 
 const connection = createRedisConnection();
 
+const processSignalCycleJob = createSignalCycleJobProcessor({ runCycle });
+const persistSignalCycleFailure = createSignalCycleFailureHandler({
+  ensureSignalRunRecord,
+  updateSignalRunWithRecovery,
+  recordAuditEvent,
+});
+
 const worker = new Worker(
   SIGNAL_CYCLE_QUEUE,
-  async job => {
-    const runId = String(job.data.runId);
-    const { signals } = await runCycle(runId);
-    return { runId, count: signals.length };
-  },
+  processSignalCycleJob,
   {
     connection,
     concurrency: 1,
@@ -66,40 +70,24 @@ worker.on("failed", (job, err) => {
     severity: "ERROR",
     message: "Signal cycle job failed",
     jobId: job?.id,
-    runId,
+    runId: runId ?? undefined,
     reason: String(err),
   });
-  if (runId) {
-    void prisma.signalRun
-      .update({
-        where: { id: runId },
-        data: {
-          status: "FAILED",
-          completedAt: new Date(),
-          failureCode: FAILURE_CODES.UNKNOWN_ERROR,
-          failureReason: String(err).slice(0, 1000),
-        },
-      })
-      .then(() =>
-        recordAuditEvent({
-          actor: "SYSTEM",
-          action: "run_failed",
-          entityType: "SignalRun",
-          entityId: runId,
-          after: { status: "FAILED", failureCode: FAILURE_CODES.UNKNOWN_ERROR },
-          correlationId: runId,
-        })
-      )
-      .catch(updateErr => {
-        logEvent({
-          component: "worker-with-scheduler",
-          severity: "ERROR",
-          message: "Failed to persist worker failure state",
-          runId,
-          reason: String(updateErr),
-        });
-      });
-  }
+  void (async () => {
+    await persistSignalCycleFailure({
+      runId,
+      correlationId: runId,
+      error: err,
+    });
+  })().catch(updateErr => {
+    logEvent({
+      component: "worker-with-scheduler",
+      severity: "ERROR",
+      message: "Failed to persist worker failure state",
+      runId: runId ?? undefined,
+      reason: String(updateErr),
+    });
+  });
 });
 
 // ── Scheduler ─────────────────────────────────────────────────────────────────

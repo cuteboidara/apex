@@ -40,8 +40,8 @@ export default function AdminSystemPage() {
     setCycleResult(null);
     try {
       const res = await fetch("/api/admin/trigger-cycle", { method: "POST" });
-      const json = await res.json() as { success: boolean; signalCount?: number; error?: string };
-      setCycleResult(json.success ? `✓ Cycle complete — ${json.signalCount} signals` : `✗ ${json.error}`);
+      const json = await res.json() as { success: boolean; signalCount?: number; error?: string; message?: string };
+      setCycleResult(json.success ? `✓ Cycle complete — ${json.signalCount} signals` : `✗ ${json.message ?? json.error ?? "Failed."}`);
       load();
     } catch (e) {
       setCycleResult(`✗ ${String(e)}`);

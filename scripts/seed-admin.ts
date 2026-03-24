@@ -16,7 +16,7 @@ const ADMIN_EMAIL    = "emmadara229@gmail.com";
 const ADMIN_PASSWORD = "Apex@Admin2026";
 const ADMIN_NAME     = "Admin";
 
-const pool   = new Pool({ connectionString: process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL });
+const pool   = new Pool({ connectionString: process.env.DATABASE_URL ?? process.env.DIRECT_DATABASE_URL });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 async function main() {

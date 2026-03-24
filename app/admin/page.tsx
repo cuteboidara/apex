@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface Stats {
   users: { total: number; pending: number; activeToday: number; banned: number };
@@ -35,11 +36,20 @@ function StatCard({ label, value, sub }: { label: string; value: number | string
 export default function AdminOverview() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then(r => r.json())
-      .then(setStats)
+    void fetchJsonResponse<Stats>("/api/admin/stats")
+      .then(result => {
+        if (!result.ok || !result.data) {
+          setStats(null);
+          setError(formatApiError(result, "Failed to load stats."));
+          return;
+        }
+
+        setStats(result.data);
+        setError(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -47,7 +57,7 @@ export default function AdminOverview() {
     return <div className="text-zinc-500 text-sm">Loading...</div>;
   }
   if (!stats) {
-    return <div className="text-red-400 text-sm">Failed to load stats.</div>;
+    return <div className="text-red-400 text-sm">{error ?? "Failed to load stats."}</div>;
   }
 
   return (

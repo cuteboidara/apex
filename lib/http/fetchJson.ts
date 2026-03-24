@@ -37,7 +37,7 @@ export async function readJsonResponse<T>(response: Response): Promise<ParsedJso
       ok: response.ok,
       status: response.status,
       data,
-      error: readString(record?.error) ?? (response.ok ? null : `Request failed with status ${response.status}.`),
+      error: readString(record?.message) ?? readString(record?.error) ?? (response.ok ? null : `Request failed with status ${response.status}.`),
       code: readString(record?.code),
       details: readString(record?.details),
       likelyMigrationIssue: record?.likelyMigrationIssue === true,

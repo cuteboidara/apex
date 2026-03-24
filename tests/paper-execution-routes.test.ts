@@ -88,7 +88,7 @@ test("paper execution accounts route returns structured migration errors", async
 
   const response = await route.GET();
   const payload = await response.json() as {
-    error: string;
+    message: string;
     code: string;
     likelyMigrationIssue: boolean;
     hint: string | null;
@@ -97,7 +97,7 @@ test("paper execution accounts route returns structured migration errors", async
   assert.equal(response.status, 503);
   assert.equal(payload.code, "MIGRATION_REQUIRED");
   assert.equal(payload.likelyMigrationIssue, true);
-  assert.match(payload.error, /paper trading accounts/i);
+  assert.match(payload.message, /paper trading accounts/i);
   assert.match(payload.hint ?? "", /migrate:deploy/i);
 });
 
@@ -128,7 +128,7 @@ test("paper execution positions route returns structured migration errors on loa
 
   const response = await route.GET(new Request("http://localhost/api/execution/positions") as never);
   const payload = await response.json() as {
-    error: string;
+    message: string;
     code: string;
     likelyMigrationIssue: boolean;
     hint: string | null;
@@ -137,6 +137,6 @@ test("paper execution positions route returns structured migration errors on loa
   assert.equal(response.status, 503);
   assert.equal(payload.code, "MIGRATION_REQUIRED");
   assert.equal(payload.likelyMigrationIssue, true);
-  assert.match(payload.error, /paper trading positions/i);
+  assert.match(payload.message, /paper trading positions/i);
   assert.match(payload.hint ?? "", /migrate:deploy/i);
 });

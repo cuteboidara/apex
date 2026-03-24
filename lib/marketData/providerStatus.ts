@@ -17,20 +17,28 @@ type ProviderSummary = {
   recordedAt: string | null;
 };
 
-const DASHBOARD_MARKET_PROVIDERS: Array<{ provider: ProviderName; assetClass: AssetClass }> = Array.from(
-  new Map(
-    marketProviderCatalog.flatMap(adapter =>
-      adapter.capability.assetClasses.map(assetClass => [
-        `${adapter.provider}:${assetClass}`,
-        { provider: adapter.provider, assetClass },
-      ] as const)
-    )
-  ).values()
+const DASHBOARD_MARKET_PROVIDERS = [
+  { provider: "Binance", assetClass: "CRYPTO" },
+  { provider: "Yahoo Finance", assetClass: "FOREX" },
+  { provider: "Yahoo Finance", assetClass: "COMMODITY" },
+] as const satisfies ReadonlyArray<{ provider: ProviderName; assetClass: AssetClass }>;
+
+const DASHBOARD_PROVIDER_SCOPE: Array<{ provider: ProviderName; assetClass: AssetClass }> = [...DASHBOARD_MARKET_PROVIDERS].filter(item =>
+  marketProviderCatalog.some(adapter =>
+    adapter.provider === item.provider &&
+    adapter.capability.assetClasses.includes(item.assetClass)
+  )
 );
+
+function fallbackStatusFromHealth(state: "HEALTHY" | "DEGRADED" | "UNHEALTHY") {
+  if (state === "HEALTHY") return "available";
+  if (state === "DEGRADED") return "degraded";
+  return "offline";
+}
 
 export async function getProviderSummaries(): Promise<ProviderSummary[]> {
   type ProviderHealthRecord = Awaited<ReturnType<typeof prisma.providerHealth.findMany>>[number];
-  return Promise.all(DASHBOARD_MARKET_PROVIDERS.map(async ({ provider, assetClass }) => {
+  return Promise.all(DASHBOARD_PROVIDER_SCOPE.map(async ({ provider, assetClass }) => {
     const [health, latest] = await Promise.all([
       getProviderHealthScore(provider, assetClass),
       prisma.providerHealth.findMany({
@@ -56,10 +64,12 @@ export async function getProviderSummaries(): Promise<ProviderSummary[]> {
       healthState: health.state,
       circuitState: health.circuitState,
       cooldownUntil: health.cooldownUntil,
-      status: latest?.status?.toLowerCase?.() ?? health.state.toLowerCase(),
+      status: latest?.status?.toLowerCase?.() ?? fallbackStatusFromHealth(health.state),
       detail: latest?.detail
         ? `${latest.requestSymbol ? `${latest.requestSymbol} · ` : ""}${latest.detail}`
-        : `${assetClass.toLowerCase()} provider`,
+        : provider === "Binance"
+          ? "Primary crypto provider"
+          : `Primary ${assetClass.toLowerCase()} provider`,
       latencyMs: latest?.latencyMs ?? null,
       recordedAt: latest?.recordedAt?.toISOString?.() ?? null,
     };

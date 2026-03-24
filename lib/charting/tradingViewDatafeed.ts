@@ -202,10 +202,10 @@ export function createTradingViewDatafeed(options: CreateTradingViewDatafeedOpti
     }, options.apiBaseUrl);
 
     const response = await fetchImpl(requestUrl, { cache: "no-store" });
-    const payload = await response.json().catch(() => null) as CandleApiResponse | { error?: string } | null;
+    const payload = await response.json().catch(() => null) as CandleApiResponse | { error?: string; message?: string } | null;
 
     if (!response.ok) {
-      throw new Error((payload as { error?: string } | null)?.error ?? `Candle request failed with ${response.status}`);
+      throw new Error((payload as { error?: string; message?: string } | null)?.message ?? (payload as { error?: string; message?: string } | null)?.error ?? `Candle request failed with ${response.status}`);
     }
 
     return payload as CandleApiResponse;

@@ -73,8 +73,8 @@ export default function AdminTelegramPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
     });
-    const json = await res.json() as { success?: boolean; error?: string };
-    setSendResult({ ok: !!json.success, text: json.success ? "Message sent." : (json.error ?? "Failed.") });
+    const json = await res.json() as { success?: boolean; error?: string; message?: string };
+    setSendResult({ ok: !!json.success, text: json.success ? "Message sent." : (json.message ?? json.error ?? "Failed.") });
     if (json.success) setMessage("");
     setSending(false);
   }

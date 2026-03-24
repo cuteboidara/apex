@@ -30,6 +30,26 @@ test("readJsonResponse tolerates non-json bodies", async () => {
   assert.match(result.details ?? "", /html/i);
 });
 
+test("readJsonResponse prefers structured message fields from route helpers", async () => {
+  const response = new Response(JSON.stringify({
+    ok: false,
+    error: true,
+    code: "INTERNAL_ERROR",
+    message: "Unable to load system stats.",
+    details: "boom",
+    likelyMigrationIssue: false,
+    hint: null,
+  }), {
+    status: 500,
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const result = await readJsonResponse(response);
+
+  assert.equal(result.error, "Unable to load system stats.");
+  assert.equal(result.code, "INTERNAL_ERROR");
+});
+
 test("formatApiError appends migration hints for likely migration failures", () => {
   const message = formatApiError({
     error: "Unable to load backtest runs.",

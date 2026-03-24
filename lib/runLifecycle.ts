@@ -1,9 +1,126 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
-import { FAILURE_CODES } from "@/lib/runConfig";
+import { ENGINE_VERSION, FAILURE_CODES, FEATURE_VERSION, PROMPT_VERSION } from "@/lib/runConfig";
 
 const STALE_RUN_THRESHOLD_MS = 5 * 60 * 1000; // 300 000 ms — matches Railway maxDuration
+
+type SignalRunSeed = {
+  id?: string | null;
+  queuedAt?: Date;
+  startedAt?: Date | null;
+  completedAt?: Date | null;
+  totalDurationMs?: number | null;
+  dataFetchDurationMs?: number | null;
+  scoringDurationMs?: number | null;
+  persistenceDurationMs?: number | null;
+  alertDispatchDurationMs?: number | null;
+  status?: string;
+  failureCode?: string | null;
+  failureReason?: string | null;
+  failureDetails?: Prisma.InputJsonValue | null;
+};
+
+function buildSignalRunCreateData(seed: SignalRunSeed = {}): Prisma.SignalRunUncheckedCreateInput {
+  const failureDetails =
+    seed.failureDetails === null
+      ? Prisma.JsonNull
+      : seed.failureDetails;
+
+  return {
+    ...(seed.id ? { id: seed.id } : {}),
+    queuedAt: seed.queuedAt ?? new Date(),
+    startedAt: seed.startedAt ?? null,
+    completedAt: seed.completedAt ?? null,
+    totalDurationMs: seed.totalDurationMs ?? null,
+    dataFetchDurationMs: seed.dataFetchDurationMs ?? null,
+    scoringDurationMs: seed.scoringDurationMs ?? null,
+    persistenceDurationMs: seed.persistenceDurationMs ?? null,
+    alertDispatchDurationMs: seed.alertDispatchDurationMs ?? null,
+    engineVersion: ENGINE_VERSION,
+    featureVersion: FEATURE_VERSION,
+    promptVersion: PROMPT_VERSION,
+    status: seed.status ?? "QUEUED",
+    failureCode: seed.failureCode ?? null,
+    failureReason: seed.failureReason ?? null,
+    ...(failureDetails !== undefined ? { failureDetails } : {}),
+  };
+}
+
+export function isSignalRunNotFoundError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  if (code === "P2025") return true;
+
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("No record was found for an update");
+}
+
+export async function createSignalRunRecord(seed: SignalRunSeed = {}) {
+  return prisma.signalRun.create({
+    data: buildSignalRunCreateData(seed),
+  });
+}
+
+export async function ensureSignalRunRecord(runId?: string | null, seed: SignalRunSeed = {}) {
+  if (runId) {
+    const existing = await prisma.signalRun.findUnique({
+      where: { id: runId },
+      select: {
+        id: true,
+        queuedAt: true,
+        startedAt: true,
+      },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    return createSignalRunRecord({
+      ...seed,
+      id: runId,
+      status: seed.status ?? "RECOVERED",
+    });
+  }
+
+  return createSignalRunRecord(seed);
+}
+
+export async function updateSignalRunWithRecovery(
+  runId: string | null | undefined,
+  data: Prisma.SignalRunUpdateInput,
+  recoverySeed: SignalRunSeed = {}
+) {
+  const ensuredRunId = runId ?? (await createSignalRunRecord({
+    ...recoverySeed,
+    status: recoverySeed.status ?? "RECOVERED",
+  })).id;
+
+  try {
+    return await prisma.signalRun.update({
+      where: { id: ensuredRunId },
+      data,
+    });
+  } catch (error) {
+    if (!isSignalRunNotFoundError(error)) {
+      throw error;
+    }
+
+    await createSignalRunRecord({
+      ...recoverySeed,
+      id: ensuredRunId,
+      status: recoverySeed.status ?? "RECOVERED",
+    });
+
+    return prisma.signalRun.update({
+      where: { id: ensuredRunId },
+      data,
+    });
+  }
+}
 
 function getRunAgeMs(run: { startedAt: Date | null; queuedAt: Date }) {
   const baseline = run.startedAt ?? run.queuedAt;

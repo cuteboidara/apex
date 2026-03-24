@@ -38,9 +38,9 @@ export default function SignUpPage() {
     });
 
     if (!res.ok) {
-      const data = await res.json() as { error?: string };
+      const data = await res.json() as { error?: string; message?: string };
       setLoading(false);
-      setError(data.error ?? "Sign up failed. Please try again.");
+      setError(data.message ?? data.error ?? "Sign up failed. Please try again.");
       return;
     }
 

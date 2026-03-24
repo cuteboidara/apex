@@ -67,8 +67,10 @@ export function createExecutionPositionsRouteHandlers(deps: ExecutionPositionsRo
 
         if (!body?.action) {
           return NextResponse.json({
-            error: "Missing action",
+            ok: false,
+            error: true,
             code: "BAD_REQUEST",
+            message: "Missing action",
             details: "Execution requests require an action value.",
             likelyMigrationIssue: false,
             hint: null,
@@ -137,8 +139,10 @@ export function createExecutionPositionsRouteHandlers(deps: ExecutionPositionsRo
         }
 
         return NextResponse.json({
-          error: "Unsupported execution action or missing parameters",
+          ok: false,
+          error: true,
           code: "BAD_REQUEST",
+          message: "Unsupported execution action or missing parameters",
           details: "Provide the required identifiers and prices for the requested execution action.",
           likelyMigrationIssue: false,
           hint: null,
