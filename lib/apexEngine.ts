@@ -445,7 +445,7 @@ export async function analyzeAsset(
   // SMC publication threshold: must meet minimum criteria for non-Silent rank
   const passesThreshold = hasActivePlan || meetsPublicationThreshold(smcScores);
   // Always derive signal rank from the SMC total, never from the plan's setupScore/publicationRank.
-  const rank = passesThreshold ? getRank(total) : "Silent";
+  const rank = hasActivePlan ? bestPlan!.publicationRank : getRank(total);
   const levels = {
     entry: bestPlan?.entryMin != null && bestPlan.entryMax != null ? (bestPlan.entryMin + bestPlan.entryMax) / 2 : null,
     stopLoss: bestPlan?.stopLoss ?? null,
