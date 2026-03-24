@@ -10,6 +10,10 @@ const requirementSets = {
     ],
     warnings: [
       ["DIRECT_DATABASE_URL", "Optional direct database connection mirror is not configured"],
+      ["APEX_CORE_SIGNAL_MODE", "Core signal mode defaults to deterministic; set it explicitly for go-live clarity"],
+      ["APEX_DISABLE_LLM", "LLM calls default to disabled in deterministic mode; set it explicitly for go-live clarity"],
+      ["APEX_DISABLE_NEWS", "News enrichment defaults to disabled in deterministic mode; set it explicitly for go-live clarity"],
+      ["APEX_LLM_OPTIONAL", "LLM providers are treated as optional by default; set it explicitly for go-live clarity"],
       ["TELEGRAM_BOT_TOKEN", "Telegram alert delivery will be unavailable"],
       ["RESEND_API_KEY", "Signup/admin email notifications will be unavailable"],
     ],

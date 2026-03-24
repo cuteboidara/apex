@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { TradingViewChartPanel } from "@/components/TradingViewChartPanel";
+import { fetchJsonResponse } from "@/lib/http/fetchJson";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -269,8 +270,31 @@ interface CommentaryStatus {
   provider: string;
   available: boolean;
   status: string;
+  mode: string;
   detail: string;
   blockedReason: string | null;
+  templateFallbackAvailable: boolean;
+  optional?: boolean;
+  llmDisabled?: boolean;
+}
+
+interface NewsStatus {
+  provider: string;
+  available: boolean;
+  status: string;
+  detail: string;
+  loadedFeeds: number;
+  failedFeeds: string[];
+}
+
+interface CoreStatus {
+  available: boolean;
+  status: string;
+  detail: string;
+  databaseStatus: string;
+  queueStatus: string;
+  marketDataStatus: string;
+  engineStatus: string;
 }
 
 interface LatestTradePlansResponse {
@@ -333,6 +357,8 @@ interface PerformanceResponse {
 }
 
 interface SystemStatus {
+  status?: string;
+  reason?: string | null;
   queue: {
     status: string;
     waiting: number;
@@ -346,7 +372,9 @@ interface SystemStatus {
   };
   providers: ProviderStatus[];
   blockedProviders: ProviderStatus[];
+  core: CoreStatus;
   commentary: CommentaryStatus;
+  news: NewsStatus;
   latestSetupBreakdown: SetupBreakdown;
   timestamp: string;
 }
@@ -402,7 +430,7 @@ const ASSETS = [
   "BTCUSDT","ETHUSDT",
 ] as const;
 const ASSET_CLASS_ORDER = ["CRYPTO", "FOREX", "COMMODITY"] as const;
-const PROVIDER_ORDER = ["Postgres", "Redis", "Anthropic", "OpenAI", "Gemini", "RSS", "FRED", "Telegram", "Yahoo Finance", "Binance"] as const;
+const PROVIDER_ORDER = ["Postgres", "Redis", "OpenAI", "Gemini", "Anthropic", "RSS", "FRED", "Telegram", "Yahoo Finance", "Binance"] as const;
 
 const ASSET_CLASS: Record<string, string> = {
   EURUSD: "FOREX", GBPUSD: "FOREX", USDJPY: "FOREX",
@@ -470,7 +498,7 @@ function sentimentDot(s: "bullish" | "bearish" | "neutral"): string {
 
 function toneForStatus(status: string): string {
   const normalized = status.toLowerCase();
-  if (normalized === "completed" || normalized === "delivered" || normalized === "configured" || normalized === "online" || normalized === "healthy" || normalized === "live" || normalized === "ok") {
+  if (normalized === "completed" || normalized === "delivered" || normalized === "configured" || normalized === "online" || normalized === "healthy" || normalized === "live" || normalized === "ok" || normalized === "available") {
     return "text-green-300 bg-green-500/10 border-green-500/30";
   }
   if (normalized === "running" || normalized === "waiting" || normalized === "active" || normalized === "processing" || normalized === "degraded") {
@@ -572,6 +600,9 @@ function qualityGateLabel(reason: string | null | undefined): string {
 
 function compactProviderDetail(detail: string): string {
   const normalized = detail.toLowerCase();
+  if (normalized.includes("news enrichment is disabled") || normalized.includes("news_disabled")) return "News enrichment is disabled. Signals run without RSS context.";
+  if (normalized.includes("deterministic mode")) return "Deterministic mode is active.";
+  if (normalized.includes("llm calls are disabled")) return "LLM calls are disabled. Templates remain active.";
   if (normalized.includes("rate_limit_error") || normalized.includes("concurrent connections has exceeded your rate limit")) {
     return "Rate limit reached.";
   }
@@ -579,6 +610,8 @@ function compactProviderDetail(detail: string): string {
   if (normalized.includes("out of api credits")) return "Daily API credits exhausted.";
   if (normalized.includes("exceeded your current quota")) return "Provider quota exhausted.";
   if (normalized.includes("insufficient_quota") || normalized.includes("resource exhausted")) return "Provider quota exhausted.";
+  if (normalized.includes("rss_unavailable")) return "All RSS feeds are temporarily unavailable.";
+  if (normalized.includes("feed_failures:")) return `Some RSS feeds failed: ${detail.split(":")[1]?.trim() ?? "partial outage"}.`;
   if (normalized.includes("premium endpoint")) return "Endpoint requires a paid plan.";
   if (normalized.includes("api key not valid")) return "Provider rejected the API key.";
   if (normalized.includes("please consider spreading out") || normalized.includes("rate limit")) return "Free-tier rate limit reached.";
@@ -593,9 +626,9 @@ function providerRole(provider: ProviderStatus): string {
   if (provider.assetClass === "COMMODITY" && provider.provider === "Yahoo Finance") return "Primary metals quotes and candles";
   if (provider.provider === "Postgres") return "Primary persistence";
   if (provider.provider === "Redis") return "Queue and retries";
-  if (provider.provider === "Anthropic") return "Primary reasoning and summaries";
-  if (provider.provider === "OpenAI") return "Secondary reasoning fallback";
-  if (provider.provider === "Gemini") return "Final reasoning fallback";
+  if (provider.provider === "OpenAI") return "Primary reasoning and signal analysis";
+  if (provider.provider === "Gemini") return "Secondary reasoning and final verdict fallback";
+  if (provider.provider === "Anthropic") return "Tertiary reasoning fallback";
   if (provider.provider === "RSS") return "Free market news feeds";
   if (provider.provider === "FRED") return "Macro data";
   if (provider.provider === "Telegram") return "Alert delivery";
@@ -747,7 +780,7 @@ function AssetCard({
                   )}
                   {signal.aiClaudeConfidence != null && (
                     <div className="flex items-center gap-2">
-                      <span className="text-[7px] text-green-400 w-10 shrink-0">Claude</span>
+                      <span className="text-[7px] text-green-400 w-10 shrink-0">Risk</span>
                       <div className="flex-1 h-1 rounded-full bg-zinc-800">
                         <div className="h-1 rounded-full bg-green-500 transition-all" style={{ width: `${signal.aiClaudeConfidence}%` }} />
                       </div>
@@ -1557,16 +1590,18 @@ export default function Home() {
   // ── Existing data fetch ───────────────────────────────────────────────────
 
   const fetchData = useCallback(async () => {
-    const [latestRes, plansRes, feedRes, tgRes, performanceRes] = await Promise.allSettled([
-      fetch("/api/signals/latest").then(r => r.json()),
-      fetch("/api/trade-plans/latest").then(r => r.json()),
-      fetch("/api/signals?rank=S,A&limit=20").then(r => r.json()),
-      fetch("/api/telegram/settings").then(r => r.json()),
-      fetch("/api/performance").then(r => r.json()),
+    const [latestRes, plansRes, feedRes, tgRes, performanceRes] = await Promise.all([
+      fetchJsonResponse<Record<string, Signal>>("/api/signals/latest"),
+      fetchJsonResponse<LatestTradePlansResponse | Record<string, Record<string, TradePlan>>>("/api/trade-plans/latest"),
+      fetchJsonResponse<Signal[]>("/api/signals?rank=S,A&limit=20"),
+      fetchJsonResponse<TelegramSettings>("/api/telegram/settings"),
+      fetchJsonResponse<PerformanceResponse>("/api/performance"),
     ]);
-    if (latestRes.status === "fulfilled") setLatestSignals(latestRes.value ?? {});
-    if (plansRes.status === "fulfilled") {
-      const payload = plansRes.value as unknown;
+    if (latestRes.ok && latestRes.data && typeof latestRes.data === "object") {
+      setLatestSignals(latestRes.data);
+    }
+    if (plansRes.ok && plansRes.data) {
+      const payload = plansRes.data as unknown;
       if (
         payload &&
         typeof payload === "object" &&
@@ -1581,9 +1616,9 @@ export default function Home() {
         setSetupBreakdown(null);
       }
     }
-    if (feedRes.status   === "fulfilled") setSignalFeed(feedRes.value   ?? []);
-    if (tgRes.status     === "fulfilled") setTgSettings(tgRes.value     ?? null);
-    if (performanceRes.status === "fulfilled") setPerformance(performanceRes.value ?? null);
+    if (feedRes.ok && Array.isArray(feedRes.data)) setSignalFeed(feedRes.data);
+    if (tgRes.ok) setTgSettings(tgRes.data ?? null);
+    if (performanceRes.ok && performanceRes.data) setPerformance(performanceRes.data);
     setLastRefresh(new Date());
   }, []);
 
@@ -1594,24 +1629,24 @@ export default function Home() {
   }, [fetchData]);
 
   const fetchOps = useCallback(async () => {
-    const [runsRes, alertsRes, systemRes, queueRes] = await Promise.allSettled([
-      fetch("/api/runs").then(r => r.json()),
-      fetch("/api/alerts").then(r => r.json()),
-      fetch("/api/system").then(r => r.json()),
-      fetch("/api/queue").then(r => r.json()),
+    const [runsRes, alertsRes, systemRes, queueRes] = await Promise.all([
+      fetchJsonResponse<RunsResponse>("/api/runs"),
+      fetchJsonResponse<AlertRecord[]>("/api/alerts"),
+      fetchJsonResponse<SystemStatus>("/api/system"),
+      fetchJsonResponse<QueueResponse>("/api/queue"),
     ]);
-    if (runsRes.status === "fulfilled") {
-      const payload = runsRes.value as RunsResponse;
+    if (runsRes.ok && runsRes.data) {
+      const payload = runsRes.data;
       setRuns(Array.isArray(payload.runs) ? payload.runs : []);
       setFailureBreakdown(payload.failureBreakdown ?? {});
     }
-    if (alertsRes.status === "fulfilled") setAlerts(alertsRes.value ?? []);
-    if (systemRes.status === "fulfilled") {
-      const payload = systemRes.value as Partial<SystemStatus> | null;
+    if (alertsRes.ok && Array.isArray(alertsRes.data)) setAlerts(alertsRes.data);
+    if (systemRes.ok) {
+      const payload = systemRes.data as Partial<SystemStatus> | null;
       setSystem(payload && Array.isArray(payload.providers) ? payload as SystemStatus : null);
     }
-    if (queueRes.status === "fulfilled") {
-      const payload = queueRes.value as QueueResponse;
+    if (queueRes.ok && queueRes.data) {
+      const payload = queueRes.data;
       setQueueJobs(Array.isArray(payload.jobs) ? payload.jobs : []);
       setAlertSendingPaused(Boolean(payload.alertSendingPaused));
     }
@@ -1624,11 +1659,10 @@ export default function Home() {
   }, [fetchOps]);
 
   const fetchRunDetail = useCallback(async (runId: string) => {
-    try {
-      const res = await fetch(`/api/runs/${runId}`);
-      if (!res.ok) return;
-      setSelectedRun(await res.json());
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<RunDetail>(`/api/runs/${runId}`);
+    if (result.ok && result.data) {
+      setSelectedRun(result.data);
+    }
   }, []);
 
   useEffect(() => {
@@ -1639,10 +1673,8 @@ export default function Home() {
   // ── Live prices — every 30 seconds ───────────────────────────────────────
 
   const fetchLivePrices = useCallback(async () => {
-    try {
-      const data = await fetch("/api/market/live").then(r => r.json());
-      if (Array.isArray(data)) setLivePrices(data);
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<LivePrice[]>("/api/market/live");
+    if (result.ok && Array.isArray(result.data)) setLivePrices(result.data);
   }, []);
 
   useEffect(() => {
@@ -1654,10 +1686,8 @@ export default function Home() {
   // ── News — every 5 minutes ────────────────────────────────────────────────
 
   const fetchNews = useCallback(async () => {
-    try {
-      const data = await fetch("/api/market/news").then(r => r.json());
-      if (Array.isArray(data)) setNewsItems(data);
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<NewsItem[]>("/api/market/news");
+    if (result.ok && Array.isArray(result.data)) setNewsItems(result.data);
   }, []);
 
   useEffect(() => {
@@ -1669,10 +1699,8 @@ export default function Home() {
   // ── Calendar — every 30 minutes ───────────────────────────────────────────
 
   const fetchCalendar = useCallback(async () => {
-    try {
-      const data = await fetch("/api/market/calendar").then(r => r.json());
-      if (Array.isArray(data)) setCalendarEvents(data);
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<CalendarEvent[]>("/api/market/calendar");
+    if (result.ok && Array.isArray(result.data)) setCalendarEvents(result.data);
   }, []);
 
   useEffect(() => {
@@ -1684,10 +1712,8 @@ export default function Home() {
   // ── Institutional — every 10 minutes ─────────────────────────────────────
 
   const fetchInstitutional = useCallback(async () => {
-    try {
-      const data = await fetch("/api/market/institutional").then(r => r.json());
-      if (Array.isArray(data)) setInstitutionalItems(data);
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<InstitutionalItem[]>("/api/market/institutional");
+    if (result.ok && Array.isArray(result.data)) setInstitutionalItems(result.data);
   }, []);
 
   useEffect(() => {
@@ -1736,14 +1762,14 @@ export default function Home() {
   }
 
   async function saveTelegramSettings(update: Partial<TelegramSettings>) {
-    try {
-      const res  = await fetch("/api/telegram/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(update),
-      });
-      setTgSettings(await res.json());
-    } catch { /* silent */ }
+    const result = await fetchJsonResponse<TelegramSettings>("/api/telegram/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update),
+    });
+    if (result.ok) {
+      setTgSettings(result.data ?? null);
+    }
   }
 
   async function retryQueueJob(jobId: string) {
@@ -1846,8 +1872,6 @@ export default function Home() {
   const configuredProviderCount = system
     ? system.providers.filter(provider => provider.availability === "available").length
     : 0;
-  const coreProviders = system?.providers.filter(provider => !provider.assetClass) ?? [];
-  const coreIssues = coreProviders.filter(provider => provider.availability !== "available");
   const marketCoverage: CoverageSummary[] = system ? (ASSET_CLASS_ORDER as readonly string[]).map(assetClass => {
     const assetProviders = system.providers.filter(provider => provider.assetClass === assetClass);
     const assetQuotes = livePrices.filter(price => price.assetClass === assetClass);
@@ -1872,21 +1896,45 @@ export default function Home() {
 
     return {
       label,
-      status: assetProviders.length > 0 ? "DEGRADED" : "MISSING",
-      summary: assetProviders.length > 0 ? "Configured but blocked" : "No provider data",
+      status: assetProviders.length > 0 ? "DEGRADED" : "OFFLINE",
+      summary: assetProviders.length > 0 ? "Quotes degraded" : "No provider data",
       providers: providerList,
       detail: issueDetails.join(" · ") || "Awaiting market data checks.",
     };
   }) : [];
-  const serviceCoverage: CoverageSummary[] = system ? [{
-    label: "Core Services",
-    status: queueAvailable && coreIssues.length === 0 ? "ONLINE" : "DEGRADED",
-    summary: queueAvailable ? "Control plane available" : "Run Cycle executes inline",
-    providers: "Postgres · Redis · Anthropic/OpenAI/Gemini · Telegram",
-      detail: coreIssues.length > 0
-        ? coreIssues.map(provider => `${provider.provider}: ${compactProviderDetail(provider.detail)}`).join(" · ")
-        : "Postgres persistence, Redis queueing, the LLM explanation chain, and Telegram delivery are responding normally.",
-  }] : [];
+  const serviceCoverage: CoverageSummary[] = system ? [
+    {
+      label: "Core Services",
+      status: String(system.core?.status ?? "degraded").toUpperCase(),
+      summary: queueAvailable ? "Control plane available" : "Inline fallback active",
+      providers: "Postgres · Redis · Yahoo Finance · Binance",
+      detail: system.core?.detail ?? "Core runtime details unavailable.",
+    },
+    {
+      label: "Commentary",
+      status: String(system.commentary?.status ?? "degraded").toUpperCase(),
+      summary: (system.commentary?.mode ?? "template") === "llm"
+        ? `${system.commentary?.provider ?? "LLM"} active`
+        : (system.commentary?.mode ?? "template") === "disabled"
+          ? "LLM disabled"
+          : "Template fallback active",
+      providers: "OpenAI · Gemini · Anthropic",
+      detail: compactProviderDetail(system.commentary?.detail ?? "Commentary fallback is available."),
+    },
+    {
+      label: "News",
+      status: String(system.news?.status ?? "degraded").toUpperCase(),
+      summary: (system.news?.detail ?? "").toLowerCase().includes("disabled")
+        ? "News disabled"
+        : (system.news?.status ?? "degraded") === "available"
+        ? "RSS healthy"
+        : (system.news?.status ?? "degraded") === "offline"
+          ? "RSS unavailable"
+          : "Partial RSS coverage",
+      providers: "Reuters · FXStreet · Investing.com",
+      detail: compactProviderDetail(system.news?.detail ?? "RSS telemetry unavailable."),
+    },
+  ] : [];
   const coverageSummaries = [...marketCoverage, ...serviceCoverage];
   const degradedCoverage = marketCoverage.filter(item => item.status !== "LIVE");
   const latestSetupMix = system?.latestSetupBreakdown ?? setupBreakdown;
@@ -1897,12 +1945,24 @@ export default function Home() {
   const scalpGate = performance?.qualityGate.byStyle.SCALP ?? null;
   const systemNotice = system
     ? [
+        (system.core?.status ?? "degraded") === "available"
+          ? "Core services are available."
+          : (system.core?.status ?? "degraded") === "degraded"
+            ? "Core services are degraded but still operational."
+            : "Core services are offline.",
         queueAvailable
           ? `Queue is online${system.queue.connectionSource ? ` via ${system.queue.connectionSource}` : ""}.`
           : "Queue is offline, so Run Cycle executes inline.",
-        system.commentary.available
-          ? "Commentary provider is available."
-          : `Commentary provider unavailable${system.commentary.blockedReason ? ` due to ${blockedReasonLabel(system.commentary.blockedReason)}` : ""}.`,
+        (system.commentary?.status ?? "degraded") === "available"
+          ? "Commentary providers are available."
+          : (system.commentary?.mode ?? "template") === "disabled"
+            ? "Commentary is in deterministic mode because LLM calls are disabled."
+            : "Commentary is degraded and using deterministic fallbacks.",
+        (system.news?.status ?? "degraded") === "available"
+          ? "RSS news is available."
+          : (system.news?.status ?? "degraded") === "offline"
+            ? "RSS news is offline; signal generation continues without fresh headlines."
+            : "RSS news is partially degraded.",
         marketCoverage.find(item => item.label === "Crypto")?.status === "LIVE"
           ? "Crypto market data is live."
           : "Crypto market data is degraded.",
@@ -1912,7 +1972,7 @@ export default function Home() {
           ? `${degradedCoverage
             .filter(item => item.label !== "Crypto")
             .map(item => item.label.toLowerCase())
-            .join(" and ")} feeds are configured but currently blocked by provider limits or plan restrictions.`
+            .join(" and ")} feeds are currently degraded or stale.`
           : "Forex and metals feeds are responding normally.",
       ].join(" ")
     : null;
@@ -2431,41 +2491,55 @@ export default function Home() {
                   <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Runtime</p>
-                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.queue.status)}`}>
-                        {system.queue.mode}
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.core?.status ?? "degraded")}`}>
+                        {system.core?.status ?? "degraded"}
                       </span>
                     </div>
                     <p className="text-[10px] font-bold text-zinc-100 mt-2">
-                      Queue {String(system.queue.status).toUpperCase()}
-                      {system.queue.connectionSource ? ` via ${system.queue.connectionSource}` : ""}
+                      Core {String(system.core?.status ?? "degraded").toUpperCase()}
                     </p>
                     <p className="text-[9px] text-zinc-500 mt-1">
-                      {system.queue.failureReason ?? "Redis-backed queue is reachable."}
+                      {compactProviderDetail(system.core?.detail ?? "Core runtime details unavailable.")}
                     </p>
                   </div>
                   <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Commentary</p>
-                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.commentary.available ? "online" : "unavailable")}`}>
-                        {system.commentary.available ? "available" : "unavailable"}
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.commentary?.status ?? "degraded")}`}>
+                        {system.commentary?.status ?? "degraded"}
                       </span>
                     </div>
-                    <p className="text-[10px] font-bold text-zinc-100 mt-2">{system.commentary.provider}</p>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">{system.commentary?.provider ?? "Template fallback"}</p>
                     <p className="text-[9px] text-zinc-500 mt-1">
-                      {system.commentary.blockedReason
-                        ? `${blockedReasonLabel(system.commentary.blockedReason)} · ${compactProviderDetail(system.commentary.detail)}`
-                        : compactProviderDetail(system.commentary.detail)}
+                      {system.commentary?.blockedReason
+                        ? `${blockedReasonLabel(system.commentary.blockedReason)} · ${compactProviderDetail(system.commentary?.detail ?? "")}`
+                        : compactProviderDetail(system.commentary?.detail ?? "Commentary fallback is available.")}
                     </p>
                   </div>
                   <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Provider Blocks</p>
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">News</p>
+                      <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.news?.status ?? "degraded")}`}>
+                        {system.news?.status ?? "degraded"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-100 mt-2">
+                      {system.news?.provider ?? "RSS"}
+                      {(system.news?.failedFeeds?.length ?? 0) > 0 ? ` · ${system.news?.failedFeeds.length ?? 0} feed issues` : ""}
+                    </p>
+                    <p className="text-[9px] text-zinc-500 mt-1">
+                      {compactProviderDetail(system.news?.detail ?? "RSS telemetry unavailable.")}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[8px] uppercase tracking-[0.22em] text-zinc-700">Hard Blocks</p>
                       <span className={`text-[8px] font-bold px-2 py-1 rounded-full border ${toneForStatus(system.blockedProviders.length > 0 ? "degraded" : "online")}`}>
                         {system.blockedProviders.length}
                       </span>
                     </div>
                     <p className="text-[10px] font-bold text-zinc-100 mt-2">
-                      {system.blockedProviders.length > 0 ? system.blockedProviders.map(provider => provider.provider).join(" · ") : "No provider blocks"}
+                      {system.blockedProviders.length > 0 ? system.blockedProviders.map(provider => provider.provider).join(" · ") : "No hard blocks"}
                     </p>
                     <p className="text-[9px] text-zinc-500 mt-1">
                       {system.blockedProviders.length > 0
@@ -2473,7 +2547,7 @@ export default function Home() {
                             .slice(0, 3)
                             .map(provider => `${provider.provider}: ${blockedReasonLabel(provider.blockedReason)}`)
                             .join(" · ")
-                        : "Credits, rate limits, and permission blocks appear here."}
+                        : "Only hard blocking dependencies appear here. Commentary and news degradation are isolated above."}
                     </p>
                   </div>
                   <div className="rounded-xl border border-zinc-900 bg-zinc-950/60 p-3">

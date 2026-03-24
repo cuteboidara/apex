@@ -36,10 +36,14 @@ test("system providers route exposes the active price providers", async () => {
   });
 
   const response = await GET();
-  const payload = await response.json() as { providers: Array<{ provider: string; status: string }> };
+  const payload = await response.json() as {
+    providers: Array<{ provider: string; status: string }>;
+    summary: { available: number; degraded: number; offline: number };
+  };
 
   assert.ok(payload.providers.some(provider => provider.provider === "Yahoo Finance"));
   assert.ok(payload.providers.some(provider => provider.provider === "Binance"));
   assert.ok(!payload.providers.some(provider => ["FCS API", "Alpha Vantage", "Twelve Data"].includes(provider.provider)));
   assert.equal(payload.providers.find(provider => provider.provider === "Binance")?.status, "degraded");
+  assert.deepEqual(payload.summary, { available: 1, degraded: 1, offline: 0 });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface SystemData {
   latestRun: {
@@ -17,32 +18,79 @@ interface SystemData {
   envStatus: Record<string, boolean>;
   dbStatus: string;
   providerHealth: { provider: string; status: string; latencyMs: number | null; errorRate: number | null; recordedAt: string }[];
+  optionalProviderHealth?: { provider: string; status: string; latencyMs: number | null; errorRate: number | null; recordedAt: string }[];
+}
+
+interface RuntimeHealthData {
+  core: {
+    status: string;
+    detail: string;
+    databaseStatus: string;
+    queueStatus: string;
+    marketDataStatus: string;
+    engineStatus: string;
+  };
+  commentary: {
+    status: string;
+    provider: string;
+    mode: string;
+    detail: string;
+  };
+  news: {
+    status: string;
+    provider: string;
+    detail: string;
+    failedFeeds: string[];
+  };
 }
 
 export default function AdminSystemPage() {
   const [data, setData] = useState<SystemData | null>(null);
+  const [runtime, setRuntime] = useState<RuntimeHealthData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [cycleLoading, setCycleLoading] = useState(false);
   const [cycleResult, setCycleResult] = useState<string | null>(null);
 
-  const load = () => {
+  const load = async () => {
     setLoading(true);
-    fetch("/api/admin/system")
-      .then(r => r.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    setError(null);
+    const [adminResult, runtimeResult] = await Promise.all([
+      fetchJsonResponse<SystemData>("/api/admin/system"),
+      fetchJsonResponse<RuntimeHealthData>("/api/system"),
+    ]);
+
+    if (adminResult.ok && adminResult.data) {
+      setData(adminResult.data);
+    } else {
+      setData(null);
+      setError(formatApiError(adminResult, "Failed to load system status."));
+    }
+
+    if (runtimeResult.ok && runtimeResult.data) {
+      setRuntime(runtimeResult.data);
+    } else {
+      setRuntime(null);
+      if (adminResult.ok && adminResult.data) {
+        setError(formatApiError(runtimeResult, "Runtime health telemetry is unavailable."));
+      }
+    }
+    setLoading(false);
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
   async function triggerCycle() {
     setCycleLoading(true);
     setCycleResult(null);
     try {
-      const res = await fetch("/api/admin/trigger-cycle", { method: "POST" });
-      const json = await res.json() as { success: boolean; signalCount?: number; error?: string; message?: string };
-      setCycleResult(json.success ? `✓ Cycle complete — ${json.signalCount} signals` : `✗ ${json.message ?? json.error ?? "Failed."}`);
-      load();
+      const result = await fetchJsonResponse<{ success: boolean; signalCount?: number; error?: string; message?: string }>("/api/admin/trigger-cycle", { method: "POST" });
+      const payload = result.data;
+      const success = Boolean(payload?.success);
+      setCycleResult(success ? `✓ Cycle complete — ${payload?.signalCount ?? 0} signals` : `✗ ${formatApiError(result, "Failed.")}`);
+      await load();
     } catch (e) {
       setCycleResult(`✗ ${String(e)}`);
     }
@@ -50,7 +98,7 @@ export default function AdminSystemPage() {
   }
 
   if (loading) return <div className="text-zinc-500 text-sm">Loading...</div>;
-  if (!data)   return <div className="text-red-400 text-sm">Failed to load system status.</div>;
+  if (!data)   return <div className="text-red-400 text-sm">{error ?? "Failed to load system status."}</div>;
 
   return (
     <div className="space-y-8">
@@ -58,6 +106,38 @@ export default function AdminSystemPage() {
         <h1 className="text-xl font-bold text-zinc-100 mb-1">System Control</h1>
         <p className="text-xs text-zinc-500">Engine status, controls, and environment</p>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-xs text-yellow-200">
+          {error}
+        </div>
+      )}
+
+      {runtime && (
+        <section>
+          <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Operational Health</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <HealthCard
+              label="Core"
+              status={runtime.core.status}
+              title={`DB ${runtime.core.databaseStatus} · Queue ${runtime.core.queueStatus}`}
+              detail={runtime.core.detail}
+            />
+            <HealthCard
+              label="Commentary"
+              status={runtime.commentary.status}
+              title={`${runtime.commentary.provider} · ${runtime.commentary.mode}`}
+              detail={runtime.commentary.detail}
+            />
+            <HealthCard
+              label="News"
+              status={runtime.news.status}
+              title={runtime.news.failedFeeds.length > 0 ? `${runtime.news.provider} · ${runtime.news.failedFeeds.length} feed issues` : runtime.news.provider}
+              detail={runtime.news.detail}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Controls */}
       <section>
@@ -120,7 +200,7 @@ export default function AdminSystemPage() {
       {/* Provider health */}
       {data.providerHealth.length > 0 && (
         <section>
-          <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Provider Health</h2>
+          <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Core Provider Health</h2>
           <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
             <table className="w-full text-xs">
               <thead>
@@ -138,6 +218,38 @@ export default function AdminSystemPage() {
                     <td className="px-4 py-2 font-mono text-zinc-300">{p.provider}</td>
                     <td className="px-4 py-2">
                       <span className={p.status === "OK" ? "text-green-400" : "text-red-400"}>{p.status}</span>
+                    </td>
+                    <td className="px-4 py-2 text-zinc-400">{p.latencyMs != null ? `${p.latencyMs}ms` : "—"}</td>
+                    <td className="px-4 py-2 text-zinc-400">{p.errorRate != null ? `${(p.errorRate * 100).toFixed(1)}%` : "—"}</td>
+                    <td className="px-4 py-2 text-zinc-500">{new Date(p.recordedAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {(data.optionalProviderHealth?.length ?? 0) > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Optional Services</h2>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-zinc-800 text-zinc-500">
+                  <th className="text-left px-4 py-2">Provider</th>
+                  <th className="text-left px-4 py-2">Status</th>
+                  <th className="text-left px-4 py-2">Latency</th>
+                  <th className="text-left px-4 py-2">Error Rate</th>
+                  <th className="text-left px-4 py-2">Recorded</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.optionalProviderHealth?.map((p, i) => (
+                  <tr key={`${p.provider}-${i}`} className="border-b border-zinc-900">
+                    <td className="px-4 py-2 font-mono text-zinc-300">{p.provider}</td>
+                    <td className="px-4 py-2">
+                      <span className={p.status === "OK" ? "text-green-400" : p.status === "DEGRADED" ? "text-yellow-300" : "text-zinc-400"}>{p.status}</span>
                     </td>
                     <td className="px-4 py-2 text-zinc-400">{p.latencyMs != null ? `${p.latencyMs}ms` : "—"}</td>
                     <td className="px-4 py-2 text-zinc-400">{p.errorRate != null ? `${(p.errorRate * 100).toFixed(1)}%` : "—"}</td>
@@ -179,12 +291,34 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function StatusCard({ label, status, sub }: { label: string; status: string; sub?: string }) {
-  const ok = status === "OK";
+  const normalized = status.toUpperCase();
+  const ok = normalized === "OK";
+  const degraded = normalized === "PENDING" || normalized === "DEGRADED";
   return (
     <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4">
       <p className="text-xs text-zinc-500 mb-1">{label}</p>
-      <p className={`text-sm font-semibold ${ok ? "text-green-400" : "text-red-400"}`}>{status}</p>
+      <p className={`text-sm font-semibold ${ok ? "text-green-400" : degraded ? "text-yellow-300" : "text-red-400"}`}>{status}</p>
       {sub && <p className="text-[10px] text-zinc-600 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function HealthCard({ label, status, title, detail }: { label: string; status: string; title: string; detail: string }) {
+  const normalized = status.toLowerCase();
+  const tone = normalized === "available"
+    ? "text-green-400 bg-green-400/10"
+    : normalized === "degraded"
+      ? "text-yellow-300 bg-yellow-300/10"
+      : "text-red-400 bg-red-400/10";
+
+  return (
+    <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-zinc-500 uppercase tracking-widest">{label}</p>
+        <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${tone}`}>{status}</span>
+      </div>
+      <p className="text-sm font-semibold text-zinc-100">{title}</p>
+      <p className="text-[11px] text-zinc-500 leading-relaxed">{detail}</p>
     </div>
   );
 }

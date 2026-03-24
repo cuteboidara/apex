@@ -1,3 +1,4 @@
+import { getLlmRuntimePolicy } from "@/lib/llm/config";
 import { generateAnthropicText } from "@/lib/llm/anthropic";
 import { generateOpenAiText } from "@/lib/llm/openai";
 import { generateGeminiText } from "@/lib/llm/gemini";
@@ -11,12 +12,23 @@ const PROVIDER_CHAIN: Array<{
   envKey: string;
   generate: (input: LlmPromptInput) => Promise<{ text: string; provider: LlmProvider }>;
 }> = [
-  { provider: "anthropic", envKey: "ANTHROPIC_API_KEY", generate: generateAnthropicText },
   { provider: "openai",    envKey: "OPENAI_API_KEY",    generate: generateOpenAiText    },
   { provider: "gemini",    envKey: "GEMINI_API_KEY",    generate: generateGeminiText    },
+  { provider: "anthropic", envKey: "ANTHROPIC_API_KEY", generate: generateAnthropicText },
 ];
 
 export async function generateLlmText(input: LlmPromptInput): Promise<LlmOrchestratorResponse> {
+  if (getLlmRuntimePolicy().disabled) {
+    return {
+      text: EXPLANATION_UNAVAILABLE,
+      provider: "none",
+      fallbackUsed: false,
+      status: "unavailable",
+      degradedReason: "llm_disabled",
+      chain: [],
+    };
+  }
+
   const chain: LlmOrchestratorResponse["chain"] = [];
 
   for (const [index, candidate] of PROVIDER_CHAIN.entries()) {

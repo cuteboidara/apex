@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface AdminUser {
   id: string;
@@ -28,17 +29,25 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const load = () => {
+  const load = async () => {
     setLoading(true);
-    fetch(`/api/admin/users/${id}`)
-      .then(r => r.json())
-      .then(setUser)
-      .finally(() => setLoading(false));
+    setError(null);
+    const result = await fetchJsonResponse<AdminUser>(`/api/admin/users/${id}`);
+    if (result.ok && result.data) {
+      setUser(result.data);
+    } else {
+      setUser(null);
+      setError(formatApiError(result, "User not found."));
+    }
+    setLoading(false);
   };
 
-  useEffect(load, [id]);
+  useEffect(() => {
+    void load();
+  }, [id]);
 
   async function doAction(act: string, reason?: string) {
     setActionLoading(true);
@@ -48,11 +57,11 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       body: JSON.stringify({ action: act, reason }),
     });
     setActionLoading(false);
-    load();
+    void load();
   }
 
   if (loading) return <div className="text-zinc-500 text-sm">Loading...</div>;
-  if (!user)   return <div className="text-red-400 text-sm">User not found.</div>;
+  if (!user)   return <div className="text-red-400 text-sm">{error ?? "User not found."}</div>;
 
   return (
     <div className="max-w-2xl space-y-6">

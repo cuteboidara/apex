@@ -25,9 +25,16 @@ export function createSystemProvidersRouteHandler(deps: ProvidersRouteDependenci
         };
       });
 
+      const summary = {
+        available: providers.filter(provider => provider.status === "available").length,
+        degraded: providers.filter(provider => provider.status === "degraded").length,
+        offline: providers.filter(provider => provider.status === "offline").length,
+      };
+
       return NextResponse.json({
         ok: true,
         providers,
+        summary,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {

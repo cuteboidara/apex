@@ -1,6 +1,6 @@
 import { callGPT4   } from "@/lib/ai/providers/openai";
-import { callClaude  } from "@/lib/ai/providers/claude";
 import { callGemini  } from "@/lib/ai/providers/gemini";
+import { getLlmRuntimePolicy } from "@/lib/llm/config";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ export interface SignalAnalysisOutput {
   entryRefinement:     string;
   gptConfidence:       number;
 
-  // Stage 2 — Claude
+  // Stage 2 — risk review (legacy DB field retained for compatibility)
   riskAssessment:      string;
   invalidationLevel:   string;
   claudeConfidence:    number;
@@ -52,7 +52,7 @@ export interface SignalAnalysisOutput {
   // Merged
   unifiedAnalysis:     string;
 
-  provider:    "gpt4+claude+gemini";
+  provider:    "gpt4+gemini";
   generatedAt: string;
 }
 
@@ -163,11 +163,11 @@ Respond ONLY with valid JSON — no markdown, no extra text:
   };
 }
 
-// ── Stage 2 — Claude Risk Assessment ──────────────────────────────────────────
+// ── Stage 2 — OpenAI Risk Assessment ──────────────────────────────────────────
 
-const CLAUDE_SYSTEM = `You are a risk management specialist for an algorithmic trading system. You identify what could go wrong with trades and define clear invalidation criteria. Be direct and specific — no generic warnings.`;
+const RISK_SYSTEM = `You are a risk management specialist for an algorithmic trading system. You identify what could go wrong with trades and define clear invalidation criteria. Be direct and specific — no generic warnings.`;
 
-type ClaudeOutput = {
+type RiskOutput = {
   riskAssessment:          string;
   invalidationLevel:       string;
   riskAdjustedConfidence:  number;
@@ -176,7 +176,11 @@ type ClaudeOutput = {
 async function runStage2(
   input: SignalAnalysisInput,
   stage1: Gpt4Output | null,
-): Promise<ClaudeOutput | null> {
+): Promise<RiskOutput | null> {
+  if (!process.env.OPENAI_API_KEY) {
+    console.log(`[APEX:ai] OpenAI key missing — skipping stage 2 (risk review) for ${input.asset}`);
+    return null;
+  }
   const gptContext = stage1
     ? `GPT-4 has analyzed this ${input.asset} ${input.direction} signal (rank ${input.rank}, score ${input.total}/100):
 
@@ -203,15 +207,15 @@ Provide:
 Respond ONLY with valid JSON — no markdown, no extra text:
 { "riskAssessment": "...", "invalidationLevel": "...", "riskAdjustedConfidence": <number 0-100> }`;
 
-  const raw = await callClaude(CLAUDE_SYSTEM, userPrompt);
+  const raw = await callGPT4(RISK_SYSTEM, userPrompt);
   if (!raw) {
-    console.error(`[APEX:ai] Stage 2 (Claude) failed for ${input.asset}: no response`);
+    console.error(`[APEX:ai] Stage 2 (risk review) failed for ${input.asset}: no response`);
     return null;
   }
 
-  const parsed = safeParseJson<ClaudeOutput>(raw);
+  const parsed = safeParseJson<RiskOutput>(raw);
   if (!parsed) {
-    console.error(`[APEX:ai] Stage 2 (Claude) failed for ${input.asset}: JSON parse error`);
+    console.error(`[APEX:ai] Stage 2 (risk review) failed for ${input.asset}: JSON parse error`);
     return null;
   }
 
@@ -233,7 +237,7 @@ type GeminiOutput = {
 async function runStage3(
   input:  SignalAnalysisInput,
   stage1: Gpt4Output | null,
-  stage2: ClaudeOutput | null,
+  stage2: RiskOutput | null,
 ): Promise<GeminiOutput | null> {
   if (!process.env.GEMINI_API_KEY) {
     console.log(`[APEX:ai] Gemini key missing — skipping stage 3 (Gemini) for ${input.asset}`);
@@ -247,12 +251,12 @@ ${stage1.entryRefinement}
 Implied confidence: ${stage1.impliedConfidence}`
     : "GPT-4 LEAD ANALYSIS: Not available.";
 
-  const claudeSection = stage2
-    ? `CLAUDE RISK ASSESSMENT:
+  const riskSection = stage2
+    ? `RISK REVIEW:
 ${stage2.riskAssessment}
 Invalidation: ${stage2.invalidationLevel}
 Risk-adjusted confidence: ${stage2.riskAdjustedConfidence}`
-    : "CLAUDE RISK ASSESSMENT: Not available.";
+    : "RISK REVIEW: Not available.";
 
   const prompt = `You are a quantitative analyst providing a final confidence score for a trading signal after reviewing two analyst reports.
 
@@ -262,12 +266,12 @@ SIGNAL: ${input.asset} ${input.direction} | Score: ${input.total}/100 | Rank: ${
 
 ${gpt4Section}
 
-${claudeSection}
+${riskSection}
 
 Your task: Final independent confidence score.
 
 Consider:
-- Alignment between GPT-4 optimism and Claude's risk flags
+- Alignment between GPT-4 conviction and the risk review
 - Signal score quality (${input.total}/100 with rank ${input.rank})
 - Whether the risk/reward justifies the trade at current levels
 
@@ -303,7 +307,7 @@ Respond ONLY with valid JSON — no markdown, no extra text:
 function buildUnifiedAnalysis(
   input:  SignalAnalysisInput,
   stage1: Gpt4Output | null,
-  stage2: ClaudeOutput | null,
+  stage2: RiskOutput | null,
   stage3: GeminiOutput | null,
 ): string {
   const explanation        = stage1?.explanation       || `${input.asset} ${input.direction} signal (rank ${input.rank}, score ${input.total}/100).`;
@@ -327,7 +331,7 @@ function buildUnifiedAnalysis(
 // ── Main export ───────────────────────────────────────────────────────────────
 
 /**
- * Runs the 3-stage AI pipeline: GPT-4 → Claude → Gemini.
+ * Runs the 3-stage AI pipeline: GPT-4 lead analysis → GPT-4 risk review → Gemini final verdict.
  * Each stage receives the previous output as context.
  * Any stage can fail independently — the pipeline continues and degrades gracefully.
  * Returns null only when all three stages fail.
@@ -335,6 +339,11 @@ function buildUnifiedAnalysis(
 export async function runSignalAnalysisPipeline(
   input: SignalAnalysisInput,
 ): Promise<SignalAnalysisOutput | null> {
+  if (getLlmRuntimePolicy().disabled) {
+    console.log(`[APEX:ai] LLM disabled — skipping AI pipeline for ${input.asset}`);
+    return null;
+  }
+
   // Stage 1
   const stage1 = await runStage1(input).catch(err => {
     console.error(`[APEX:ai] Stage 1 (GPT-4) threw for ${input.asset}:`, String(err).slice(0, 120));
@@ -343,7 +352,7 @@ export async function runSignalAnalysisPipeline(
 
   // Stage 2 — runs even if Stage 1 failed
   const stage2 = await runStage2(input, stage1).catch(err => {
-    console.error(`[APEX:ai] Stage 2 (Claude) threw for ${input.asset}:`, String(err).slice(0, 120));
+    console.error(`[APEX:ai] Stage 2 (risk review) threw for ${input.asset}:`, String(err).slice(0, 120));
     return null;
   });
 
@@ -379,7 +388,7 @@ export async function runSignalAnalysisPipeline(
     // Merged
     unifiedAnalysis: buildUnifiedAnalysis(input, stage1, stage2, stage3),
 
-    provider:    "gpt4+claude+gemini",
+    provider:    "gpt4+gemini",
     generatedAt: new Date().toISOString(),
   };
 }

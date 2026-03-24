@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { validateRuntimeEnv } from "@/scripts/validate-env.mjs";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,10 @@ const ENV_KEYS = [
   "ANTHROPIC_API_KEY",
   "OPENAI_API_KEY",
   "GEMINI_API_KEY",
+  "APEX_LLM_OPTIONAL",
+  "APEX_DISABLE_LLM",
+  "APEX_DISABLE_NEWS",
+  "APEX_CORE_SIGNAL_MODE",
   "TELEGRAM_BOT_TOKEN",
   "FRED_API_KEY",
   "RESEND_API_KEY",
@@ -23,29 +28,6 @@ const ENV_KEYS = [
 ] as const;
 
 export async function GET() {
-  const auth = await requireAdmin();
-  if (!auth.ok) return auth.response;
-
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const [latestRun, pendingAlerts, failedAlerts, recentProviderHealth] = await Promise.all([
-    prisma.signalRun.findFirst({ orderBy: { queuedAt: "desc" } }),
-    prisma.alert.count({ where: { status: "PENDING" } }),
-    prisma.alert.count({ where: { status: "FAILED" } }),
-    prisma.providerHealth.findMany({
-      orderBy: { recordedAt: "desc" },
-      take: 10,
-      select: { provider: true, status: true, latencyMs: true, errorRate: true, recordedAt: true },
-    }),
-  ]);
-
-  // Check which env vars are set (never expose values)
-  const envStatus = Object.fromEntries(
-    ENV_KEYS.map(key => [key, !!process.env[key]]),
-  );
-
-  // DB status
   let dbStatus = "OK";
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -53,19 +35,49 @@ export async function GET() {
     dbStatus = "ERROR";
   }
 
-  const envChecks = {
-    web: validateRuntimeEnv({ service: "web", strict: process.env.NODE_ENV === "production" }),
-    worker: validateRuntimeEnv({ service: "worker", strict: process.env.NODE_ENV === "production" }),
-    scheduler: validateRuntimeEnv({ service: "scheduler", strict: process.env.NODE_ENV === "production" }),
-    backfill: validateRuntimeEnv({ service: "backfill", strict: process.env.NODE_ENV === "production" }),
-  };
+  try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
 
-  return NextResponse.json({
-    latestRun,
-    queue: { pending: pendingAlerts, failed: failedAlerts },
-    envStatus,
-    envChecks,
-    dbStatus,
-    providerHealth: recentProviderHealth,
-  });
+    const [latestRun, pendingAlerts, failedAlerts, recentProviderHealth] = await Promise.all([
+      prisma.signalRun.findFirst({ orderBy: { queuedAt: "desc" } }),
+      prisma.alert.count({ where: { status: "PENDING" } }),
+      prisma.alert.count({ where: { status: "FAILED" } }),
+      prisma.providerHealth.findMany({
+        orderBy: { recordedAt: "desc" },
+        take: 10,
+        select: { provider: true, status: true, latencyMs: true, errorRate: true, recordedAt: true },
+      }),
+    ]);
+
+    const envStatus = Object.fromEntries(
+      ENV_KEYS.map(key => [key, !!process.env[key]]),
+    );
+
+    const envChecks = {
+      web: validateRuntimeEnv({ service: "web", strict: process.env.NODE_ENV === "production" }),
+      worker: validateRuntimeEnv({ service: "worker", strict: process.env.NODE_ENV === "production" }),
+      scheduler: validateRuntimeEnv({ service: "scheduler", strict: process.env.NODE_ENV === "production" }),
+      backfill: validateRuntimeEnv({ service: "backfill", strict: process.env.NODE_ENV === "production" }),
+    };
+
+    const OPTIONAL_PROVIDERS = new Set(["OpenAI", "Gemini", "Anthropic", "RSS"]);
+    const coreProviderHealth = recentProviderHealth.filter(row => !OPTIONAL_PROVIDERS.has(row.provider));
+    const optionalProviderHealth = recentProviderHealth.filter(row => OPTIONAL_PROVIDERS.has(row.provider));
+
+    return NextResponse.json({
+      ok: true,
+      latestRun,
+      queue: { pending: pendingAlerts, failed: failedAlerts },
+      envStatus,
+      envChecks,
+      dbStatus,
+      providerHealth: coreProviderHealth,
+      optionalProviderHealth,
+    });
+  } catch (error) {
+    return buildRouteErrorResponse(error, {
+      publicMessage: "System control data",
+    });
+  }
 }

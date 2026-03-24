@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 const ALL_ASSETS = [
   { symbol: "EURUSD",  class: "FOREX" },
@@ -27,13 +28,24 @@ const CLASS_COLOR: Record<string, string> = {
 export default function AdminAssetsPage() {
   const [config, setConfig] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/assets/toggle")
-      .then(r => r.json())
-      .then((data: Record<string, boolean>) => setConfig(data))
-      .finally(() => setLoading(false));
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      const result = await fetchJsonResponse<Record<string, boolean>>("/api/admin/assets/toggle");
+      if (result.ok && result.data && typeof result.data === "object") {
+        setConfig(result.data);
+      } else {
+        setConfig({});
+        setError(formatApiError(result, "Failed to load asset controls."));
+      }
+      setLoading(false);
+    };
+
+    void load();
   }, []);
 
   async function toggle(symbol: string, active: boolean) {
@@ -61,6 +73,10 @@ export default function AdminAssetsPage() {
 
       {loading ? (
         <div className="text-zinc-500 text-sm">Loading...</div>
+      ) : error ? (
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-400">
+          {error}
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {ALL_ASSETS.map(a => {

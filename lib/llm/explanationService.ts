@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { getLlmRuntimePolicy } from "@/lib/llm/config";
 import { getCachedExplanationRecord, storeExplanationRecord } from "@/lib/llm/explanationCache";
 import { generateLlmText } from "@/lib/llm/llmOrchestrator";
 import {
@@ -21,10 +22,16 @@ import type {
 } from "@/lib/llm/types";
 
 const EXPLANATION_UNAVAILABLE = "Explanation unavailable";
-const AUTO_LLM_FOR_PUBLISHED = !["0", "false", "off"].includes((process.env.APEX_ENABLE_AUTO_LLM_PUBLISHED ?? "true").toLowerCase());
-const EXPLICIT_LLM_ENABLED = !["0", "false", "off"].includes((process.env.APEX_ENABLE_EXPLICIT_LLM ?? "true").toLowerCase());
-
 const inflight = new Map<string, Promise<ExplanationResponse>>();
+
+function readFeatureFlag(key: string, fallback: boolean) {
+  const raw = process.env[key];
+  if (raw == null || raw.trim() === "") {
+    return fallback;
+  }
+
+  return !["0", "false", "off"].includes(raw.trim().toLowerCase());
+}
 
 function stableSerialize(value: unknown): string {
   if (value === null || typeof value !== "object") {
@@ -68,11 +75,18 @@ function toExplanationResponse(record: CachedExplanationRecord, cached: boolean)
 }
 
 function externalAllowed(mode: ExplanationRequestMode, eligibleForAuto: boolean) {
-  if (mode === "explicit") {
-    return EXPLICIT_LLM_ENABLED;
+  if (getLlmRuntimePolicy().disabled) {
+    return false;
   }
 
-  return eligibleForAuto && AUTO_LLM_FOR_PUBLISHED;
+  const autoLlmForPublished = readFeatureFlag("APEX_ENABLE_AUTO_LLM_PUBLISHED", true);
+  const explicitLlmEnabled = readFeatureFlag("APEX_ENABLE_EXPLICIT_LLM", true);
+
+  if (mode === "explicit") {
+    return explicitLlmEnabled;
+  }
+
+  return eligibleForAuto && autoLlmForPublished;
 }
 
 async function finalizeExplanation(input: {
@@ -141,6 +155,7 @@ async function resolveExplanation(input: {
 
     const canCallExternal = externalAllowed(input.mode, input.eligibleForAuto);
     if (!canCallExternal) {
+      const llmPolicy = getLlmRuntimePolicy();
       if (input.templateText) {
         return finalizeExplanation({
           purpose: input.purpose,
@@ -150,7 +165,11 @@ async function resolveExplanation(input: {
             provider: "none",
             fallbackUsed: false,
             status: "template",
-            degradedReason: input.mode === "explicit" ? "llm_disabled" : "template_only_mode",
+            degradedReason: llmPolicy.disabled
+              ? "llm_disabled"
+              : input.mode === "explicit"
+                ? "llm_disabled"
+                : "template_only_mode",
             chain: [],
           },
         });
@@ -164,7 +183,7 @@ async function resolveExplanation(input: {
           provider: "none",
           fallbackUsed: false,
           status: "unavailable",
-          degradedReason: "not_eligible",
+          degradedReason: llmPolicy.disabled ? "llm_disabled" : "not_eligible",
           chain: [],
         },
       });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface AdminUser {
   id: string;
@@ -30,15 +31,22 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [tab, setTab] = useState<Tab>("ALL");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [suspendModal, setSuspendModal] = useState<{ userId: string; name: string } | null>(null);
   const [suspendReason, setSuspendReason] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const load = useCallback(async (status: Tab) => {
     setLoading(true);
+    setError(null);
     const url = status === "ALL" ? "/api/admin/users" : `/api/admin/users?status=${status}`;
-    const data = await fetch(url).then(r => r.json()) as AdminUser[];
-    setUsers(data);
+    const result = await fetchJsonResponse<AdminUser[]>(url);
+    if (result.ok && Array.isArray(result.data)) {
+      setUsers(result.data);
+    } else {
+      setUsers([]);
+      setError(formatApiError(result, "Failed to load users."));
+    }
     setLoading(false);
   }, []);
 
@@ -97,6 +105,10 @@ export default function AdminUsersPage() {
       {/* Table */}
       {loading ? (
         <div className="text-zinc-500 text-sm">Loading...</div>
+      ) : error ? (
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-400">
+          {error}
+        </div>
       ) : (
         <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
           <div className="overflow-x-auto">

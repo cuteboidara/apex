@@ -7,6 +7,7 @@ import path from "path";
 import { ENGINE_VERSION, FAILURE_CODES, FEATURE_VERSION, PROMPT_VERSION, type FailureCode } from "@/lib/runConfig";
 import { buildTradePlans } from "@/lib/tradePlanner";
 import { generateSignalNarrative } from "@/lib/llm/explanationService";
+import type { ExplanationResponse } from "@/lib/llm/types";
 import { runSignalAnalysisPipeline, type SignalAnalysisInput } from "@/lib/ai/signalAnalysisPipeline";
 import { ensureSignalRunRecord, updateSignalRunWithRecovery } from "@/lib/runLifecycle";
 import type { Timeframe } from "@/lib/marketData/types";
@@ -27,6 +28,7 @@ import {
   fetchTechnicals,
 } from "@/lib/marketData";
 import { SUPPORTED_ASSETS, type SupportedAsset } from "@/lib/assets";
+import { getCoreSignalRuntime } from "@/lib/runtime/featureFlags";
 import {
   deriveDirectionSMC,
   scoreMacroSMC,
@@ -57,6 +59,9 @@ type PersistenceTransaction = {
   signal: typeof prisma.signal;
   tradePlan: typeof prisma.tradePlan;
 };
+
+const PERSISTENCE_TRANSACTION_MAX_WAIT_MS = 15_000;
+const PERSISTENCE_TRANSACTION_TIMEOUT_MS = 15_000;
 
 // ── Rank ─────────────────────────────────────────────────────────────────────
 
@@ -128,6 +133,63 @@ function classifyFailure(reason: unknown): FailureCode {
   return FAILURE_CODES.UNKNOWN_ERROR;
 }
 
+function buildDeterministicExplanationResponse(input: {
+  symbol: string;
+  rank: string;
+  direction: "LONG" | "SHORT";
+  brief: string;
+  degradedReason: string;
+}): ExplanationResponse {
+  return {
+    text: input.brief,
+    provider: "none",
+    fallbackUsed: false,
+    status: "template",
+    degradedReason: input.degradedReason,
+    fingerprint: `deterministic:${input.symbol}:${input.rank}:${input.direction}`,
+    cached: false,
+    generatedAt: new Date().toISOString(),
+    chain: [],
+  };
+}
+
+export async function resolveSignalExplanation(input: {
+  symbol: string;
+  rank: string;
+  direction: "LONG" | "SHORT";
+  deterministicBrief: string;
+  runtime: ReturnType<typeof getCoreSignalRuntime>;
+  narrativeInput: Parameters<typeof generateSignalNarrative>[0];
+  generateNarrative?: typeof generateSignalNarrative;
+  onFailure?: (error: unknown) => void;
+}) {
+  const deterministicExplanation = buildDeterministicExplanationResponse({
+    symbol: input.symbol,
+    rank: input.rank,
+    direction: input.direction,
+    brief: input.deterministicBrief,
+    degradedReason: input.runtime.llmDisabled
+      ? "llm_disabled"
+      : input.runtime.deterministic
+        ? "deterministic_mode"
+        : "template_fallback",
+  });
+
+  if (input.runtime.deterministic || input.runtime.llmDisabled) {
+    return deterministicExplanation;
+  }
+
+  try {
+    return await (input.generateNarrative ?? generateSignalNarrative)(input.narrativeInput);
+  } catch (error) {
+    input.onFailure?.(error);
+    return {
+      ...deterministicExplanation,
+      degradedReason: "explanation_error",
+    } satisfies ExplanationResponse;
+  }
+}
+
 // ── Core analysis ─────────────────────────────────────────────────────────────
 
 export async function analyzeAsset(
@@ -151,6 +213,17 @@ export async function analyzeAsset(
     asset.assetClass === "CRYPTO"    ? asset.symbol.replace("USDT", "") :
     asset.assetClass === "COMMODITY" ? (asset.symbol.startsWith("XAU") ? "gold" : "silver") :
     asset.symbol;
+  const runtime = getCoreSignalRuntime();
+  const newsRequest = runtime.newsDisabled
+    ? Promise.resolve({
+        articles: [] as Array<{ title: string; source: string; publishedAt: string; sentiment: "bullish" | "bearish" | "neutral" }>,
+        status: "DEGRADED" as const,
+        reason: "news_disabled",
+        degraded: true,
+        sourceType: "disabled" as const,
+        fetchedAt: Date.now(),
+      })
+    : fetchNewsBundle(newsQuery, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false });
 
   const [priceResult, newsResult] = await Promise.allSettled([
     // Price + candles
@@ -162,7 +235,7 @@ export async function analyzeAsset(
         : fetchCommodityData(asset.symbol.slice(0, 3), { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
 
     // News
-    fetchNewsBundle(newsQuery, { consumer: "signal-cycle", priority: "cold", allowBackgroundRefresh: false }),
+    newsRequest,
   ]);
 
   const priceData = priceResult.status === "fulfilled" ? priceResult.value : null;
@@ -421,38 +494,55 @@ Deterministic context: ${deterministicBrief}
 Market data: ${JSON.stringify(dataSummary)}
 
 Cover conviction, strongest factors, invalidation, and execution discipline.`;
-  const explanation = await generateSignalNarrative({
-    template: {
-      symbol: asset.symbol,
-      assetClass: asset.assetClass,
-      direction,
-      rank,
-      style: bestPlan?.style ?? null,
-      setupFamily: bestPlan?.setupFamily ?? null,
-      regimeTag: bestPlan?.regimeTag ?? null,
-      status: bestPlan?.status ?? "NO_SETUP",
-      diagnostics: bestPlan?.diagnostics ?? [],
-      provider: providerContext.providerAtSignal,
-      providerHealthState: providerContext.providerHealthStateAtSignal,
-      marketStatus: providerContext.providerMarketStatusAtSignal,
-      fallbackUsed: providerContext.providerFallbackUsedAtSignal,
-      freshnessClass: ((priceData as Record<string, unknown> | null)?.freshnessClass as "fresh" | "stale" | "expired" | null | undefined) ?? null,
-      entry: levels.entry,
-      stopLoss: levels.stopLoss,
-      tp1: levels.tp1,
-      tp2: levels.tp2,
-      tp3: levels.tp3,
-      reason: bestPlan?.status === "ACTIVE"
-        ? bestPlan.executionNotes
-        : bestPlan?.executionNotes ?? deterministicBrief,
+  const explanation = await resolveSignalExplanation({
+    symbol: asset.symbol,
+    rank,
+    direction,
+    deterministicBrief,
+    runtime,
+    narrativeInput: {
+      template: {
+        symbol: asset.symbol,
+        assetClass: asset.assetClass,
+        direction,
+        rank,
+        style: bestPlan?.style ?? null,
+        setupFamily: bestPlan?.setupFamily ?? null,
+        regimeTag: bestPlan?.regimeTag ?? null,
+        status: bestPlan?.status ?? "NO_SETUP",
+        diagnostics: bestPlan?.diagnostics ?? [],
+        provider: providerContext.providerAtSignal,
+        providerHealthState: providerContext.providerHealthStateAtSignal,
+        marketStatus: providerContext.providerMarketStatusAtSignal,
+        fallbackUsed: providerContext.providerFallbackUsedAtSignal,
+        freshnessClass: ((priceData as Record<string, unknown> | null)?.freshnessClass as "fresh" | "stale" | "expired" | null | undefined) ?? null,
+        entry: levels.entry,
+        stopLoss: levels.stopLoss,
+        tp1: levels.tp1,
+        tp2: levels.tp2,
+        tp3: levels.tp3,
+        reason: bestPlan?.status === "ACTIVE"
+          ? bestPlan.executionNotes
+          : bestPlan?.executionNotes ?? deterministicBrief,
+      },
+      prompt: {
+        system: "You are APEX. Provide explanation text only. Do not alter the supplied scores or direction.",
+        user: userPrompt,
+        maxTokens: 220,
+        requestId: asset.symbol,
+      },
+      mode: "auto",
     },
-    prompt: {
-      system: "You are APEX. Provide explanation text only. Do not alter the supplied scores or direction.",
-      user: userPrompt,
-      maxTokens: 220,
-      requestId: asset.symbol,
+    onFailure: error => {
+      logEvent({
+        runId,
+        asset: asset.symbol,
+        component: "explanation-engine",
+        severity: "WARN",
+        message: "Explanation generation failed; using deterministic brief",
+        reason: String(error),
+      });
     },
-    mode: "auto",
   });
   const brief = explanation.text || deterministicBrief;
 
@@ -602,6 +692,9 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
     });
 
     return createdSignal;
+  }, {
+    maxWait: PERSISTENCE_TRANSACTION_MAX_WAIT_MS,
+    timeout: PERSISTENCE_TRANSACTION_TIMEOUT_MS,
   });
   const persistenceDurationMs = Date.now() - persistenceStartedAt;
   const persistedAtMs = Date.now();
@@ -616,7 +709,7 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
 
   // ── 5. Fire 3-stage AI pipeline async (non-blocking) ──────────────────────
   // Only runs for published signals (B/A/S). Does not block signal publication.
-  if (rank === "S" || rank === "A" || rank === "B") {
+  if ((rank === "S" || rank === "A" || rank === "B") && !runtime.deterministic && !runtime.llmDisabled) {
     const pipelineInput: SignalAnalysisInput = {
       asset:         asset.symbol,
       direction,
@@ -673,7 +766,7 @@ Cover conviction, strongest factors, invalidation, and execution discipline.`;
           message: "3-stage AI analysis complete",
           verdict: output.verdict,
           geminiConfidence: output.geminiConfidence,
-          claudeConfidence: output.claudeConfidence,
+          riskConfidence: output.claudeConfidence,
           gptConfidence: output.gptConfidence,
         });
       })
@@ -796,7 +889,7 @@ export async function runFullCycle(requestedRunId?: string | null) {
 
   // Map with original index so asset names are correct
   const errors = results
-    .map((r, i) => ({ r, asset: ASSETS[i]?.symbol }))
+    .map((r, i) => ({ r, asset: assetsToRun[i]?.symbol }))
     .filter(({ r }) => r.status === "rejected")
     .map(({ r, asset }) => ({ asset, reason: (r as PromiseRejectedResult).reason }));
 
@@ -813,52 +906,23 @@ export async function runFullCycle(requestedRunId?: string | null) {
     });
   }
 
-  if (errors.length > 0) {
-    await updateSignalRunWithRecovery(runId, {
-      status: "FAILED",
-      completedAt: new Date(),
-      totalDurationMs: Date.now() - cycleStartedAt,
-      dataFetchDurationMs: metrics.dataFetchDurationMs,
-      scoringDurationMs: metrics.scoringDurationMs,
-      persistenceDurationMs: metrics.persistenceDurationMs,
-      failureCode: classifyFailure(errors[0]?.reason),
-      failureReason: errors.map(e => `${e.asset}: ${String(e.reason)}`).join(" | ").slice(0, 1000),
-      failureDetails: errors.map(e => ({
-        asset: e.asset,
-        failureCode: classifyFailure(e.reason),
-        reason: String(e.reason),
-      })),
-    }, {
-      id: runId,
-      queuedAt: runRecord.queuedAt,
-      startedAt: runRecord.startedAt ?? startedAt,
-      status: "FAILED",
-    });
+  const warningDetails = errors.map(e => ({
+    asset: e.asset,
+    failureCode: classifyFailure(e.reason),
+    reason: String(e.reason),
+  }));
 
+  if (errors.length > 0) {
     for (const e of errors) {
       logEvent({
         runId,
         asset: e.asset,
         component: "signal-engine",
-        severity: "ERROR",
-        message: "Asset analysis failed",
+        severity: "WARN",
+        message: "Asset analysis degraded; continuing cycle",
         reason: String(e.reason),
       });
     }
-    await recordAuditEvent({
-      actor: "SYSTEM",
-      action: "run_failed",
-      entityType: "SignalRun",
-      entityId: runId,
-      after: {
-        status: "FAILED",
-        failureCode: classifyFailure(errors[0]?.reason),
-        failureCount: errors.length,
-      },
-      correlationId: runId,
-    });
-
-    throw new Error(`Signal cycle failed for ${errors.length} asset(s)`);
   }
 
   await updateSignalRunWithRecovery(runId, {
@@ -868,6 +932,11 @@ export async function runFullCycle(requestedRunId?: string | null) {
     dataFetchDurationMs: metrics.dataFetchDurationMs,
     scoringDurationMs: metrics.scoringDurationMs,
     persistenceDurationMs: metrics.persistenceDurationMs,
+    failureCode: errors.length > 0 ? classifyFailure(errors[0]?.reason) : null,
+    failureReason: errors.length > 0
+      ? `Completed with ${errors.length} asset warning(s); ${signals.length} signal(s) persisted.`
+      : null,
+    failureDetails: warningDetails.length > 0 ? warningDetails : Prisma.JsonNull,
   }, {
     id: runId,
     queuedAt: runRecord.queuedAt,
@@ -880,17 +949,19 @@ export async function runFullCycle(requestedRunId?: string | null) {
     component: "signal-engine",
     message: "Signal cycle completed",
     signalCount: signals.length,
+    warningCount: errors.length,
   });
   console.log(`[apexEngine] Cycle complete. Scored ${signals.length} assets.`);
   await recordAuditEvent({
     actor: "SYSTEM",
-    action: "run_completed",
+    action: errors.length > 0 ? "run_completed_with_warnings" : "run_completed",
     entityType: "SignalRun",
     entityId: runId,
     after: {
       status: "COMPLETED",
       signalCount: signals.length,
       totalDurationMs: Date.now() - cycleStartedAt,
+      warningCount: errors.length,
     },
     correlationId: runId,
   });

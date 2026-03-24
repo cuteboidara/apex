@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface BotInfo { username?: string; first_name?: string }
 interface Alert {
@@ -41,6 +42,7 @@ export default function AdminTelegramPage() {
   const [data, setData] = useState<TelegramData | null>(null);
   const [subsData, setSubsData] = useState<SubsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -50,17 +52,35 @@ export default function AdminTelegramPage() {
   const [dmSending, setDmSending] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/telegram/broadcast")
-      .then(r => r.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    const loadOverview = async () => {
+      setLoading(true);
+      setError(null);
+      const result = await fetchJsonResponse<TelegramData>("/api/admin/telegram/broadcast");
+      if (result.ok && result.data) {
+        setData(result.data);
+      } else {
+        setData(null);
+        setError(formatApiError(result, "Failed to load Telegram overview."));
+      }
+      setLoading(false);
+    };
+
+    void loadOverview();
   }, []);
 
   useEffect(() => {
     if (tab === "subscribers") {
-      fetch("/api/admin/telegram/subscribers")
-        .then(r => r.json())
-        .then(setSubsData);
+      const loadSubscribers = async () => {
+        const result = await fetchJsonResponse<SubsData>("/api/admin/telegram/subscribers");
+        if (result.ok && result.data) {
+          setSubsData(result.data);
+        } else {
+          setSubsData(null);
+          setError(formatApiError(result, "Failed to load Telegram subscribers."));
+        }
+      };
+
+      void loadSubscribers();
     }
   }, [tab]);
 
@@ -68,14 +88,15 @@ export default function AdminTelegramPage() {
     if (!message.trim()) return;
     setSending(true);
     setSendResult(null);
-    const res = await fetch("/api/admin/telegram/broadcast", {
+    const result = await fetchJsonResponse<{ success?: boolean; error?: string; message?: string }>("/api/admin/telegram/broadcast", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
     });
-    const json = await res.json() as { success?: boolean; error?: string; message?: string };
-    setSendResult({ ok: !!json.success, text: json.success ? "Message sent." : (json.message ?? json.error ?? "Failed.") });
-    if (json.success) setMessage("");
+    const payload = result.data;
+    const success = Boolean(payload?.success);
+    setSendResult({ ok: success, text: success ? "Message sent." : formatApiError(result, "Failed.") });
+    if (success) setMessage("");
     setSending(false);
   }
 
@@ -107,17 +128,19 @@ export default function AdminTelegramPage() {
   async function sendDm() {
     if (!dmTarget || !dmText.trim()) return;
     setDmSending(true);
-    const res = await fetch(`/api/admin/telegram/subscribers/${dmTarget.id}`, {
+    const result = await fetchJsonResponse<{ ok?: boolean }>(`/api/admin/telegram/subscribers/${dmTarget.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: dmText }),
     });
-    const json = await res.json() as { ok?: boolean };
-    if (json.ok) { setDmText(""); setDmTarget(null); }
+    if (result.data?.ok) { setDmText(""); setDmTarget(null); }
     setDmSending(false);
   }
 
   if (loading) return <div className="text-zinc-500 text-sm">Loading...</div>;
+  if (error && !data && tab === "overview") {
+    return <div className="text-red-400 text-sm">{error}</div>;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">

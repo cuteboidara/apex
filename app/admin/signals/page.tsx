@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface TradePlan {
   style: string;
@@ -46,18 +47,25 @@ const ASSETS = ["EURUSD","GBPUSD","USDJPY","USDCAD","AUDUSD","NZDUSD","USDCHF","
 export default function AdminSignalsPage() {
   const [signals, setSignals] = useState<AdminSignal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [asset, setAsset] = useState("");
   const [rank, setRank] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const params = new URLSearchParams();
     if (asset) params.set("asset", asset);
     if (rank)  params.set("rank", rank);
     params.set("limit", "50");
-    const data = await fetch(`/api/admin/signals?${params}`).then(r => r.json()) as AdminSignal[];
-    setSignals(data);
+    const result = await fetchJsonResponse<AdminSignal[]>(`/api/admin/signals?${params}`);
+    if (result.ok && Array.isArray(result.data)) {
+      setSignals(result.data);
+    } else {
+      setSignals([]);
+      setError(formatApiError(result, "Failed to load signals."));
+    }
     setLoading(false);
   }, [asset, rank]);
 
@@ -126,6 +134,10 @@ export default function AdminSignalsPage() {
 
       {loading ? (
         <div className="text-zinc-500 text-sm">Loading...</div>
+      ) : error ? (
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-400">
+          {error}
+        </div>
       ) : (
         <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
@@ -223,7 +235,7 @@ export default function AdminSignalsPage() {
                                 <p className="text-zinc-300 leading-relaxed mb-2">{s.aiUnifiedAnalysis}</p>
                                 <div className="flex gap-3 text-[10px]">
                                   {s.aiGptConfidence != null && <span className="text-blue-400">GPT {s.aiGptConfidence}</span>}
-                                  {s.aiClaudeConfidence != null && <span className="text-green-400">Claude {s.aiClaudeConfidence}</span>}
+                                  {s.aiClaudeConfidence != null && <span className="text-green-400">Risk {s.aiClaudeConfidence}</span>}
                                   {s.aiGeminiConfidence != null && <span className="text-purple-400">Gemini {s.aiGeminiConfidence}</span>}
                                 </div>
                               </>

@@ -13,6 +13,8 @@ export function classifyProviderStatus(
   const normalizedStatus = status.toLowerCase();
   const normalizedDetail = String(detail ?? "").toLowerCase();
   const normalizedProvider = String(provider ?? "").toLowerCase();
+  const isLlmProvider = ["openai", "gemini", "anthropic"].includes(normalizedProvider);
+  const isRssProvider = normalizedProvider === "rss";
 
   if (
     normalizedProvider === "binance" &&
@@ -64,6 +66,14 @@ export function classifyProviderStatus(
     return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
   }
 
+  if (isLlmProvider && blockedReason) {
+    return { availability: "degraded", blockedReason, displayStatus: "degraded" };
+  }
+
+  if (isRssProvider && blockedReason) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
+  }
+
   if (blockedReason) {
     return { availability: "blocked", blockedReason, displayStatus: "offline" };
   }
@@ -73,6 +83,14 @@ export function classifyProviderStatus(
   }
 
   if (["degraded"].includes(normalizedStatus)) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
+  }
+
+  if (isLlmProvider && ["offline", "error", "unavailable", "unhealthy"].includes(normalizedStatus)) {
+    return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
+  }
+
+  if (isRssProvider && ["offline", "error", "unavailable", "unhealthy"].includes(normalizedStatus)) {
     return { availability: "degraded", blockedReason: null, displayStatus: "degraded" };
   }
 

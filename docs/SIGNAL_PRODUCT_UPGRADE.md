@@ -66,6 +66,18 @@ Optional fallbacks and enrichments:
 - `TELEGRAM_CHAT_ID`
 - `RESEND_API_KEY`
 
+Recommended go-live deterministic runtime:
+
+- `APEX_CORE_SIGNAL_MODE=deterministic`
+- `APEX_DISABLE_LLM=true`
+- `APEX_LLM_OPTIONAL=true`
+- `APEX_DISABLE_NEWS=true`
+- `APEX_EVIDENCE_GATE_MIN_SAMPLE_SIZE=20`
+- `APEX_EVIDENCE_GATE_MIN_WIN_RATE=0.5`
+- `APEX_EVIDENCE_GATE_MIN_EXPECTANCY=0`
+
+In this mode, signal cycles continue without LLM commentary and without RSS/news enrichment. Trade-plan generation, diagnostics, persistence, replay, paper trading, and admin/system visibility remain active.
+
 Quality-gate tuning:
 
 - `APEX_DEGRADED_CONFIDENCE_FLOOR`
@@ -145,6 +157,7 @@ node --import tsx --test tests/strategy-direction.test.ts tests/trade-plan-diagn
    - `/api/admin/backfill`
    - `/api/performance`
    - `/api/queue`
+   - the runtime payload shows `core.status=available` even when commentary/news are intentionally disabled
 8. Verify the new provider summary shows Yahoo Finance primary for FX/metals and Binance primary for crypto.
 9. Verify `TradeOutcome`, `StrategyPerformanceWindow`, `ConfidenceCalibrationBucket`, and `OperationalMetric` are being populated after completed cycles.
 10. Run a bounded backtest and confirm the response includes `coverage` and optional `dataPreparation` metadata.
@@ -157,3 +170,4 @@ node --import tsx --test tests/strategy-direction.test.ts tests/trade-plan-diagn
 - Dead-letter jobs can now be replayed from `/api/queue` even after the original BullMQ job has aged out.
 - Signup, admin moderation, paper execution actions, Telegram delivery failures, and queue replay actions now have explicit route/service-level smoke coverage.
 - The schema includes commercial foundation models for plans, subscriptions, teams, API tokens, webhooks, exports, and user preferences. External billing integration is still a next step.
+- Commentary and RSS/news are optional runtime enrichments. Their failures must not block `SignalRun` completion in deterministic go-live mode.

@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
+import { getLlmRuntimePolicy } from "@/lib/llm/config";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { getQueueConfiguration, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
 import { prisma } from "@/lib/prisma";
 import { recordProviderHealth } from "@/lib/providerHealth";
 import { classifyProviderStatus } from "@/lib/providerStatusClassifier";
 import { buildLatestSetupBreakdown } from "@/lib/setupBreakdown";
+import { getCoreSignalRuntime } from "@/lib/runtime/featureFlags";
 import { getRuntimeCacheMode } from "@/lib/runtime/runtimeCache";
 import { getRedisConfiguration, isRedisConfigured } from "@/lib/runtime/redis";
 
@@ -48,6 +50,8 @@ type ProviderResponseRow = {
   blockedReason: string | null;
 };
 
+type ServiceHealthState = "available" | "degraded" | "offline";
+
 type SystemRouteDependencies = {
   prisma: typeof prisma;
   getProviderSummaries: typeof getProviderSummaries;
@@ -65,6 +69,44 @@ type SystemRouteDependencies = {
 
 function round(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+function summarizeStatus(states: ServiceHealthState[]) {
+  if (states.includes("offline")) {
+    return "offline" as const;
+  }
+
+  if (states.includes("degraded")) {
+    return "degraded" as const;
+  }
+
+  return "available" as const;
+}
+
+function formatAssetClassLabel(assetClass: string) {
+  if (assetClass === "COMMODITY") return "metals";
+  return assetClass.toLowerCase();
+}
+
+function parseFeedFailures(detail: string | null | undefined) {
+  const normalized = String(detail ?? "").trim();
+  if (!normalized.toLowerCase().startsWith("feed_failures:")) {
+    return [];
+  }
+
+  return normalized
+    .slice("feed_failures:".length)
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function isRecentRssFailure(record: ProviderHealthRecord) {
+  const status = String(record.status ?? "").toLowerCase();
+  const detail = String(record.detail ?? "").toLowerCase();
+  return ["error", "offline", "unavailable", "unhealthy"].includes(status) ||
+    detail.includes("rss_unavailable") ||
+    detail.includes("feed_failures:");
 }
 
 async function safeQuery<T>(query: () => Promise<T>, fallback: T): Promise<T> {
@@ -189,11 +231,29 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
         buildSystemStats(deps.prisma),
       ]);
 
+      const runtimeConfig = getCoreSignalRuntime();
+      const llmPolicy = getLlmRuntimePolicy();
       const providers: ProviderConfigRow[] = [
-        { provider: "Anthropic", fallbackStatus: envFlags.anthropic ? "available" : "offline", detail: "Primary explanation model" },
-        { provider: "OpenAI", fallbackStatus: envFlags.openai ? "available" : "offline", detail: "Secondary explanation fallback" },
-        { provider: "Gemini", fallbackStatus: envFlags.gemini ? "available" : "offline", detail: "Final explanation fallback" },
-        { provider: "RSS", fallbackStatus: "available", detail: "Free market news feeds" },
+        {
+          provider: "OpenAI",
+          fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.openai ? "available" : "offline",
+          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Primary explanation and signal-analysis model",
+        },
+        {
+          provider: "Gemini",
+          fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.gemini ? "available" : "offline",
+          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Secondary reasoning and final-verdict fallback",
+        },
+        {
+          provider: "Anthropic",
+          fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.anthropic ? "available" : "offline",
+          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Tertiary explanation fallback",
+        },
+        {
+          provider: "RSS",
+          fallbackStatus: runtimeConfig.newsDisabled ? "degraded" : "available",
+          detail: runtimeConfig.newsDisabled ? "News enrichment disabled by APEX_DISABLE_NEWS" : "Free market news feeds",
+        },
         { provider: "FRED", fallbackStatus: envFlags.fred ? "available" : "offline", detail: "Macro data" },
         { provider: "Telegram", fallbackStatus: envFlags.telegram ? "available" : "offline", detail: "Alert delivery" },
         { provider: "Redis", fallbackStatus: queue.status === "online" ? "available" : "offline", detail: "Signal cycle queue" },
@@ -207,18 +267,27 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
 
       const providerRows: ProviderResponseRow[] = [
         ...providers.map(item => {
+          const llmDisabledProvider = llmPolicy.disabled && ["OpenAI", "Gemini", "Anthropic"].includes(item.provider);
+          const newsDisabledProvider = runtimeConfig.newsDisabled && item.provider === "RSS";
+          const optionalProviderDisabled = llmDisabledProvider || newsDisabledProvider;
           const latest = latestSystemProvider.get(item.provider);
-          const detail = latest?.detail
+          const detail = optionalProviderDisabled
+            ? item.detail
+            : latest?.detail
             ? `${latest.requestSymbol ? `${latest.requestSymbol} · ` : ""}${latest.detail}`
             : item.detail;
-          const classified = deps.classifyProviderStatus(latest?.status?.toLowerCase() ?? item.fallbackStatus, detail, item.provider);
+          const classified = deps.classifyProviderStatus(
+            optionalProviderDisabled ? item.fallbackStatus : latest?.status?.toLowerCase() ?? item.fallbackStatus,
+            detail,
+            item.provider
+          );
           return {
             provider: item.provider,
             assetClass: null,
             status: classified.displayStatus,
             detail,
-            latencyMs: latest?.latencyMs ?? null,
-            recordedAt: latest?.recordedAt?.toISOString?.() ?? null,
+            latencyMs: optionalProviderDisabled ? null : latest?.latencyMs ?? null,
+            recordedAt: optionalProviderDisabled ? null : latest?.recordedAt?.toISOString?.() ?? null,
             score: null,
             healthState: null,
             circuitState: null,
@@ -255,46 +324,148 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
         : [];
 
       const setupBreakdown = deps.buildLatestSetupBreakdown(latestPlans);
-      const commentaryProvider =
-        providerRows.find(row => row.assetClass == null && ["Anthropic", "OpenAI", "Gemini"].includes(row.provider) && row.availability === "available") ??
-        providerRows.find(row => row.assetClass == null && ["Anthropic", "OpenAI", "Gemini"].includes(row.provider)) ??
-        null;
-      const blockedProviders = providerRows.filter(row => row.availability === "blocked");
-      const queueStatus = queue.status === "online" ? "ONLINE" : "DEGRADED";
-      const queueReason = queue.status === "online"
-        ? null
-        : !deps.queueAvailable
-          ? deps.queueUnavailableReason
-          : queue.failureReason ?? "Queue unavailable";
-      const commentaryMode = commentaryProvider?.availability === "available" ? "llm" : "template";
-      const commentaryDetail = commentaryProvider?.availability === "available"
-        ? commentaryProvider?.detail ?? "LLM explanation provider available."
-        : "LLM providers are unavailable. Deterministic templates remain available.";
+      const llmProviders = providerRows.filter(row => row.assetClass == null && ["OpenAI", "Gemini", "Anthropic"].includes(row.provider));
+      const activeCommentaryProvider = llmProviders.find(row => row.availability === "available") ?? null;
+      const commentaryFailure = llmProviders.find(row => row.availability !== "available") ?? null;
+      const rssProvider = providerRows.find(row => row.assetClass == null && row.provider === "RSS") ?? null;
+      const marketProviders = providerRows.filter(row => row.assetClass != null);
+      const rssHistory = systemProviders.filter(row => row.provider === "RSS");
+      const recentRssHistory = rssHistory.slice(0, 3);
+      const rssConsistentlyUnavailable =
+        recentRssHistory.length >= 3 &&
+        recentRssHistory.every(isRecentRssFailure) &&
+        recentRssHistory.every(row => String(row.detail ?? "").toLowerCase().includes("rss_unavailable"));
+      const failedFeeds = parseFeedFailures(rssProvider?.detail);
+      const loadedFeeds = rssProvider?.detail?.toLowerCase().includes("rss_unavailable")
+        ? 0
+        : Math.max(0, 3 - failedFeeds.length);
+      const marketAssetClasses = ["FOREX", "COMMODITY", "CRYPTO"];
+      const offlineMarketClasses = marketAssetClasses.filter(assetClass => {
+        const rows = marketProviders.filter(row => row.assetClass === assetClass);
+        return rows.length === 0 || rows.every(row => row.availability === "offline");
+      });
+      const degradedMarketClasses = marketAssetClasses.filter(assetClass => {
+        const rows = marketProviders.filter(row => row.assetClass === assetClass);
+        return rows.length > 0 && rows.some(row => row.availability === "degraded" || row.availability === "blocked");
+      });
+      const marketDataStatus: ServiceHealthState = offlineMarketClasses.length > 0
+        ? "offline"
+        : degradedMarketClasses.length > 0
+          ? "degraded"
+          : "available";
+      const marketDataDetail = marketDataStatus === "available"
+        ? "Yahoo Finance and Binance are returning usable market data."
+        : marketDataStatus === "offline"
+          ? `${offlineMarketClasses.map(formatAssetClassLabel).join(", ")} market data is unavailable.`
+          : `${degradedMarketClasses.map(formatAssetClassLabel).join(", ")} market data is degraded or stale.`;
+      const queueServiceStatus: ServiceHealthState = queue.status === "online" ? "available" : "degraded";
+      const databaseStatus: ServiceHealthState = envFlags.database ? "available" : "offline";
+      const coreStatus = summarizeStatus([databaseStatus, queueServiceStatus, marketDataStatus]);
+      const coreDetail = [
+        databaseStatus === "available" ? "Postgres persistence available." : "Database connection is not configured.",
+        queueServiceStatus === "available"
+          ? "Redis-backed queue available."
+          : queue.failureReason
+            ? `Queue fallback active: ${queue.failureReason}`
+            : "Queue fallback active: inline execution remains available.",
+        marketDataDetail,
+      ].join(" ");
+      const commentaryStatus: ServiceHealthState = llmPolicy.disabled
+        ? "degraded"
+        : activeCommentaryProvider
+          ? "available"
+          : llmPolicy.optional
+            ? "degraded"
+            : "offline";
+      const commentaryMode = llmPolicy.disabled
+        ? "disabled"
+        : activeCommentaryProvider
+          ? "llm"
+          : "template";
+      const commentaryDetail = llmPolicy.disabled
+        ? "LLM calls are disabled. Deterministic templates remain available."
+        : activeCommentaryProvider
+          ? activeCommentaryProvider.detail ?? "LLM explanation provider available."
+          : commentaryFailure
+            ? `LLM providers are unavailable. Deterministic templates remain available. Latest issue: ${commentaryFailure.provider}: ${commentaryFailure.detail}`
+            : "No LLM providers are configured. Deterministic templates remain available.";
+      const newsStatus: ServiceHealthState = runtimeConfig.newsDisabled
+        ? "degraded"
+        : rssProvider == null
+        ? "available"
+        : rssProvider.availability === "available"
+          ? "available"
+          : rssConsistentlyUnavailable
+            ? "offline"
+            : "degraded";
+      const newsDetail = runtimeConfig.newsDisabled
+        ? "News enrichment is disabled. Signal generation continues without RSS context."
+        : rssProvider == null
+        ? "RSS feeds will be checked on demand. Empty news does not block signals."
+        : newsStatus === "available"
+          ? "RSS feeds are responding normally."
+          : newsStatus === "offline"
+            ? "All RSS feeds are currently unavailable. Signal generation continues without fresh news."
+            : failedFeeds.length > 0
+              ? `RSS is partially degraded. Failed feeds: ${failedFeeds.join(", ")}.`
+              : "RSS feeds are temporarily unavailable. Signal generation continues without fresh news.";
+      const blockedProviders = providerRows.filter(row =>
+        row.availability === "blocked" &&
+        !["OpenAI", "Gemini", "Anthropic", "RSS"].includes(row.provider)
+      );
+      const topLevelStatus = coreStatus === "available"
+        ? "ONLINE"
+        : coreStatus === "degraded"
+          ? "DEGRADED"
+          : "OFFLINE";
+      const topLevelReason = coreStatus === "available" ? null : coreDetail;
 
       return NextResponse.json({
         ok: true,
         stats,
-        status: queueStatus,
-        reason: queueReason,
+        status: topLevelStatus,
+        reason: topLevelReason,
         runtime: {
+          coreSignalMode: runtimeConfig.coreSignalMode,
           redisEnabled: envFlags.redis,
           redisSource: redisConfig.source,
           redisRestOnlyConfigured: redisConfig.restOnlyConfigured,
           queueAvailable: deps.queueAvailable,
           queueMode: queue.status === "online" ? "queue" : "direct",
+          llmDisabled: runtimeConfig.llmDisabled,
+          newsDisabled: runtimeConfig.newsDisabled,
           cacheMode,
         },
         queue,
         providers: providerRows,
         blockedProviders,
+        core: {
+          available: coreStatus !== "offline",
+          status: coreStatus,
+          detail: coreDetail,
+          databaseStatus,
+          queueStatus: queueServiceStatus,
+          marketDataStatus,
+          engineStatus: "available",
+        },
         commentary: {
-          provider: commentaryProvider?.provider ?? "none",
-          available: commentaryProvider?.availability === "available",
+          provider: llmPolicy.disabled ? "LLM disabled" : activeCommentaryProvider?.provider ?? "Template fallback",
+          available: commentaryStatus !== "offline",
           mode: commentaryMode,
-          status: commentaryProvider?.status ?? "offline",
+          status: commentaryStatus,
           detail: commentaryDetail,
-          blockedReason: commentaryProvider?.blockedReason ?? null,
+          blockedReason: commentaryFailure?.blockedReason ?? null,
           templateFallbackAvailable: true,
+          optional: llmPolicy.optional,
+          llmDisabled: llmPolicy.disabled,
+        },
+        news: {
+          provider: "RSS",
+          available: newsStatus !== "offline",
+          status: newsStatus,
+          detail: newsDetail,
+          loadedFeeds: rssProvider == null ? 0 : loadedFeeds,
+          failedFeeds,
         },
         latestSetupBreakdown: setupBreakdown,
         timestamp: new Date().toISOString(),

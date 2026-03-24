@@ -6,6 +6,7 @@ import { fetchMarketQuote } from "@/lib/marketData/fetchQuotes";
 import { evaluateStyleReadiness } from "@/lib/marketData/policies/freshnessPolicy";
 import type { MarketRequestContext } from "@/lib/marketData/policies/requestPolicy";
 import { fetchRssNewsBundle } from "@/lib/providers/newsRss";
+import { getCoreSignalRuntime } from "@/lib/runtime/featureFlags";
 import { getCachedValue, setCachedValue } from "@/lib/runtime/runtimeCache";
 
 const FRED_KEY = process.env.FRED_API_KEY ?? "";
@@ -489,6 +490,18 @@ export async function fetchMacroData(context?: MarketRequestContext) {
 }
 
 export async function fetchNewsBundle(query: string, context?: MarketRequestContext) {
+  const runtime = getCoreSignalRuntime();
+  if (runtime.newsDisabled) {
+    return {
+      articles: [] as Array<{ title: string; source: string; publishedAt: string; sentiment: "bullish" | "bearish" | "neutral" }>,
+      status: "DEGRADED" as const,
+      reason: "news_disabled",
+      degraded: true,
+      sourceType: "disabled" as const,
+      fetchedAt: Date.now(),
+    };
+  }
+
   const priority = context?.priority ?? "cold";
   const freshTtlMs = priority === "hot" ? 2 * 60_000 : priority === "warm" ? 10 * 60_000 : 30 * 60_000;
   const staleTtlMs = priority === "hot" ? 10 * 60_000 : priority === "warm" ? 45 * 60_000 : 6 * 60 * 60_000;

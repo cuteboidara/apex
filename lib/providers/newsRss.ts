@@ -1,4 +1,5 @@
 import { recordProviderHealth } from "@/lib/providerHealth";
+import { getCoreSignalRuntime } from "@/lib/runtime/featureFlags";
 
 export type NewsSentiment = "bullish" | "bearish" | "neutral";
 
@@ -20,6 +21,7 @@ type FeedDefinition = {
 };
 
 const REQUEST_TIMEOUT_MS = 8_000;
+const RSS_USER_AGENT = "APEX/1.0 (+https://apex1-wine.vercel.app; rss-monitor)";
 const ALL_ASSETS = ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD", "BTCUSDT", "ETHUSDT"];
 
 const RSS_FEEDS: FeedDefinition[] = [
@@ -131,6 +133,10 @@ function cleanText(value: string | null | undefined) {
   return stripTags(decodeXmlEntities(value ?? "")).replace(/\s+/g, " ").trim();
 }
 
+function formatFeedError(error: unknown) {
+  return String(error).replace(/\s+/g, " ").trim().slice(0, 180);
+}
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -235,43 +241,58 @@ export function parseRssFeed(xml: string, source: string): RssNewsArticle[] {
 
   return items
     .map(item => {
-      const title = extractTag(item, "title");
-      const summary = extractTag(item, "description");
-      const url = extractTag(item, "link");
-      const publishedAt = toIsoDate(extractTag(item, "pubDate"));
-      const itemSource = extractTag(item, "source") || source;
+      try {
+        const title = extractTag(item, "title");
+        const summary = extractTag(item, "description");
+        const url = extractTag(item, "link");
+        const publishedAt = toIsoDate(extractTag(item, "pubDate"));
+        const itemSource = extractTag(item, "source") || source;
 
-      if (!title || !url) {
+        if (!title || !url) {
+          return null;
+        }
+
+        const combinedText = `${title} ${summary}`.trim();
+        return {
+          title,
+          source: itemSource,
+          publishedAt: publishedAt ?? new Date(0).toISOString(),
+          sentiment: classifyNewsSentiment(combinedText),
+          url,
+          summary,
+          affectedAssets: getAffectedAssets(combinedText),
+        } satisfies RssNewsArticle;
+      } catch {
         return null;
       }
-
-      const combinedText = `${title} ${summary}`.trim();
-      return {
-        title,
-        source: itemSource,
-        publishedAt: publishedAt ?? new Date(0).toISOString(),
-        sentiment: classifyNewsSentiment(combinedText),
-        url,
-        summary,
-        affectedAssets: getAffectedAssets(combinedText),
-      } satisfies RssNewsArticle;
     })
     .filter((article): article is RssNewsArticle => article != null);
 }
 
 async function fetchFeed(feed: FeedDefinition, fetchImpl: FetchLike): Promise<RssNewsArticle[]> {
-  const response = await fetchImpl(feed.url, {
-    cache: "no-store",
-    headers: { Accept: "application/rss+xml, application/xml, text/xml" },
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
+  try {
+    const response = await fetchImpl(feed.url, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/rss+xml, application/xml, text/xml",
+        "User-Agent": RSS_USER_AGENT,
+      },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
 
-  if (!response.ok) {
-    throw new Error(`${feed.source} HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`http_${response.status}`);
+    }
+
+    const xml = await response.text();
+    if (!xml.trim()) {
+      return [];
+    }
+
+    return parseRssFeed(xml, feed.source);
+  } catch (error) {
+    throw new Error(`${feed.source}: ${formatFeedError(error)}`);
   }
-
-  const xml = await response.text();
-  return parseRssFeed(xml, feed.source);
 }
 
 export async function fetchRssNewsBundle(input?: {
@@ -280,6 +301,26 @@ export async function fetchRssNewsBundle(input?: {
   fetchImpl?: FetchLike;
   sources?: string[];
 }) {
+  if (getCoreSignalRuntime().newsDisabled) {
+    await recordProviderHealth({
+      provider: "RSS",
+      status: "DEGRADED",
+      errorRate: 0,
+      detail: "news_disabled",
+    }).catch(() => undefined);
+
+    return {
+      provider: "RSS" as const,
+      articles: [] as RssNewsArticle[],
+      status: "DEGRADED" as const,
+      reason: "news_disabled",
+      degraded: true,
+      loadedFeeds: 0,
+      failedFeeds: [] as string[],
+      failureDetails: [] as Array<{ source: string; reason: string }>,
+    };
+  }
+
   const fetchImpl = input?.fetchImpl ?? fetch;
   const limit = input?.limit ?? 20;
   const allowedSources = input?.sources?.length
@@ -291,6 +332,7 @@ export async function fetchRssNewsBundle(input?: {
 
   const settled = await Promise.allSettled(feeds.map(feed => fetchFeed(feed, fetchImpl)));
   const failures: string[] = [];
+  const failureDetails: Array<{ source: string; reason: string }> = [];
   const deduped = new Map<string, RssNewsArticle>();
 
   settled.forEach((result, index) => {
@@ -299,6 +341,10 @@ export async function fetchRssNewsBundle(input?: {
 
     if (result.status !== "fulfilled") {
       failures.push(feed.source);
+      failureDetails.push({
+        source: feed.source,
+        reason: formatFeedError(result.reason),
+      });
       return;
     }
 
@@ -350,6 +396,7 @@ export async function fetchRssNewsBundle(input?: {
     degraded: status !== "LIVE",
     loadedFeeds: feeds.length - failures.length,
     failedFeeds: failures,
+    failureDetails,
   };
 }
 
