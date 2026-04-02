@@ -13,7 +13,7 @@ export function classifyProviderStatus(
   const normalizedStatus = status.toLowerCase();
   const normalizedDetail = String(detail ?? "").toLowerCase();
   const normalizedProvider = String(provider ?? "").toLowerCase();
-  const isLlmProvider = ["openai", "gemini", "anthropic"].includes(normalizedProvider);
+  const isLlmProvider = ["gemini", "anthropic"].includes(normalizedProvider);
   const isRssProvider = normalizedProvider === "rss";
 
   if (

@@ -1,9 +1,5 @@
 {
-  "framework": "nextjs",
-  "functions": {
-    "app/api/cycle/route.ts": { "maxDuration": 300 },
-    "app/api/reasoning/route.ts": { "maxDuration": 300 },
-    "app/api/insights/route.ts": { "maxDuration": 300 },
-    "app/api/admin/trigger-cycle/route.ts": { "maxDuration": 300 }
-  }
+  "buildCommand": "prisma generate && next build",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
 }

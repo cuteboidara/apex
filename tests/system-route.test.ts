@@ -78,25 +78,21 @@ test("system route returns valid JSON with empty stats when the database is empt
 test("provider classifier keeps Yahoo available and degrades Binance on 451 region restrictions", () => {
   const yahoo = classifyProviderStatus("available", "Primary forex provider", "Yahoo Finance");
   const binance = classifyProviderStatus("error", "HTTP 451 unavailable from a restricted location", "Binance");
-  const openAi = classifyProviderStatus("error", "The request failed because you exceeded your current quota.", "OpenAI");
+  const anthropic = classifyProviderStatus("error", "Credit balance is too low", "Anthropic");
 
   assert.equal(yahoo.availability, "available");
   assert.equal(yahoo.displayStatus, "available");
   assert.equal(binance.availability, "degraded");
   assert.equal(binance.displayStatus, "degraded");
-  assert.equal(openAi.availability, "degraded");
-  assert.equal(openAi.displayStatus, "degraded");
+  assert.equal(anthropic.availability, "degraded");
+  assert.equal(anthropic.displayStatus, "degraded");
 });
 
-test("system route prefers OpenAI commentary when multiple LLM providers are available", async () => {
-  const originalOpenAi = process.env.OPENAI_API_KEY;
-  const originalGemini = process.env.GEMINI_API_KEY;
+test("system route prefers Anthropic commentary when Claude is available", async () => {
   const originalAnthropic = process.env.ANTHROPIC_API_KEY;
   const originalDisableLlm = process.env.APEX_DISABLE_LLM;
   const originalCoreMode = process.env.APEX_CORE_SIGNAL_MODE;
 
-  process.env.OPENAI_API_KEY = "test-openai";
-  process.env.GEMINI_API_KEY = "test-gemini";
   process.env.ANTHROPIC_API_KEY = "test-anthropic";
   process.env.APEX_DISABLE_LLM = "false";
   process.env.APEX_CORE_SIGNAL_MODE = "hybrid";
@@ -155,15 +151,9 @@ test("system route prefers OpenAI commentary when multiple LLM providers are ava
       };
     };
 
-    assert.equal(payload.commentary.provider, "OpenAI");
-    assert.match(payload.commentary.detail, /Primary explanation and signal-analysis model/i);
+    assert.equal(payload.commentary.provider, "Anthropic");
+    assert.match(payload.commentary.detail, /Claude reasoning and market commentary/i);
   } finally {
-    if (originalOpenAi == null) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = originalOpenAi;
-
-    if (originalGemini == null) delete process.env.GEMINI_API_KEY;
-    else process.env.GEMINI_API_KEY = originalGemini;
-
     if (originalAnthropic == null) delete process.env.ANTHROPIC_API_KEY;
     else process.env.ANTHROPIC_API_KEY = originalAnthropic;
 
@@ -176,15 +166,11 @@ test("system route prefers OpenAI commentary when multiple LLM providers are ava
 });
 
 test("system route keeps core healthy when LLM providers fail and RSS is unavailable", async () => {
-  const originalOpenAi = process.env.OPENAI_API_KEY;
-  const originalGemini = process.env.GEMINI_API_KEY;
   const originalAnthropic = process.env.ANTHROPIC_API_KEY;
   const originalLlmOptional = process.env.APEX_LLM_OPTIONAL;
   const originalDisableLlm = process.env.APEX_DISABLE_LLM;
   const originalDatabaseUrl = process.env.DATABASE_URL;
 
-  process.env.OPENAI_API_KEY = "test-openai";
-  process.env.GEMINI_API_KEY = "test-gemini";
   process.env.ANTHROPIC_API_KEY = "test-anthropic";
   process.env.APEX_LLM_OPTIONAL = "true";
   process.env.APEX_DISABLE_LLM = "false";
@@ -195,22 +181,6 @@ test("system route keeps core healthy when LLM providers fail and RSS is unavail
       prisma: {
         providerHealth: {
           findMany: async () => ([
-            {
-              provider: "OpenAI",
-              status: "ERROR",
-              detail: "The request failed because you exceeded your current quota.",
-              requestSymbol: null,
-              latencyMs: 120,
-              recordedAt: new Date("2026-03-24T08:00:00.000Z"),
-            },
-            {
-              provider: "Gemini",
-              status: "ERROR",
-              detail: "resource exhausted",
-              requestSymbol: null,
-              latencyMs: 140,
-              recordedAt: new Date("2026-03-24T07:59:00.000Z"),
-            },
             {
               provider: "Anthropic",
               status: "ERROR",
@@ -324,12 +294,6 @@ test("system route keeps core healthy when LLM providers fail and RSS is unavail
     assert.equal(payload.news.available, true);
     assert.deepEqual(payload.blockedProviders, []);
   } finally {
-    if (originalOpenAi == null) delete process.env.OPENAI_API_KEY;
-    else process.env.OPENAI_API_KEY = originalOpenAi;
-
-    if (originalGemini == null) delete process.env.GEMINI_API_KEY;
-    else process.env.GEMINI_API_KEY = originalGemini;
-
     if (originalAnthropic == null) delete process.env.ANTHROPIC_API_KEY;
     else process.env.ANTHROPIC_API_KEY = originalAnthropic;
 

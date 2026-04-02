@@ -1,9 +1,14 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { AssetClass } from "@/lib/marketData/types";
 
 export type TradingViewSymbolType = "crypto" | "forex" | "commodity";
 
 export type TradingViewSymbolDefinition = {
-  symbol: "BTCUSDT" | "ETHUSDT" | "EURUSD" | "GBPUSD" | "USDJPY" | "XAUUSD" | "XAGUSD";
+  symbol: "BTCUSDT" | "ETHUSDT" | "EURUSD" | "GBPUSD" | "USDJPY" | "XAGUSD";
   description: string;
   assetClass: AssetClass;
   type: TradingViewSymbolType;
@@ -80,17 +85,6 @@ const SYMBOL_DEFINITIONS: readonly TradingViewSymbolDefinition[] = [
     pricescale: 1000,
   },
   {
-    symbol: "XAUUSD",
-    description: "Gold / US Dollar",
-    assetClass: "COMMODITY",
-    type: "commodity",
-    session: "24x5",
-    timezone: "Etc/UTC",
-    exchange: "APEX",
-    minmov: 1,
-    pricescale: 100,
-  },
-  {
     symbol: "XAGUSD",
     description: "Silver / US Dollar",
     assetClass: "COMMODITY",
@@ -160,3 +154,4 @@ export function searchTradingViewSymbols(
     })
     .map(toTradingViewSearchResult);
 }
+

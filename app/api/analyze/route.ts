@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
+import { deprecatedEndpointResponse } from "@/src/presentation/api/deprecated";
+
+export async function GET() {
+  return deprecatedEndpointResponse();
+}
 
 export async function POST() {
-  return NextResponse.json(
-    {
-      error: "Direct ad hoc analysis has been retired. Use the persisted signal cycle endpoint instead.",
-    },
-    { status: 410 }
-  );
+  return deprecatedEndpointResponse();
 }

@@ -1,30 +1,9 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-export const dynamic = "force-dynamic";
+import { deprecatedEndpointResponse } from "@/src/presentation/api/deprecated";
 
 export async function GET() {
-  try {
-    const alerts = await prisma.alert.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      include: {
-        signal: {
-          select: {
-            id: true,
-            runId: true,
-            asset: true,
-            rank: true,
-            direction: true,
-            total: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
+  return deprecatedEndpointResponse();
+}
 
-    return NextResponse.json(alerts);
-  } catch {
-    return NextResponse.json([]);
-  }
+export async function POST() {
+  return deprecatedEndpointResponse();
 }

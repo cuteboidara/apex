@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { TradePlanStyle } from "@/lib/assets";
 import { getTimeframeProfile } from "@/lib/strategy/timeframeEngine";
 import { detectRegime } from "@/lib/strategy/regimeEngine";
@@ -243,3 +248,4 @@ export function publishStrategyPlan(style: TradePlanStyle, snapshot: MarketSnaps
     },
   };
 }
+

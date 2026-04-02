@@ -9,7 +9,7 @@ import {
 import { getProviderHealthScore, updateCircuitState } from "@/lib/marketData/providerHealthEngine";
 import { selectProviders } from "@/lib/marketData/providerSelector";
 import { shouldUseFallback } from "@/lib/marketData/policies/fallbackPolicy";
-import { getCandleFreshnessMs, isCandleFresh } from "@/lib/marketData/policies/freshnessPolicy";
+import { isCandleFresh } from "@/lib/marketData/policies/freshnessPolicy";
 import { resolveCandleRequestPolicy, type MarketRequestContext } from "@/lib/marketData/policies/requestPolicy";
 import { chooseBetter } from "@/lib/marketData/policies/quorumPolicy";
 import type {

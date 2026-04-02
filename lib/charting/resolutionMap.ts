@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { Timeframe } from "@/lib/marketData/types";
 
 export const TRADINGVIEW_RESOLUTIONS = ["1", "5", "15", "60", "240", "D"] as const;
@@ -29,3 +34,4 @@ export function mapResolutionToTimeframe(resolution: string): Timeframe | null {
 export function mapTimeframeToResolution(timeframe: Timeframe): TradingViewResolution {
   return TIMEFRAME_TO_RESOLUTION[timeframe];
 }
+

@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["apex"]
 }
 
 model User {
@@ -19,6 +20,7 @@ model User {
   lastLoginAt     DateTime?
   loginCount      Int       @default(0)
   createdAt       DateTime  @default(now())
+  @@schema("apex")
 }
 
 model Setup {
@@ -35,6 +37,7 @@ model Setup {
   reasoning String?
   createdAt DateTime  @default(now())
   tradeLog  TradeLog?
+  @@schema("apex")
 }
 
 model TradeLog {
@@ -46,6 +49,7 @@ model TradeLog {
   pnl     Float?
   notes   String?
   outcome String?
+  @@schema("apex")
 }
 
 model Signal {
@@ -87,6 +91,7 @@ model Signal {
 
   alerts       Alert[]
   tradePlans   TradePlan[]
+  @@schema("apex")
 }
 
 model TelegramSettings {
@@ -96,6 +101,7 @@ model TelegramSettings {
   allowedAssets     String   @default("ALL")
   weekendCryptoOnly Boolean  @default(false)
   updatedAt         DateTime @updatedAt
+  @@schema("apex")
 }
 
 model SignalRun {
@@ -117,6 +123,65 @@ model SignalRun {
   failureDetails          Json?
   signals                 Signal[]
   tradePlans              TradePlan[]
+  @@schema("apex")
+}
+
+model DailySignalRun {
+  id                String   @id @default(cuid())
+  windowKey         String   @unique
+  runDate           String
+  timezone          String
+  scheduledFor      DateTime
+  startedAt         DateTime?
+  completedAt       DateTime?
+  triggeredBy       String
+  mode              String
+  status            String
+  forced            Boolean  @default(false)
+  dryRun            Boolean  @default(false)
+  zeroSignalDay     Boolean  @default(false)
+  generatedCount    Int      @default(0)
+  publishedCount    Int      @default(0)
+  deliveredCount    Int      @default(0)
+  failedCount       Int      @default(0)
+  signalSnapshot    Json?
+  publicationPolicy Json?
+  errorCode         String?
+  errorMessage      String?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  deliveries        DailySignalDelivery[]
+
+  @@index([runDate, timezone])
+  @@index([status, scheduledFor])
+  @@schema("apex")
+}
+
+model DailySignalDelivery {
+  id               String   @id @default(cuid())
+  dailySignalRunId String
+  channel          String
+  target           String
+  dedupeKey        String   @unique
+  status           String
+  signalCount      Int      @default(0)
+  attempts         Int      @default(0)
+  lastAttemptAt    DateTime?
+  deliveredAt      DateTime?
+  errorCode        String?
+  errorMessage     String?
+  payloadSnapshot  Json?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  dailySignalRun   DailySignalRun @relation(fields: [dailySignalRunId], references: [id])
+
+  @@index([dailySignalRunId, status])
+  @@index([channel, status, createdAt])
+  @@schema("apex")
 }
 
 model TradePlan {
@@ -173,6 +238,7 @@ model TradePlan {
   @@index([symbol, detectedAt])
   @@index([style, outcome])
   @@index([providerHealthStateAtSignal])
+  @@schema("apex")
 }
 
 model Alert {
@@ -187,6 +253,7 @@ model Alert {
   failureReason  String?
   retryCount     Int      @default(0)
   createdAt      DateTime @default(now())
+  @@schema("apex")
 }
 
 model TelegramSubscriber {
@@ -206,6 +273,7 @@ model TelegramSubscriber {
   messageCount  Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  @@schema("apex")
 }
 
 model ProviderHealth {
@@ -218,6 +286,7 @@ model ProviderHealth {
   quotaRemaining Int?
   status         String
   recordedAt     DateTime @default(now())
+  @@schema("apex")
 }
 
 model MarketDataSnapshot {
@@ -240,6 +309,7 @@ model MarketDataSnapshot {
   capturedAt     DateTime @default(now())
 
   @@index([symbol, timeframe, capturedAt])
+  @@schema("apex")
 }
 
 model ProviderCircuitState {
@@ -258,6 +328,7 @@ model ProviderCircuitState {
   updatedAt     DateTime @updatedAt
 
   @@unique([provider, assetClass])
+  @@schema("apex")
 }
 
 model AuditEvent {
@@ -270,6 +341,7 @@ model AuditEvent {
   after         Json?
   correlationId String?
   timestamp     DateTime @default(now())
+  @@schema("apex")
 }
 
 model ExplanationCache {
@@ -287,6 +359,7 @@ model ExplanationCache {
 
   @@unique([fingerprint, purpose])
   @@index([purpose, updatedAt])
+  @@schema("apex")
 }
 
 model Candle {
@@ -309,6 +382,7 @@ model Candle {
   @@unique([symbol, timeframe, provider, sourceTimestamp])
   @@index([symbol, timeframe, sourceTimestamp])
   @@index([provider, sourceTimestamp])
+  @@schema("apex")
 }
 
 model QuoteSnapshot {
@@ -334,6 +408,7 @@ model QuoteSnapshot {
   @@unique([symbol, provider, sourceTimestamp])
   @@index([symbol, sourceTimestamp])
   @@index([provider, sourceTimestamp])
+  @@schema("apex")
 }
 
 model RegimeSnapshot {
@@ -356,6 +431,7 @@ model RegimeSnapshot {
   @@index([symbol, timeframe, sourceTimestamp])
   @@index([runId])
   @@index([tradePlanId])
+  @@schema("apex")
 }
 
 model TradeOutcome {
@@ -389,6 +465,7 @@ model TradeOutcome {
   @@index([style, outcome])
   @@index([regimeTag])
   @@index([providerAtSignal, providerHealthStateAtSignal])
+  @@schema("apex")
 }
 
 model StrategyPerformanceWindow {
@@ -413,6 +490,7 @@ model StrategyPerformanceWindow {
   @@index([scopeType, generatedAt])
   @@index([symbol, style, generatedAt])
   @@index([setupFamily, regimeTag, generatedAt])
+  @@schema("apex")
 }
 
 model ConfidenceCalibrationBucket {
@@ -435,6 +513,7 @@ model ConfidenceCalibrationBucket {
   @@index([scopeType, generatedAt])
   @@index([symbol, style, generatedAt])
   @@index([setupFamily, regimeTag, generatedAt])
+  @@schema("apex")
 }
 
 model PaperAccount {
@@ -454,6 +533,7 @@ model PaperAccount {
 
   @@index([ownerUserId, status])
   @@index([teamId, status])
+  @@schema("apex")
 }
 
 model PaperPosition {
@@ -483,6 +563,7 @@ model PaperPosition {
   @@index([accountId, status])
   @@index([symbol, status])
   @@index([tradePlanId])
+  @@schema("apex")
 }
 
 model ExecutionFill {
@@ -508,6 +589,7 @@ model ExecutionFill {
   @@index([accountId, occurredAt])
   @@index([positionId, occurredAt])
   @@index([tradePlanId])
+  @@schema("apex")
 }
 
 model AlertDeliveryAttempt {
@@ -524,6 +606,7 @@ model AlertDeliveryAttempt {
 
   @@index([alertId, attemptedAt])
   @@index([channel, attemptedAt])
+  @@schema("apex")
 }
 
 model DeadLetterJob {
@@ -543,6 +626,7 @@ model DeadLetterJob {
 
   @@index([queueName, failedAt])
   @@index([runId])
+  @@schema("apex")
 }
 
 model OperationalMetric {
@@ -565,6 +649,7 @@ model OperationalMetric {
   @@index([category, recordedAt])
   @@index([provider, recordedAt])
   @@index([symbol, recordedAt])
+  @@schema("apex")
 }
 
 model BacktestRun {
@@ -583,6 +668,7 @@ model BacktestRun {
 
   @@index([status, startedAt])
   @@index([symbol, startedAt])
+  @@schema("apex")
 }
 
 model BacktestTrade {
@@ -610,6 +696,7 @@ model BacktestTrade {
   @@index([backtestRunId, signalTimestamp])
   @@index([symbol, outcome])
   @@index([setupFamily, regimeTag])
+  @@schema("apex")
 }
 
 model SubscriptionPlan {
@@ -623,6 +710,7 @@ model SubscriptionPlan {
   features         Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  @@schema("apex")
 }
 
 model UserSubscription {
@@ -642,6 +730,7 @@ model UserSubscription {
 
   @@index([userId, status])
   @@index([billingCustomerId])
+  @@schema("apex")
 }
 
 model Team {
@@ -652,6 +741,7 @@ model Team {
   status      String   @default("ACTIVE")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  @@schema("apex")
 }
 
 model TeamMember {
@@ -665,6 +755,7 @@ model TeamMember {
 
   @@unique([teamId, userId])
   @@index([userId, status])
+  @@schema("apex")
 }
 
 model ApiToken {
@@ -679,6 +770,7 @@ model ApiToken {
   createdAt DateTime @default(now())
 
   @@index([userId, revokedAt])
+  @@schema("apex")
 }
 
 model WebhookEndpoint {
@@ -696,6 +788,7 @@ model WebhookEndpoint {
 
   @@index([userId, status])
   @@index([teamId, status])
+  @@schema("apex")
 }
 
 model ExportJob {
@@ -713,6 +806,7 @@ model ExportJob {
 
   @@index([userId, status])
   @@index([teamId, status])
+  @@schema("apex")
 }
 
 model Watchlist {
@@ -723,6 +817,7 @@ model Watchlist {
   updatedAt DateTime @updatedAt
 
   @@index([userId, updatedAt])
+  @@schema("apex")
 }
 
 model WatchlistAsset {
@@ -732,6 +827,7 @@ model WatchlistAsset {
   createdAt  DateTime @default(now())
 
   @@unique([watchlistId, symbol])
+  @@schema("apex")
 }
 
 model UserPreference {
@@ -748,4 +844,429 @@ model UserPreference {
   webhookAlertsEnabled   Boolean  @default(false)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+  @@schema("apex")
+}
+
+model MarketEvent {
+  id              String   @id @default(cuid())
+  eventId         String   @unique
+  tsExchange      DateTime
+  tsReceived      DateTime
+  venue           String
+  symbolCanonical String
+  assetClass      String
+  eventType       String
+  sequenceNumber  Int
+  payload         Json
+  integrityFlags  String[] @default([])
+  createdAt       DateTime @default(now())
+
+  @@index([symbolCanonical, tsExchange])
+  @@index([venue, tsReceived])
+  @@schema("apex")
+}
+
+model FeatureSnapshot {
+  id              String   @id @default(cuid())
+  snapshotId      String   @unique
+  ts              DateTime
+  symbolCanonical String
+  horizon         String
+  features        Json
+  quality         Json
+  createdAt       DateTime @default(now())
+
+  @@index([symbolCanonical, ts])
+  @@index([horizon, ts])
+  @@schema("apex")
+}
+
+model PodOutput {
+  id                 String   @id @default(cuid())
+  podId              String
+  ts                 DateTime
+  symbolCanonical    String
+  decisionHorizon    String
+  signalType         String
+  confidence         Float
+  recommendedAction  String?
+  expectedReturn     Float?
+  expectedVolatility Float?
+  winProbability     Float?
+  urgency            Float?
+  stateAssessment    String?
+  constraints        Json
+  diagnostics        Json
+  modelVersion       String
+  createdAt          DateTime @default(now())
+
+  @@index([podId, ts])
+  @@index([symbolCanonical, ts])
+  @@schema("apex")
+}
+
+model AllocationIntent {
+  id               String   @id @default(cuid())
+  ts               DateTime
+  symbolCanonical  String
+  selectedPods     String[] @default([])
+  podWeights       Json
+  targetPosition   Float
+  confidence       Float
+  portfolioContext Json
+  reasonCodes      String[] @default([])
+  createdAt        DateTime @default(now())
+
+  @@index([symbolCanonical, ts])
+  @@schema("apex")
+}
+
+model RiskDecision {
+  id                     String   @id @default(cuid())
+  ts                     DateTime
+  scope                  String
+  symbolCanonical        String
+  approvalStatus         String
+  approvedSizeMultiplier Float
+  riskCheckResults       Json
+  overrideInstructions   String?
+  deRiskingAction        String   @default("none")
+  killSwitchActive       Boolean  @default(false)
+  createdAt              DateTime @default(now())
+
+  @@index([symbolCanonical, ts])
+  @@index([approvalStatus, ts])
+  @@schema("apex")
+}
+
+model ExecutionIntent {
+  id                 String   @id @default(cuid())
+  intentId           String   @unique
+  ts                 DateTime
+  symbolCanonical    String
+  side               String
+  targetSize         Float
+  urgency            Float
+  executionStyle     String
+  slippageBudgetBps  Float
+  constraints        Json
+  fallbackStyle      String
+  createdAt          DateTime @default(now())
+
+  @@index([symbolCanonical, ts])
+  @@schema("apex")
+}
+
+model ChildOrder {
+  id                  String   @id @default(cuid())
+  childOrderId        String   @unique
+  intentId            String
+  ts                  DateTime
+  symbolCanonical     String
+  side                String
+  size                Float
+  executionStyle      String
+  limitPrice          Float?
+  expectedSlippageBps Float
+  status              String
+  notes               String?
+  createdAt           DateTime @default(now())
+
+  @@index([intentId, ts])
+  @@index([symbolCanonical, ts])
+  @@schema("apex")
+}
+
+model DecisionJournal {
+  id                 String   @id @default(cuid())
+  decisionId         String   @unique
+  ts                 DateTime
+  symbolCanonical    String
+  marketSnapshotRef  String
+  podOutputRefs      String[] @default([])
+  allocationRef      String
+  riskDecisionRef    String
+  executionIntentRef String
+  finalAction        String
+  humanSummary       String
+  createdAt          DateTime @default(now())
+
+  @@index([symbolCanonical, ts])
+  @@index([finalAction, ts])
+  @@schema("apex")
+}
+
+model LearningFeedback {
+  id                     String   @id @default(cuid())
+  feedbackId             String   @unique
+  decisionRef            String
+  outcomeWindow          String
+  realizedPnl            Float?
+  realizedSlippageBps    Float?
+  forecastAccuracy       Float?
+  attribution            Json
+  driftFlags             String[] @default([])
+  recommendedUpdateScope String
+  createdAt              DateTime @default(now())
+
+  @@index([decisionRef, createdAt])
+  @@schema("apex")
+}
+
+model ModelRegistry {
+  id               String   @id @default(cuid())
+  podId            String
+  version          String
+  trainedAt        DateTime
+  status           String
+  validationScore  Float
+  deploymentStatus String
+  createdAt        DateTime @default(now())
+
+  @@unique([podId, version])
+  @@index([podId, trainedAt])
+  @@schema("apex")
+}
+
+model DriftLog {
+  id                         String   @id @default(cuid())
+  podId                      String
+  ts                         DateTime
+  predictionAccuracy7d       Float
+  predictionAccuracy30d      Float
+  confidenceCalibrationError Float
+  featureDistributionShift   Float
+  driftFlags                 String[] @default([])
+  recommendedUpdateScope     String
+  createdAt                  DateTime @default(now())
+
+  @@index([podId, ts])
+  @@schema("apex")
+}
+
+model SystemEvent {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  ts        DateTime
+  module    String
+  type      String
+  reason    String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([module, ts])
+  @@index([type, ts])
+  @@schema("apex")
+}
+
+model SignalLog {
+  id             String   @id @default(cuid())
+  symbol         String
+  direction      String
+  grade          String
+  status         String
+  setupType      String?
+  session        String?
+  bias           String?
+  confidence     Float?
+  entry          Float?
+  sl             Float?
+  tp1            Float?
+  tp2            Float?
+  tp3            Float?
+  livePrice      Float?
+  noTradeReason  String?
+  shortReasoning String?
+  marketPhase    String?
+  location       String?
+  zoneType       String?
+  podVoteSummary String?
+  blockedReasons String?
+  cycleId        String?
+  emittedAt      DateTime @default(now())
+  outcome        String?
+  outcomeAt      DateTime?
+  outcomePrice   Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([symbol, emittedAt])
+  @@index([grade, emittedAt])
+  @@index([status, emittedAt])
+  @@index([emittedAt])
+  @@schema("apex")
+}
+
+model OperatorSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  @@schema("apex")
+}
+
+model MarketSnapshot {
+  id                         String   @id @default(cuid())
+  snapshot_id                String   @unique
+  cycle_id                   String
+  symbol                     String
+  timestamp                  DateTime
+  features                   Json
+  raw_inputs_metadata        Json
+  data_source                String
+  data_quality_tier          String
+  feature_version            String
+  market_session_context     Json
+  publication_session_window String
+  session_context            Json
+  data_fetch_timestamps      Json
+  created_at                 DateTime
+
+  @@index([cycle_id, symbol])
+  @@index([symbol, timestamp])
+  @@schema("apex")
+}
+
+model TradeCandidate {
+  id                  String   @id @default(cuid())
+  candidate_id        String   @unique
+  cycle_id            String
+  snapshot_id         String
+  symbol              String
+  direction           String
+  confidence          Float
+  size_hint           Float
+  allocator_version   String
+  pod_votes           Json
+  supporting_evidence Json
+  allocator_metadata  Json?
+  directional_attribution Json?
+  veto_attribution    Json?
+  confidence_breakdown Json?
+  proposed_trade_plan Json?
+  status              String
+  created_at          DateTime
+
+  @@index([cycle_id, symbol])
+  @@index([snapshot_id])
+  @@schema("apex")
+}
+
+model RiskEvaluatedCandidate {
+  id                  String   @id @default(cuid())
+  candidate_id        String   @unique
+  cycle_id            String
+  decision            String
+  blocking_rules      String[] @default([])
+  warnings            String[] @default([])
+  size_adjustments    Json?
+  policy_evaluations  Json
+  risk_version        String
+  approved_trade_plan Json?
+  authoritative_source String?
+  shadow_decision     String?
+  shadow_mismatch     Boolean  @default(false)
+  shadow_blocking_rules String[] @default([])
+  shadow_adjustments  Json?
+  explainability_score Float?
+  created_at          DateTime
+
+  @@index([cycle_id, decision])
+  @@schema("apex")
+}
+
+model RiskShadowLog {
+  id              String   @id @default(cuid())
+  cycleId         String
+  symbol          String
+  legacyDecision  String
+  shadowDecision  String
+  matched         Boolean
+  divergentRules  String
+  legacyRuleCodes String
+  shadowRuleCodes String
+  recordedAt      DateTime @default(now())
+
+  @@index([cycleId])
+  @@index([symbol, recordedAt])
+  @@index([matched, recordedAt])
+  @@schema("apex")
+}
+
+model ExecutableSignal {
+  id          String   @id @default(cuid())
+  signal_id   String   @unique
+  cycle_id    String
+  candidate_id String
+  symbol      String
+  direction   String
+  size        Float
+  entry       Float
+  stop_loss   Float
+  take_profit Json
+  status      String
+  created_at  DateTime
+  version     String
+
+  @@index([cycle_id, symbol])
+  @@index([candidate_id])
+  @@schema("apex")
+}
+
+model SignalLifecycle {
+  id               String   @id @default(cuid())
+  signal_id        String
+  current_state    String
+  fill_status      String
+  opened_at        DateTime?
+  updated_at       DateTime
+  closed_at        DateTime?
+  pnl              Float?
+  execution_events Json
+  created_at       DateTime @default(now())
+
+  @@index([signal_id, updated_at])
+  @@schema("apex")
+}
+
+model SignalViewModel {
+  id               String   @id @default(cuid())
+  view_id          String   @unique
+  entity_ref       String
+  display_type     String
+  headline         String
+  summary          String
+  reason_labels    String[] @default([])
+  confidence_label String?
+  ui_sections      Json
+  commentary       Json?
+  ui_version       String
+  generated_at     DateTime
+
+  @@index([entity_ref, generated_at])
+  @@index([display_type, generated_at])
+  @@schema("apex")
+}
+
+model CycleOutput {
+  id                String   @id @default(cuid())
+  cycle_id          String   @unique
+  started_at        DateTime
+  completed_at      DateTime
+  symbols_processed String[] @default([])
+  snapshots         Json
+  candidates        Json
+  risk_results      Json
+  signals           Json
+  metadata          Json
+  versions          Json
+  pipeline_status   String
+  payload_source    String
+  created_at        DateTime @default(now())
+
+  @@index([started_at])
+  @@index([pipeline_status, started_at])
+  @@schema("apex")
 }

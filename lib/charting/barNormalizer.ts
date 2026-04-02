@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { MarketStatus, Timeframe } from "@/lib/marketData/types";
 
 export type TradingViewBar = {
@@ -90,3 +95,4 @@ export function tradingViewBarKey(bar: TradingViewBar | null | undefined) {
   if (!bar) return null;
   return [bar.time, bar.open, bar.high, bar.low, bar.close, bar.volume ?? ""].join(":");
 }
+

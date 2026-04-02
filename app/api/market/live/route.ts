@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
-import { fetchLiveMarketPrices } from "@/lib/liveMarket";
-
-export const dynamic = "force-dynamic";
+import { deprecatedEndpointResponse } from "@/src/presentation/api/deprecated";
 
 export async function GET() {
-  return NextResponse.json(await fetchLiveMarketPrices());
+  return deprecatedEndpointResponse();
+}
+
+export async function POST() {
+  return deprecatedEndpointResponse();
 }

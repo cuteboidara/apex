@@ -1,4 +1,8 @@
+// Handles Telegram bot commands and subscriber interactions only.
+// It does not own active signal alert delivery; use src/lib/telegram.ts for that path.
 import { prisma } from "@/lib/prisma";
+import { getSignalsPayload } from "@/src/api/signals";
+import { getSystemStatusPayload } from "@/src/api/system";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? "";
 
@@ -44,6 +48,14 @@ type SignalRow = {
   createdAt: Date;
 };
 
+type RuntimeSignalSummary = {
+  symbol: string;
+  direction: string;
+  grade: string;
+  session: string;
+  shortReasoning: string;
+};
+
 // ── Telegram API helpers ───────────────────────────────────────────────────────
 
 export async function sendMessage(
@@ -58,8 +70,21 @@ export async function sendMessage(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", ...options }),
     });
+    if (!res.ok) {
+      const responseText = await res.text();
+      console.error("[APEX TELEGRAM BOT] sendMessage failed", {
+        status: res.status,
+        chatId: String(chatId),
+        responseBody: responseText,
+      });
+      return false;
+    }
     return res.ok;
-  } catch {
+  } catch (error) {
+    console.error("[APEX TELEGRAM BOT] sendMessage threw", {
+      chatId: String(chatId),
+      error: String(error),
+    });
     return false;
   }
 }
@@ -143,25 +168,32 @@ async function handleStart(msg: TelegramMessage) {
 
 async function handleSignals(msg: TelegramMessage) {
   await upsertSubscriber(msg);
-  const signals = await prisma.signal.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    select: {
-      id: true, asset: true, direction: true, rank: true, total: true,
-      entry: true, stopLoss: true, tp1: true, tp2: true, tp3: true,
-      brief: true, createdAt: true,
-    },
-  });
+  const payload = await getSignalsPayload();
+  const activeSignals = payload.activeSignals.slice(0, 5).map(signal => ({
+    symbol: signal.symbol,
+    direction: signal.direction.toUpperCase(),
+    grade: signal.grade,
+    session: signal.session,
+    shortReasoning: signal.shortReasoning,
+  })) satisfies RuntimeSignalSummary[];
 
-  if (signals.length === 0) {
-    await sendMessage(msg.chat.id, "📭 No signals yet. Check back after the next analysis cycle.");
+  if (activeSignals.length === 0) {
+    await sendMessage(msg.chat.id, "📭 No active signals right now. Check back after the next analysis cycle.");
     return;
   }
 
-  await sendMessage(msg.chat.id, `📡 <b>Last ${signals.length} Signals:</b>`);
-  for (const s of signals) {
-    await sendSignalAlert(msg.chat.id, s);
-  }
+  const lines = activeSignals.map(signal =>
+    `• <b>${signal.symbol}</b> · ${signal.direction} · ${signal.grade} · ${signal.session}\n  ${signal.shortReasoning}`,
+  );
+
+  await sendMessage(
+    msg.chat.id,
+    [
+      `📡 <b>Current Active Signals (${activeSignals.length})</b>`,
+      "",
+      ...lines,
+    ].join("\n"),
+  );
 }
 
 async function handlePerformance(msg: TelegramMessage) {
@@ -206,27 +238,27 @@ async function handlePerformance(msg: TelegramMessage) {
 
 async function handleStatus(msg: TelegramMessage) {
   await upsertSubscriber(msg);
-
-  const latestRun = await prisma.signalRun.findFirst({
-    orderBy: { queuedAt: "desc" },
-    select: { status: true, queuedAt: true, completedAt: true, engineVersion: true },
-  });
-
-  const totalSignals = await prisma.signal.count();
+  const [status, signals] = await Promise.all([
+    getSystemStatusPayload(),
+    getSignalsPayload(),
+  ]);
   const subscribers = await prisma.telegramSubscriber.count({ where: { status: "ACTIVE" } });
-
-  const lastRun = latestRun
-    ? `${latestRun.status.toUpperCase()} at ${new Date(latestRun.completedAt ?? latestRun.queuedAt).toUTCString()}`
+  const lastRun = status.last_cycle_ts
+    ? new Date(status.last_cycle_ts).toUTCString()
     : "No runs yet";
+  const readiness = typeof status.readiness === "string"
+    ? status.readiness
+    : (status.readiness?.market_data_status ?? "unknown");
 
   await sendMessage(
     msg.chat.id,
     `⚙️ <b>APEX System Status</b>\n\n` +
-    `🟢 Engine: <b>Online</b>\n` +
-    `📡 Total signals: <b>${totalSignals}</b>\n` +
+    `🟢 Engine: <b>${"status" in status && status.status === "offline" ? "Offline" : "Online"}</b>\n` +
+    `📡 Active signals: <b>${signals.activeSignals.length}</b>\n` +
+    `📊 Pairs tracked: <b>${signals.liveMarketBoard.length}</b>\n` +
+    `🧭 Readiness: <b>${readiness}</b>\n` +
     `👥 Active subscribers: <b>${subscribers}</b>\n` +
-    `🔄 Last run: ${lastRun}\n` +
-    (latestRun?.engineVersion ? `🏷 Version: <b>${latestRun.engineVersion}</b>` : ""),
+    `🔄 Last cycle: ${lastRun}`,
   );
 }
 
@@ -292,9 +324,8 @@ export async function handleUpdate(update: TelegramUpdate): Promise<void> {
     case "/alerts":      return handleAlerts(msg);
     case "/help":        return handleHelp(msg);
     default:
-      // Unknown command — silently ignore (don't spam unknown users)
       if (text.startsWith("/")) {
-        await sendMessage(msg.chat.id, `Unknown command. Try /help`);
+        await sendMessage(msg.chat.id, "Unknown command. Available: /status, /signals, /alerts, /help");
       }
   }
 }

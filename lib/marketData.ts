@@ -23,7 +23,6 @@ const ASSET_PROVIDER: Record<string, "multi" | "binance"> = {
   USDCHF:  "multi",
   EURJPY:  "multi",
   GBPJPY:  "multi",
-  XAUUSD:  "multi",
   XAGUSD:  "multi",
   BTCUSDT: "binance",
   ETHUSDT: "binance",
@@ -348,15 +347,16 @@ export async function fetchCryptoData(symbol: string, context?: MarketRequestCon
   };
 }
 
-async function fetchMultiProviderAsset(apexSymbol: string, _assetClass: "FOREX" | "COMMODITY", _context?: MarketRequestContext) {
+async function fetchMultiProviderAsset(apexSymbol: string, assetClass: "FOREX" | "COMMODITY", context?: MarketRequestContext) {
+  void context;
   const [quote, minute1, minute5, minute15, hour1, hour4, day1] = await Promise.all([
-    fetchMarketQuote(apexSymbol, _assetClass),
-    fetchMarketCandles(apexSymbol, _assetClass, "1m"),
-    fetchMarketCandles(apexSymbol, _assetClass, "5m"),
-    fetchMarketCandles(apexSymbol, _assetClass, "15m"),
-    fetchMarketCandles(apexSymbol, _assetClass, "1h"),
-    fetchMarketCandles(apexSymbol, _assetClass, "4h"),
-    fetchMarketCandles(apexSymbol, _assetClass, "1D"),
+    fetchMarketQuote(apexSymbol, assetClass),
+    fetchMarketCandles(apexSymbol, assetClass, "1m"),
+    fetchMarketCandles(apexSymbol, assetClass, "5m"),
+    fetchMarketCandles(apexSymbol, assetClass, "15m"),
+    fetchMarketCandles(apexSymbol, assetClass, "1h"),
+    fetchMarketCandles(apexSymbol, assetClass, "4h"),
+    fetchMarketCandles(apexSymbol, assetClass, "1D"),
   ]);
 
   const dailyCandles = day1.candles;

@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 export type CalibrationOutcomeRecord = {
   symbol: string;
   assetClass: string;
@@ -167,7 +172,7 @@ export function buildStrategyPerformanceWindows(records: CalibrationOutcomeRecor
     {
       scopeType: "GLOBAL",
       group: () => "GLOBAL",
-      shape: (_records: CalibrationOutcomeRecord[]) => ({
+      shape: () => ({
         symbol: null,
         assetClass: null,
         style: null,
@@ -300,3 +305,4 @@ export function buildEvidenceGateRules(
       };
     });
 }
+

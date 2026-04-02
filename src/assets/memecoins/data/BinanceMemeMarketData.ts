@@ -1,0 +1,241 @@
+import type { Candle } from "@/src/smc/types";
+
+const BINANCE_REST_BASE = "https://api.binance.com/api/v3";
+const BINANCE_WS_BASE = "wss://stream.binance.com:9443/stream";
+const CANDLE_CACHE_TTL_MS = 60_000;
+
+type CachedCandles = {
+  candles: Candle[];
+  fetchedAt: number;
+};
+
+type LivePriceEntry = {
+  price: number;
+  updatedAt: number;
+};
+
+type BinanceTickerMessage = {
+  stream: string;
+  data: {
+    s: string;
+    c: string;
+  };
+};
+
+type MemeBinanceState = {
+  candleCache: Map<string, CachedCandles>;
+  livePrices: Map<string, LivePriceEntry>;
+  wsInstance: WebSocket | null;
+  isConnecting: boolean;
+  intentionalClose: boolean;
+  subscribedSymbolsKey: string;
+};
+
+const globalForMemeBinance = globalThis as typeof globalThis & {
+  __apexMemeBinanceState?: MemeBinanceState;
+};
+
+const state = globalForMemeBinance.__apexMemeBinanceState ??= {
+  candleCache: new Map<string, CachedCandles>(),
+  livePrices: new Map<string, LivePriceEntry>(),
+  wsInstance: null,
+  isConnecting: false,
+  intentionalClose: false,
+  subscribedSymbolsKey: "",
+};
+
+function buildStreamUrl(symbols: string[]): string {
+  const streams = symbols.map(symbol => `${symbol.toLowerCase()}@ticker`).join("/");
+  return `${BINANCE_WS_BASE}?streams=${streams}`;
+}
+
+function readMessageData(event: MessageEvent): string | null {
+  if (typeof event.data === "string") {
+    return event.data;
+  }
+  if (event.data instanceof ArrayBuffer) {
+    return new TextDecoder().decode(event.data);
+  }
+  if (ArrayBuffer.isView(event.data)) {
+    return new TextDecoder().decode(event.data);
+  }
+  return null;
+}
+
+function connectWebSocket(symbols: string[]): void {
+  if (typeof globalThis.WebSocket === "undefined" || symbols.length === 0) {
+    return;
+  }
+
+  state.intentionalClose = false;
+  state.isConnecting = true;
+  state.subscribedSymbolsKey = symbols.join(",");
+
+  const ws = new globalThis.WebSocket(buildStreamUrl(symbols));
+  state.wsInstance = ws;
+
+  ws.onopen = () => {
+    state.isConnecting = false;
+    console.log(`[meme-binance-ws] Connected for ${symbols.length} symbols`);
+  };
+
+  ws.onmessage = event => {
+    try {
+      const payload = readMessageData(event);
+      if (!payload) {
+        return;
+      }
+
+      const message = JSON.parse(payload) as BinanceTickerMessage;
+      const price = Number(message.data.c);
+      if (!Number.isFinite(price)) {
+        return;
+      }
+
+      state.livePrices.set(message.data.s, {
+        price,
+        updatedAt: Date.now(),
+      });
+    } catch {
+      // Ignore malformed frames and keep the stream alive.
+    }
+  };
+
+  ws.onerror = () => {
+    state.isConnecting = false;
+    console.error("[meme-binance-ws] WebSocket error");
+  };
+
+  ws.onclose = () => {
+    state.isConnecting = false;
+    state.wsInstance = null;
+    if (state.intentionalClose) {
+      state.intentionalClose = false;
+      return;
+    }
+  };
+}
+
+function closeCurrentSocket(): void {
+  if (state.wsInstance) {
+    state.intentionalClose = true;
+    state.wsInstance.close();
+    state.wsInstance = null;
+  }
+
+  state.isConnecting = false;
+}
+
+export function ensureMemeBinanceWebSocket(symbols: string[]): void {
+  const uniqueSymbols = [...new Set(symbols.filter(Boolean))].sort();
+  const nextKey = uniqueSymbols.join(",");
+
+  if (uniqueSymbols.length === 0 || typeof globalThis.WebSocket === "undefined") {
+    return;
+  }
+
+  if (state.subscribedSymbolsKey !== nextKey && state.wsInstance) {
+    closeCurrentSocket();
+  }
+
+  if (
+    state.subscribedSymbolsKey === nextKey
+    && (state.isConnecting || state.wsInstance?.readyState === 1)
+  ) {
+    return;
+  }
+
+  connectWebSocket(uniqueSymbols);
+}
+
+export async function fetchMemeBinanceCandles(symbol: string): Promise<Candle[]> {
+  return fetchMemeBinanceCandlesByInterval(symbol, "15m", 100);
+}
+
+export async function fetchMemeBinanceCandlesByInterval(
+  symbol: string,
+  interval: "5m" | "15m" | "1h" | "4h" | "1d",
+  limit = 100,
+): Promise<Candle[]> {
+  const cacheKey = `${symbol}:${interval}:${limit}`;
+  const cached = state.candleCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < CANDLE_CACHE_TTL_MS) {
+    return cached.candles;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8_000);
+    const response = await fetch(`${BINANCE_REST_BASE}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`, {
+      signal: controller.signal,
+    }).finally(() => {
+      clearTimeout(timeout);
+    });
+
+    if (!response.ok) {
+      throw new Error(`Binance candle fetch failed: ${response.status} for ${symbol}`);
+    }
+
+    const raw = await response.json() as unknown[][];
+    const candles = raw.map(candle => ({
+      time: Math.floor(Number(candle[0]) / 1000),
+      open: Number(candle[1]),
+      high: Number(candle[2]),
+      low: Number(candle[3]),
+      close: Number(candle[4]),
+      volume: Number(candle[5]),
+    }));
+
+    state.candleCache.set(cacheKey, {
+      candles,
+      fetchedAt: Date.now(),
+    });
+    return candles;
+  } catch (error) {
+    console.error(`[meme-binance] Failed to fetch candles for ${symbol} ${interval}:`, error);
+    return state.candleCache.get(cacheKey)?.candles ?? [];
+  }
+}
+
+export async function fetchMemeBinanceTickerPrice(symbol: string): Promise<number | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5_000);
+    const response = await fetch(`${BINANCE_REST_BASE}/ticker/price?symbol=${symbol}`, {
+      signal: controller.signal,
+    }).finally(() => {
+      clearTimeout(timeout);
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json() as { price: string };
+    return Number(data.price);
+  } catch {
+    return null;
+  }
+}
+
+export function getMemeBinanceLivePrice(symbol: string): number | null {
+  const entry = state.livePrices.get(symbol);
+  if (!entry) {
+    return null;
+  }
+  if (Date.now() - entry.updatedAt > 30_000) {
+    return null;
+  }
+  return entry.price;
+}
+
+export function isMemeBinanceWsConnected(): boolean {
+  return state.wsInstance?.readyState === 1;
+}
+
+export function resetMemeBinanceMarketDataForTests(): void {
+  closeCurrentSocket();
+  state.candleCache.clear();
+  state.livePrices.clear();
+  state.subscribedSymbolsKey = "";
+}

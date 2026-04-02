@@ -1,8 +1,14 @@
+import "./load-env.mjs";
+
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { printValidationReport, validateRuntimeEnv } from "./validate-env.mjs";
 
 const require = createRequire(import.meta.url);
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, "..");
 
 const validationReport = validateRuntimeEnv({
   service: "web",
@@ -21,6 +27,7 @@ const child = spawn(
   process.execPath,
   [nextBin, "start", "--hostname", host, "--port", port],
   {
+    cwd: projectRoot,
     stdio: "inherit",
     env: process.env,
   }

@@ -1,15 +1,20 @@
 {
-  "EURUSD":  true,
-  "GBPUSD":  true,
-  "USDJPY":  true,
-  "USDCAD":  true,
-  "AUDUSD":  true,
-  "NZDUSD":  true,
-  "USDCHF":  true,
-  "EURJPY":  true,
-  "GBPJPY":  true,
-  "XAUUSD":  true,
-  "XAGUSD":  true,
-  "BTCUSDT": true,
-  "ETHUSDT": true
+  "modules": {
+    "forex": true,
+    "crypto": true,
+    "stocks": true,
+    "commodities": true,
+    "indices": true,
+    "memecoins": true
+  },
+  "forexSymbols": {
+    "EURUSD": true,
+    "GBPUSD": true,
+    "USDJPY": true,
+    "EURJPY": true,
+    "AUDUSD": true,
+    "NZDUSD": true,
+    "USDCHF": true,
+    "USDCAD": true
+  }
 }

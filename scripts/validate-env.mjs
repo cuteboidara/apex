@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env.mjs";
 
 const RAW_REDIS_KEYS = ["REDIS_URL", "KV_URL", "UPSTASH_REDIS_URL", "UPSTASH_REDIS_TLS_URL"];
 const REST_REDIS_KEYS = ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_URL"];
@@ -9,22 +9,27 @@ const requirementSets = {
       ["DATABASE_URL", "Primary database connection used by Prisma and runtime services"],
     ],
     warnings: [
-      ["DIRECT_DATABASE_URL", "Optional direct database connection mirror is not configured"],
-      ["APEX_CORE_SIGNAL_MODE", "Core signal mode defaults to deterministic; set it explicitly for go-live clarity"],
-      ["APEX_DISABLE_LLM", "LLM calls default to disabled in deterministic mode; set it explicitly for go-live clarity"],
-      ["APEX_DISABLE_NEWS", "News enrichment defaults to disabled in deterministic mode; set it explicitly for go-live clarity"],
-      ["APEX_LLM_OPTIONAL", "LLM providers are treated as optional by default; set it explicitly for go-live clarity"],
-      ["TELEGRAM_BOT_TOKEN", "Telegram alert delivery will be unavailable"],
-      ["RESEND_API_KEY", "Signup/admin email notifications will be unavailable"],
+      ["ANTHROPIC_API_KEY", "Claude reasoning and market commentary will fall back to deterministic copy"],
+      ["APEX_DISABLE_LLM", "Claude reasoning defaults to the runtime fallback; set APEX_DISABLE_LLM explicitly for go-live clarity"],
+      ["POLYGON_API_KEY", "Stocks, commodities, and indices remain disabled without Polygon.io credentials"],
+      ["COINGECKO_API_KEY", "CoinGecko discovery will run on the free tier and may be rate limited"],
+      ["APEX_DAILY_SIGNALS_SECRET|APEX_SECRET", "Manual daily signal route auth falls back to APEX_SECRET unless a dedicated secret is configured"],
+      [RAW_REDIS_KEYS.join("|"), "BullMQ-backed queue workers remain unavailable without a raw Redis URL"],
     ],
   },
   web: {
     required: [
       ["NEXTAUTH_SECRET", "Authentication signing secret"],
+      ["NEXTAUTH_URL", "Canonical app URL"],
+      ["APEX_SECRET", "Master secret for runtime cycle control"],
+      ["TELEGRAM_BOT_TOKEN", "Telegram delivery token"],
+      ["TELEGRAM_CHAT_ID", "Telegram delivery target chat/channel"],
     ],
     warnings: [
-      ["NEXTAUTH_URL", "Canonical app URL should be configured"],
-      ["FRED_API_KEY", "Macro data will be unavailable"],
+      ["TWELVE_DATA_API_KEY", "Twelve Data live FX pricing is optional; dashboard live-price rows may be null without it"],
+      ["OANDA_API_TOKEN", "Oanda is the primary FX candle source; without it the runtime falls back to Yahoo Finance"],
+      ["OANDA_ENV", "Oanda environment should be set to practice or live for explicit FX provider targeting"],
+      ["APEX_REQUIRE_LIVE_DATA", "Set APEX_REQUIRE_LIVE_DATA explicitly for deterministic FX fallback behavior"],
     ],
   },
   worker: {
@@ -32,20 +37,12 @@ const requirementSets = {
       [RAW_REDIS_KEYS.join("|"), "BullMQ requires a raw Redis URL"],
     ],
     warnings: [
-      ["FRED_API_KEY", "Macro data will be unavailable"],
+      ["APEX_DAILY_SIGNALS_SECRET|APEX_SECRET", "Worker-driven daily signal invocations need a validated secret"],
     ],
-  },
-  scheduler: {
-    required: [
-      [RAW_REDIS_KEYS.join("|"), "BullMQ requires a raw Redis URL"],
-    ],
-    warnings: [],
   },
   backfill: {
     required: [],
-    warnings: [
-      ["FRED_API_KEY", "Macro data will be unavailable"],
-    ],
+    warnings: [],
   },
 };
 
@@ -101,7 +98,7 @@ export function validateRuntimeEnv(input = {}) {
     }
   }
 
-  if ((service === "worker" || service === "scheduler") && hasOnlyRestRedis()) {
+  if (service === "worker" && hasOnlyRestRedis()) {
     errors.push("Only Upstash REST Redis credentials were found. BullMQ requires REDIS_URL, KV_URL, UPSTASH_REDIS_URL, or UPSTASH_REDIS_TLS_URL.");
   }
 

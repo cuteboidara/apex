@@ -145,7 +145,7 @@ test("fetchRssNewsBundle filters by asset query and ignores malformed entries", 
 test("getAffectedAssets keeps macro headlines broad", () => {
   assert.deepEqual(
     getAffectedAssets("Fed officials signal another rate hike after inflation surprise"),
-    ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD", "BTCUSDT", "ETHUSDT"]
+    ["EURUSD", "GBPUSD", "USDJPY", "XAGUSD", "BTCUSDT", "ETHUSDT"]
   );
 });
 

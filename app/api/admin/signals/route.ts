@@ -1,39 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { getSignalsPayload } from "@/src/presentation/api/signals";
 
 export const dynamic = "force-dynamic";
+
+function applyFilters<T extends { symbol: string; grade: string }>(
+  items: T[],
+  filters: { asset: string | null; rank: string | null; limit: number },
+): T[] {
+  return items
+    .filter(item => (filters.asset ? item.symbol === filters.asset : true))
+    .filter(item => (filters.rank ? item.grade === filters.rank : true))
+    .slice(0, filters.limit);
+}
 
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin();
   if (!auth.ok) return auth.response;
 
   const { searchParams } = new URL(req.url);
-  const asset  = searchParams.get("asset");
-  const rank   = searchParams.get("rank");
-  const from   = searchParams.get("from");
-  const to     = searchParams.get("to");
-  const limit  = Math.min(parseInt(searchParams.get("limit") ?? "50"), 200);
+  const filters = {
+    asset: searchParams.get("asset"),
+    rank: searchParams.get("rank"),
+    limit: Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 200),
+  };
 
-  const where: Record<string, unknown> = {};
-  if (asset) where.asset = asset;
-  if (rank)  where.rank  = rank;
-  if (from || to) {
-    where.createdAt = {};
-    if (from) (where.createdAt as Record<string, unknown>).gte = new Date(from);
-    if (to)   (where.createdAt as Record<string, unknown>).lte = new Date(to);
-  }
+  const payload = await getSignalsPayload();
 
-  const signals = await prisma.signal.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    include: {
-      tradePlans: {
-        select: { style: true, bias: true, confidence: true, entryMin: true, entryMax: true, stopLoss: true, takeProfit1: true, takeProfit2: true, takeProfit3: true },
-      },
-    },
+  return NextResponse.json({
+    generatedAt: payload.generatedAt,
+    pipelineDiagnostics: payload.pipelineDiagnostics ?? null,
+    executable: applyFilters(payload.executable, filters),
+    monitored: applyFilters(payload.monitored, filters),
+    rejected: applyFilters(payload.rejected, filters),
   });
-
-  return NextResponse.json(signals);
 }

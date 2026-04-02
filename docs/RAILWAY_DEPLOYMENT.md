@@ -1,16 +1,12 @@
 # Railway Deployment
 
-This project should be deployed to Railway as five services:
+APEX runs in manual-only mode on Railway. Deploy the web app and trigger signal generation through direct API calls after authentication.
+
+Recommended services:
 
 1. `apex-web`
-2. `apex-worker`
-3. `apex-scheduler`
-4. `Postgres`
-5. `Redis`
-
-## App services
-
-Create three services from the same repository root.
+2. `Postgres`
+3. `Redis` (optional but recommended for cache and heartbeat storage)
 
 ### `apex-web`
 
@@ -20,23 +16,9 @@ Create three services from the same repository root.
 - Healthcheck path: `/api/health`
 - Networking: generate a public domain
 
-### `apex-worker`
-
-- Build command: `npm run build`
-- Start command: `npm run worker:signal-cycle`
-- Restart policy: `ON_FAILURE`
-- Networking: private only
-
-### `apex-scheduler`
-
-- Build command: `npm run build`
-- Start command: `npm run service:scheduler`
-- Restart policy: `ON_FAILURE`
-- Networking: private only
-
 ## Service variables
 
-Use Railway reference variables so all three app services share the same database and Redis instances.
+Use Railway reference variables so the web app shares the same database and optional Redis instance.
 
 ### Shared infrastructure variables
 
@@ -55,16 +37,14 @@ Use Railway reference variables so all three app services share the same databas
 
 - `npm start` uses `scripts/start-web.mjs`, which binds Next.js to `0.0.0.0` and Railway's injected `PORT`.
 - `npm run migrate:deploy` should run on the web service before each deploy so schema changes are applied once per release.
-- The worker and scheduler should not have public domains.
 - `/api/health` is intentionally lightweight and does not depend on PostgreSQL or Redis, so it is safe to use as the web healthcheck.
+- Signal generation is manual-only. Trigger runs through authenticated API calls such as `/api/cycle`, `/api/crypto-cycle-trigger`, `/api/meme-cycle-trigger`, `/api/meme-discovery-trigger`, `/api/all-assets-cycle-trigger`, and `/api/jobs/daily-signals`.
 
 ## First production deploy
 
-1. Create the `Postgres` and `Redis` services.
-2. Create `apex-web`, `apex-worker`, and `apex-scheduler` from this repo.
-3. Add the reference variables above to all three app services.
-4. Add the provider secrets to the services that need them. In practice, sharing the same secret set across all three app services is simplest.
-5. Deploy `apex-web` first and confirm `/api/health` returns `200`.
-6. Deploy `apex-worker`.
-7. Deploy `apex-scheduler`.
-8. Open the generated public domain for `apex-web`.
+1. Create the `Postgres` service and add `Redis` if you want shared cache and heartbeat state.
+2. Create `apex-web` from this repo.
+3. Add the reference variables above to the web service.
+4. Add the provider and auth secrets needed by your enabled modules.
+5. Deploy `apex-web` and confirm `/api/health` returns `200`.
+6. Trigger cycles manually through the secured API routes once the deploy is live.

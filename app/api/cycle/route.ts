@@ -1,94 +1,72 @@
-import { NextResponse } from "next/server";
-import { enqueueSignalCycle, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
+import { NextRequest, NextResponse } from "next/server";
+
+import { getApexRuntime } from "@/src/application/cycle/buildRuntime";
+import { queueFocusedRuntimeCycle } from "@/src/application/cycle/runCycle";
+import { validateApexSecretRequest } from "@/src/infrastructure/security/apexSecret";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
-import { logEvent } from "@/lib/logging";
-import { recordAuditEvent } from "@/lib/audit";
-import { prisma } from "@/lib/prisma";
-import { ENGINE_VERSION, FEATURE_VERSION, PROMPT_VERSION } from "@/lib/runConfig";
-import { runCycle } from "@/lib/scheduler";
 
-async function runCycleDirectly() {
-  const run = await prisma.signalRun.create({
-    data: {
-      queuedAt: new Date(),
-      engineVersion: ENGINE_VERSION,
-      featureVersion: FEATURE_VERSION,
-      promptVersion: PROMPT_VERSION,
-      status: "QUEUED",
-    },
-  });
+type CycleRouteDependencies = {
+  getRuntime: typeof getApexRuntime;
+  queueCycle?: typeof queueFocusedRuntimeCycle;
+  apexSecret: string | undefined;
+};
 
-  await recordAuditEvent({
-    actor: "OPERATOR",
-    action: "manual_trigger",
-    entityType: "SignalRun",
-    entityId: run.id,
-    after: {
-      status: "QUEUED",
-      executionMode: "direct",
-    },
-    correlationId: run.id,
-  });
+export function createCycleRouteHandler(deps: CycleRouteDependencies) {
+  return async function handleCycleRequest(request: NextRequest) {
+    // APEX_SECRET is required on ALL environments — no dev bypass.
+    // Set APEX_SECRET in your .env.local for local development.
+    // Provide via Authorization: Bearer <secret> or x-apex-secret header.
+    const auth = validateApexSecretRequest(request, deps.apexSecret);
+    if (!auth.ok) {
+      return NextResponse.json(
+        {
+          error: auth.error,
+        },
+        { status: auth.status },
+      );
+    }
 
-  const result = await runCycle(run.id);
-  return { runId: run.id, signalCount: result.signals.length };
-}
-
-export async function POST() {
-  if (!queueAvailable) {
     try {
-      const result = await runCycleDirectly();
+      const runtime = deps.getRuntime();
+      const queued = await (deps.queueCycle ?? queueFocusedRuntimeCycle)(runtime, "api");
+      if (queued.queued) {
+        return NextResponse.json({
+          success: true,
+          queued: true,
+          trigger: "api",
+          job_id: queued.jobId,
+          mode: runtime.config.mode,
+        });
+      }
+
+      const result = queued.result!;
       return NextResponse.json({
         success: true,
-        degraded: true,
-        status: "DEGRADED",
-        reason: QUEUE_UNAVAILABLE_REASON,
-        mode: "direct",
-        runId: result.runId,
-        signalCount: result.signalCount,
-        runStatus: "COMPLETED",
+        queued: false,
+        trigger: "api",
+        mode: runtime.config.mode,
+        cycle_id: result.cycle_id,
+        timestamp: result.timestamp,
+        symbols: result.symbols,
       });
-    } catch (err) {
-      logEvent({
-        component: "control-plane",
-        severity: "ERROR",
-        message: "Manual cycle error",
-        reason: String(err),
-      });
-      return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
+    } catch (error) {
+      console.error("[cycle-route] Failed to queue cycle:", error);
+      return NextResponse.json(
+        {
+          error: "Runtime not initialized",
+        },
+        { status: 503 },
+      );
     }
-  }
-
-  try {
-    const { job, runId } = await enqueueSignalCycle(undefined, {
-      actor: "OPERATOR",
-      correlationId: null,
-    });
-    await recordAuditEvent({
-      actor: "OPERATOR",
-      action: "manual_enqueue",
-      entityType: "SignalRun",
-      entityId: runId,
-      after: { jobId: job.id },
-      correlationId: runId,
-    });
-    return NextResponse.json({
-      success: true,
-      mode: "queue",
-      jobId: job.id,
-      runId,
-      queue: job.queueName,
-      status: "QUEUED",
-    });
-  } catch (err) {
-    logEvent({
-      component: "control-plane",
-      severity: "ERROR",
-      message: "Manual cycle error",
-      reason: String(err),
-    });
-    return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
-  }
+  };
 }
+
+export const POST = createCycleRouteHandler({
+  getRuntime: getApexRuntime,
+  queueCycle: queueFocusedRuntimeCycle,
+  apexSecret: process.env.APEX_SECRET,
+});
+
+export const GET = POST;

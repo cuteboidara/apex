@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { MarketSnapshot, StructureAssessment, StrategyBias } from "@/lib/strategy/types";
 
 export function analyzeStructure(snapshot: MarketSnapshot): StructureAssessment {
@@ -55,3 +60,4 @@ export function analyzeStructure(snapshot: MarketSnapshot): StructureAssessment 
         : "Structure is mixed and lacks strong directional confirmation.",
   };
 }
+

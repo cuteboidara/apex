@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { TradePlanStyle } from "@/lib/assets";
 import type { Style, Timeframe } from "@/lib/marketData/types";
 
@@ -151,3 +156,4 @@ export type ValidationResult = {
   diagnostics: StrategyDiagnostic[];
   dataFreshnessScore: number;
 };
+

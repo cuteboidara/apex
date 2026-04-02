@@ -1,29 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+import { createEmptySignalsPayload, getSignalsPayload } from "@/src/presentation/api/signals";
+import { RepositoryUnavailableError } from "@/src/lib/repository";
+import { logger } from "@/src/lib/logger";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-
-  const asset  = searchParams.get("asset") ?? undefined;
-  const rank   = searchParams.get("rank")  ?? undefined;
-  const limit  = Math.min(200, parseInt(searchParams.get("limit") ?? "50") || 50);
-
-  // Build rank filter — supports comma-separated e.g. "A,S"
-  const rankFilter = rank
-    ? { in: rank.split(",").map((r: string) => r.trim()) }
-    : undefined;
-
-  const signals = await prisma.signal.findMany({
-    where: {
-      run: { status: "COMPLETED" },
-      ...(asset       ? { asset }                  : {}),
-      ...(rankFilter  ? { rank: rankFilter }        : {}),
-    },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-
-  return NextResponse.json(signals);
+export async function GET() {
+  try {
+    return NextResponse.json(await getSignalsPayload());
+  } catch (error) {
+    if (error instanceof RepositoryUnavailableError) {
+      return NextResponse.json(createEmptySignalsPayload());
+    }
+    logger.error({
+      module: "signals-route",
+      message: "Failed to serve canonical signals payload",
+      error: String(error),
+    });
+    return NextResponse.json(
+      {
+        error: "canonical_truth_missing",
+      },
+      { status: 503 },
+    );
+  }
 }

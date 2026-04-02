@@ -1,0 +1,1958 @@
+(node:63512) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+IMPORTANT! Eviction policy is volatile-lru. It should be "noeviction"
+IMPORTANT! Eviction policy is volatile-lru. It should be "noeviction"
+IMPORTANT! Eviction policy is volatile-lru. It should be "noeviction"
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ ./src/lib/runtime.ts:3:1
+Module not found: Can't resolve '@/src/data-plant/DataPlant'
+[0m [90m 1 |[39m [36mimport[39m { [33mAuditJournal[39m } [36mfrom[39m [32m"@/src/audit/AuditJournal"[39m[33m;[39m
+ [90m 2 |[39m [36mimport[39m { [33mPortfolioAllocator[39m } [36mfrom[39m [32m"@/src/allocator/PortfolioAllocator"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mDataPlant[39m } [36mfrom[39m [32m"@/src/data-plant/DataPlant"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 4 |[39m [36mimport[39m { [33mExecutionOrchestrator[39m } [36mfrom[39m [32m"@/src/execution/ExecutionOrchestrator"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m { [33mFeatureEngine[39m } [36mfrom[39m [32m"@/src/feature-engine/FeatureEngine"[39m[33m;[39m
+ [90m 6 |[39m [36mimport[39m { [33mApexEngine[39m } [36mfrom[39m [32m"@/src/lib/engine"[39m[33m;[39m[0m
+
+Import map: aliased to relative './src/data-plant/DataPlant' inside of [project]/
+
+
+Import trace:
+  App Route:
+    ./src/lib/runtime.ts
+    ./src/api/signals.ts
+    ./app/api/signals/route.ts
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./src/lib/runtime.ts:5:1
+Module not found: Can't resolve '@/src/feature-engine/FeatureEngine'
+[0m [90m 3 |[39m [36mimport[39m { [33mDataPlant[39m } [36mfrom[39m [32m"@/src/data-plant/DataPlant"[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mExecutionOrchestrator[39m } [36mfrom[39m [32m"@/src/execution/ExecutionOrchestrator"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mFeatureEngine[39m } [36mfrom[39m [32m"@/src/feature-engine/FeatureEngine"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { [33mApexEngine[39m } [36mfrom[39m [32m"@/src/lib/engine"[39m[33m;[39m
+ [90m 7 |[39m [36mimport[39m { getApexConfig } [36mfrom[39m [32m"@/src/lib/config"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m { logger } [36mfrom[39m [32m"@/src/lib/logger"[39m[33m;[39m[0m
+
+Import map: aliased to relative './src/feature-engine/FeatureEngine' inside of [project]/
+
+
+Import trace:
+  App Route:
+    ./src/lib/runtime.ts
+    ./src/api/signals.ts
+    ./app/api/signals/route.ts
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ ./src/lib/runtime.ts:5:1
+Module not found: Can't resolve '@/src/feature-engine/FeatureEngine'
+[0m [90m 3 |[39m [36mimport[39m { [33mDataPlant[39m } [36mfrom[39m [32m"@/src/data-plant/DataPlant"[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mExecutionOrchestrator[39m } [36mfrom[39m [32m"@/src/execution/ExecutionOrchestrator"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mFeatureEngine[39m } [36mfrom[39m [32m"@/src/feature-engine/FeatureEngine"[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m [36mimport[39m { [33mApexEngine[39m } [36mfrom[39m [32m"@/src/lib/engine"[39m[33m;[39m
+ [90m 7 |[39m [36mimport[39m { getApexConfig } [36mfrom[39m [32m"@/src/lib/config"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m { logger } [36mfrom[39m [32m"@/src/lib/logger"[39m[33m;[39m[0m
+
+Import map: aliased to relative './src/feature-engine/FeatureEngine' inside of [project]/
+
+
+Import trace:
+  App Route:
+    ./src/lib/runtime.ts
+    ./src/api/signals.ts
+    ./app/api/signals/route.ts
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: Cannot read properties of undefined (reading 'includes')
+    at getSignalsPayload (src\api\signals.ts:21:95)
+    at GET (app\api\signals\route.ts:8:51)
+  19 |     const entryStyle = getEntryStyleForPod(output.pod_id);
+  20 |     const supportPod = output.pod_id === "volatility-regime" || output.pod_id === "execution-advisory";
+> 21 |     const podEnabled = supportPod || (entryStyle != null && runtime.config.enabledEntryStyles.includes(entryStyle));
+     |                                                                                               ^
+  22 |     if (!podEnabled) {
+  23 |       continue;
+  24 |     }
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '377261249'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '377261249'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '377261249'
+}
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '377261249'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '377261249'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3725953353'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:54:78)
+  52 |           label="System Mode"
+  53 |           value={status.mode.replaceAll("_", " ")}
+> 54 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  55 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  56 |         />
+  57 |         <MetricCard {
+  digest: '3874974528'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '3224753286'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '1007447050'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '1007447050'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '1792587438'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getRiskDecisionsPayload (src\api\risk.ts:7:42)
+    at GET (app\api\risk\decisions\route.ts:8:57)
+   5 |   const runtime = getApexRuntime();
+   6 |   const positions = runtime.repository.getPositions();
+>  7 |   const allocations = runtime.repository.getLatestSignalCandidates(24);
+     |                                          ^
+   8 |   const decisions = runtime.repository.getRecentRiskDecisions(50);
+   9 |   const latestPrices = runtime.repository.getLatestFeatureSnapshots(runtime.config.activeSymbols);
+  10 |   const priceBySymbol = new Map(
+⨯ TypeError: runtime.repository.getLatestSignalCandidates is not a function
+    at getSignalsPayload (src\api\signals.ts:6:41)
+    at GET (app\api\signals\route.ts:8:51)
+  4 | export async function getSignalsPayload() {
+  5 |   const runtime = getApexRuntime();
+> 6 |   const candidates = runtime.repository.getLatestSignalCandidates(50);
+    |                                         ^
+  7 |
+  8 |   return candidates
+  9 |     .filter(candidate => {
+⨯ TypeError: runtime.repository.getSignalQualityReport is not a function
+    at getSignalQualityPayload (src\api\quality.ts:9:29)
+    at GET (app\api\quality\route.ts:12:57)
+   7 |   const runtime = getApexRuntime();
+   8 |
+>  9 |   return runtime.repository.getSignalQualityReport({
+     |                             ^
+  10 |     // Keep analytics constrained to the intentionally narrow FX runtime scope.
+  11 |     symbols: runtime.config.activeSymbols,
+  12 |     fromTs: filters?.from,
+⨯ TypeError: {imported module ./src/lib/runtime.ts}.getApexRuntime(...).repository.getLatestSignalCandidates is not a function
+    at getAllocationsPayload (src\api\allocations.ts:4:38)
+    at GET (app\api\allocations\route.ts:8:55)
+  2 |
+  3 | export async function getAllocationsPayload() {
+> 4 |   return getApexRuntime().repository.getLatestSignalCandidates();
+    |                                      ^
+  5 | }
+  6 |
+⨯ TypeError: Cannot read properties of undefined (reading 'replaceAll')
+    at SystemOverviewPage (src\dashboard\SystemOverviewPage.tsx:56:78)
+  54 |           label="System Mode"
+  55 |           value={status.mode.replaceAll("_", " ")}
+> 56 |           detail={`Provider ${status.provider} • ${status.active_entry_style.replaceAll("_", " ")} • ${status.cycle_interval_minutes} minute cycle`}
+     |                                                                              ^
+  57 |           tone={status.mode === "normal" ? "good" : status.mode === "full_stop" ? "bad" : "warn"}
+  58 |         />
+  59 |         <MetricCard {
+  digest: '322261546'
+}
+^C

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface AdminUser {
@@ -21,10 +22,10 @@ const TABS = ["ALL", "PENDING", "APPROVED", "SUSPENDED", "BANNED"] as const;
 type Tab = typeof TABS[number];
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING:   "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
-  APPROVED:  "text-green-400  bg-green-400/10  border-green-400/20",
-  SUSPENDED: "text-orange-400 bg-orange-400/10 border-orange-400/20",
-  BANNED:    "text-red-400    bg-red-400/10    border-red-400/20",
+  PENDING: "text-yellow-300 bg-yellow-300/10 border-yellow-300/20",
+  APPROVED: "text-[var(--apex-status-active-text)] bg-[var(--apex-status-active-bg)] border-[var(--apex-status-active-border)]",
+  SUSPENDED: "text-orange-300 bg-orange-300/10 border-orange-300/20",
+  BANNED: "text-[var(--apex-status-blocked-text)] bg-[var(--apex-status-blocked-bg)] border-[var(--apex-status-blocked-border)]",
 };
 
 export default function AdminUsersPage() {
@@ -50,9 +51,29 @@ export default function AdminUsersPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { void load(tab); }, [tab, load]);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const url = tab === "ALL" ? "/api/admin/users" : `/api/admin/users?status=${tab}`;
+      const result = await fetchJsonResponse<AdminUser[]>(url);
+      if (cancelled) {
+        return;
+      }
+      if (result.ok && Array.isArray(result.data)) {
+        setUsers(result.data);
+        setError(null);
+      } else {
+        setUsers([]);
+        setError(formatApiError(result, "Failed to load users."));
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
 
-  const pendingCount = users.filter(u => u.status === "PENDING").length;
+  const pendingCount = users.filter(user => user.status === "PENDING").length;
 
   async function action(userId: string, act: string, reason?: string) {
     setActionLoading(userId + act);
@@ -75,180 +96,151 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-zinc-100 mb-1">User Management</h1>
-        <p className="text-xs text-zinc-500">Approve, suspend, or ban user accounts</p>
-      </div>
+      <section className="apex-surface px-6 py-6">
+        <p className="apex-eyebrow">Operator Access</p>
+        <h2 className="mt-3 font-[var(--apex-font-display)] text-[28px] font-semibold tracking-[-0.05em] text-[var(--apex-text-primary)]">
+          User approvals and lifecycle actions
+        </h2>
+        <p className="mt-3 text-[14px] leading-7 text-[var(--apex-text-secondary)]">
+          Review pending access, suspend accounts, and restore operator access without leaving the unified control surface.
+        </p>
+      </section>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-zinc-800">
-        {TABS.map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-xs font-medium tracking-wide transition-colors border-b-2 -mb-px ${
-              tab === t
-                ? "border-[#00ff88] text-[#00ff88]"
-                : "border-transparent text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            {t}
-            {t === "PENDING" && pendingCount > 0 && tab !== "PENDING" && (
-              <span className="ml-1.5 bg-yellow-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+      <div className="apex-tab-row">
+        {TABS.map(item => (
+          <button key={item} onClick={() => setTab(item)} data-active={tab === item} className="apex-tab-button">
+            {item}
+            {item === "PENDING" && pendingCount > 0 && tab !== "PENDING" ? (
+              <span className="ml-2 inline-flex min-w-[18px] items-center justify-center rounded-full bg-yellow-300 px-1.5 py-0.5 text-[9px] font-bold text-[#04111f]">
                 {pendingCount}
               </span>
-            )}
+            ) : null}
           </button>
         ))}
       </div>
 
-      {/* Table */}
       {loading ? (
-        <div className="text-zinc-500 text-sm">Loading...</div>
+        <div className="apex-empty-state">Loading user registry…</div>
       ) : error ? (
-        <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-400">
+        <div className="apex-stack-card border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-sm text-[var(--apex-status-blocked-text)]">
           {error}
         </div>
       ) : (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[800px]">
+        <div className="apex-table-shell overflow-hidden">
+          <div className="overflow-x-auto px-6 py-5">
+            <table className="apex-table min-w-[980px]">
               <thead>
-                <tr className="border-b border-zinc-800 text-zinc-500 text-xs">
-                  <th className="text-left px-4 py-3">Name</th>
-                  <th className="text-left px-4 py-3">Email</th>
-                  <th className="text-left px-4 py-3">Status</th>
-                  <th className="text-left px-4 py-3">Joined</th>
-                  <th className="text-left px-4 py-3">Last Login</th>
-                  <th className="text-left px-4 py-3">Logins</th>
-                  <th className="text-left px-4 py-3">Actions</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Last Login</th>
+                  <th>Logins</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.length === 0 && (
+                {users.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-zinc-600">No users found</td>
+                    <td colSpan={7} className="apex-empty-state">
+                      No users found.
+                    </td>
                   </tr>
+                ) : (
+                  users.map(user => (
+                    <tr key={user.id}>
+                      <td className="font-[var(--apex-font-body)] text-[var(--apex-text-primary)]">{user.name ?? "—"}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${STATUS_STYLE[user.status] ?? "text-[var(--apex-text-secondary)] border-[var(--apex-border-default)]"}`}>
+                          {user.status}
+                        </span>
+                        {user.suspendedReason ? (
+                          <p className="mt-2 text-[11px] text-orange-200/80">{user.suspendedReason}</p>
+                        ) : null}
+                      </td>
+                      <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : "Never"}</td>
+                      <td>{user.loginCount}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          {user.status === "PENDING" ? (
+                            <>
+                              <ActionBtn label="Approve" color="green" loading={actionLoading === user.id + "approve"} onClick={() => action(user.id, "approve")} />
+                              <ActionBtn label="Reject" color="red" loading={actionLoading === user.id + "delete"} onClick={() => deleteUser(user.id)} />
+                            </>
+                          ) : null}
+                          {user.status === "APPROVED" ? (
+                            <>
+                              <ActionBtn label="Suspend" color="orange" loading={actionLoading === user.id + "suspend"} onClick={() => setSuspendModal({ userId: user.id, name: user.name ?? user.email })} />
+                              <ActionBtn label="Ban" color="red" loading={actionLoading === user.id + "ban"} onClick={() => action(user.id, "ban")} />
+                            </>
+                          ) : null}
+                          {user.status === "SUSPENDED" ? (
+                            <ActionBtn label="Restore" color="green" loading={actionLoading === user.id + "restore"} onClick={() => action(user.id, "restore")} />
+                          ) : null}
+                          {user.status === "BANNED" ? (
+                            <ActionBtn label="Unban" color="green" loading={actionLoading === user.id + "unban"} onClick={() => action(user.id, "unban")} />
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
-                {users.map(u => (
-                  <tr key={u.id} className="border-b border-zinc-900 hover:bg-zinc-900/40">
-                    <td className="px-4 py-3 text-zinc-100 font-medium">{u.name ?? "—"}</td>
-                    <td className="px-4 py-3 text-zinc-400 text-xs">{u.email}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded border font-medium ${STATUS_STYLE[u.status] ?? "text-zinc-400"}`}>
-                        {u.status}
-                      </span>
-                      {u.suspendedReason && (
-                        <p className="text-[10px] text-orange-400/70 mt-0.5">{u.suspendedReason}</p>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-500 text-xs">
-                      {new Date(u.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-500 text-xs">
-                      {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "Never"}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-400 text-center">{u.loginCount}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {u.status === "PENDING" && (
-                          <>
-                            <ActionBtn
-                              label="Approve"
-                              color="green"
-                              loading={actionLoading === u.id + "approve"}
-                              onClick={() => action(u.id, "approve")}
-                            />
-                            <ActionBtn
-                              label="Reject"
-                              color="red"
-                              loading={actionLoading === u.id + "delete"}
-                              onClick={() => deleteUser(u.id)}
-                            />
-                          </>
-                        )}
-                        {u.status === "APPROVED" && (
-                          <>
-                            <ActionBtn
-                              label="Suspend"
-                              color="orange"
-                              loading={actionLoading === u.id + "suspend"}
-                              onClick={() => setSuspendModal({ userId: u.id, name: u.name ?? u.email })}
-                            />
-                            <ActionBtn
-                              label="Ban"
-                              color="red"
-                              loading={actionLoading === u.id + "ban"}
-                              onClick={() => action(u.id, "ban")}
-                            />
-                          </>
-                        )}
-                        {u.status === "SUSPENDED" && (
-                          <ActionBtn
-                            label="Restore"
-                            color="green"
-                            loading={actionLoading === u.id + "restore"}
-                            onClick={() => action(u.id, "restore")}
-                          />
-                        )}
-                        {u.status === "BANNED" && (
-                          <ActionBtn
-                            label="Unban"
-                            color="green"
-                            loading={actionLoading === u.id + "unban"}
-                            onClick={() => action(u.id, "unban")}
-                          />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* Suspend modal */}
-      {suspendModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-zinc-100 font-semibold mb-1">Suspend {suspendModal.name}</h3>
-            <p className="text-zinc-500 text-xs mb-4">Provide a reason (optional, shown to admin)</p>
+      {suspendModal ? (
+        <div className="apex-modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="apex-modal-card w-full max-w-md">
+            <h3 className="font-[var(--apex-font-display)] text-[26px] font-semibold tracking-[-0.05em] text-[var(--apex-text-primary)]">
+              Suspend {suspendModal.name}
+            </h3>
+            <p className="mt-2 text-[13px] text-[var(--apex-text-secondary)]">Provide a reason if you want the suspension context visible in admin review.</p>
             <textarea
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500"
+              className="apex-form-textarea mt-5"
               rows={3}
               placeholder="Reason for suspension..."
               value={suspendReason}
-              onChange={e => setSuspendReason(e.target.value)}
+              onChange={event => setSuspendReason(event.target.value)}
             />
-            <div className="flex gap-3 mt-4">
+            <div className="mt-5 flex gap-3">
               <button
                 onClick={() => {
                   void action(suspendModal.userId, "suspend", suspendReason || undefined);
                   setSuspendModal(null);
                   setSuspendReason("");
                 }}
-                className="flex-1 py-2 bg-orange-500 hover:bg-orange-400 text-black text-sm font-semibold rounded-lg transition-colors"
+                className="apex-button apex-button-amber flex-1"
               >
                 Confirm Suspend
               </button>
               <button
-                onClick={() => { setSuspendModal(null); setSuspendReason(""); }}
-                className="flex-1 py-2 border border-zinc-700 text-zinc-400 hover:text-zinc-200 text-sm rounded-lg transition-colors"
+                onClick={() => {
+                  setSuspendModal(null);
+                  setSuspendReason("");
+                }}
+                className="apex-button apex-button-muted flex-1"
               >
                 Cancel
               </button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
 function ActionBtn({
-  label, color, loading, onClick,
+  label,
+  color,
+  loading,
+  onClick,
 }: {
   label: string;
   color: "green" | "red" | "orange";
@@ -256,15 +248,16 @@ function ActionBtn({
   onClick: () => void;
 }) {
   const colors = {
-    green:  "bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20",
-    red:    "bg-red-500/10   text-red-400   hover:bg-red-500/20   border-red-500/20",
-    orange: "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 border-orange-500/20",
+    green: "border-[var(--apex-status-active-border)] bg-[var(--apex-status-active-bg)] text-[var(--apex-status-active-text)]",
+    red: "border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-[var(--apex-status-blocked-text)]",
+    orange: "border-yellow-300/20 bg-yellow-300/10 text-yellow-300",
   };
+
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className={`text-xs px-2.5 py-1 rounded border font-medium transition-colors disabled:opacity-40 ${colors[color]}`}
+      className={`inline-flex rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.12em] transition-all disabled:opacity-40 ${colors[color]}`}
     >
       {loading ? "..." : label}
     </button>

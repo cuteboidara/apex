@@ -8,7 +8,6 @@ export const SUPPORTED_ASSETS = [
   { symbol: "USDCHF",  assetClass: "FOREX",     binanceSymbol: null,      provider: "Yahoo Finance" },
   { symbol: "EURJPY",  assetClass: "FOREX",     binanceSymbol: null,      provider: "Yahoo Finance" },
   { symbol: "GBPJPY",  assetClass: "FOREX",     binanceSymbol: null,      provider: "Yahoo Finance" },
-  { symbol: "XAUUSD",  assetClass: "COMMODITY", binanceSymbol: null,      provider: "Yahoo Finance" },
   { symbol: "XAGUSD",  assetClass: "COMMODITY", binanceSymbol: null,      provider: "Yahoo Finance" },
   { symbol: "BTCUSDT", assetClass: "CRYPTO",    binanceSymbol: "BTCUSDT", provider: "Binance" },
   { symbol: "ETHUSDT", assetClass: "CRYPTO",    binanceSymbol: "ETHUSDT", provider: "Binance" },

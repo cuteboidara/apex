@@ -1,5 +1,6 @@
-export const ADMIN_EMAIL = "emmadara229@gmail.com";
+export const ADMIN_EMAIL = "daraemma555@gmail.com";
 
 export function isAdmin(email: string | null | undefined): boolean {
-  return email === ADMIN_EMAIL;
+  if (!email) return false;
+  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
-import { getLlmRuntimePolicy } from "@/lib/llm/config";
 import { getProviderSummaries } from "@/lib/marketData/providerStatus";
 import { getQueueConfiguration, getSignalCycleQueue, QUEUE_UNAVAILABLE_REASON, queueAvailable } from "@/lib/queue";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +10,7 @@ import { buildLatestSetupBreakdown } from "@/lib/setupBreakdown";
 import { getCoreSignalRuntime } from "@/lib/runtime/featureFlags";
 import { getRuntimeCacheMode } from "@/lib/runtime/runtimeCache";
 import { getRedisConfiguration, isRedisConfigured } from "@/lib/runtime/redis";
+import { getLlmRuntimePolicy } from "@/src/lib/apex-llm/runtimePolicy";
 
 export const dynamic = "force-dynamic";
 
@@ -202,9 +202,7 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
     try {
       const envFlags = {
         anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
-        openai: Boolean(process.env.OPENAI_API_KEY),
-        gemini: Boolean(process.env.GEMINI_API_KEY),
-        fred: Boolean(process.env.FRED_API_KEY),
+        twelveData: Boolean(process.env.TWELVE_DATA_API_KEY),
         database: Boolean(process.env.DATABASE_URL ?? process.env.DIRECT_DATABASE_URL),
         telegram: Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
         redis: deps.isRedisConfigured(),
@@ -217,7 +215,7 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
         safeQuery(() => deps.getProviderSummaries(), []),
         safeQuery(() => deps.prisma.providerHealth.findMany({
           where: {
-            provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "OpenAI", "Gemini", "RSS", "FRED"] },
+            provider: { in: ["Redis", "Telegram", "Postgres", "Anthropic", "RSS", "Twelve Data", "TwelveData"] },
             requestSymbol: null,
           },
           orderBy: { recordedAt: "desc" },
@@ -235,26 +233,16 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
       const llmPolicy = getLlmRuntimePolicy();
       const providers: ProviderConfigRow[] = [
         {
-          provider: "OpenAI",
-          fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.openai ? "available" : "offline",
-          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Primary explanation and signal-analysis model",
-        },
-        {
-          provider: "Gemini",
-          fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.gemini ? "available" : "offline",
-          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Secondary reasoning and final-verdict fallback",
-        },
-        {
           provider: "Anthropic",
           fallbackStatus: llmPolicy.disabled ? "degraded" : envFlags.anthropic ? "available" : "offline",
-          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Tertiary explanation fallback",
+          detail: llmPolicy.disabled ? "LLM calls disabled by APEX_DISABLE_LLM" : "Claude reasoning and market commentary for the focused runtime",
         },
         {
           provider: "RSS",
           fallbackStatus: runtimeConfig.newsDisabled ? "degraded" : "available",
           detail: runtimeConfig.newsDisabled ? "News enrichment disabled by APEX_DISABLE_NEWS" : "Free market news feeds",
         },
-        { provider: "FRED", fallbackStatus: envFlags.fred ? "available" : "offline", detail: "Macro data" },
+        { provider: "Twelve Data", fallbackStatus: envFlags.twelveData ? "available" : "offline", detail: "Live FX pricing" },
         { provider: "Telegram", fallbackStatus: envFlags.telegram ? "available" : "offline", detail: "Alert delivery" },
         { provider: "Redis", fallbackStatus: queue.status === "online" ? "available" : "offline", detail: "Signal cycle queue" },
         { provider: "Postgres", fallbackStatus: envFlags.database ? "available" : "offline", detail: "Primary persistence" },
@@ -267,7 +255,7 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
 
       const providerRows: ProviderResponseRow[] = [
         ...providers.map(item => {
-          const llmDisabledProvider = llmPolicy.disabled && ["OpenAI", "Gemini", "Anthropic"].includes(item.provider);
+          const llmDisabledProvider = llmPolicy.disabled && item.provider === "Anthropic";
           const newsDisabledProvider = runtimeConfig.newsDisabled && item.provider === "RSS";
           const optionalProviderDisabled = llmDisabledProvider || newsDisabledProvider;
           const latest = latestSystemProvider.get(item.provider);
@@ -324,7 +312,7 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
         : [];
 
       const setupBreakdown = deps.buildLatestSetupBreakdown(latestPlans);
-      const llmProviders = providerRows.filter(row => row.assetClass == null && ["OpenAI", "Gemini", "Anthropic"].includes(row.provider));
+      const llmProviders = providerRows.filter(row => row.assetClass == null && row.provider === "Anthropic");
       const activeCommentaryProvider = llmProviders.find(row => row.availability === "available") ?? null;
       const commentaryFailure = llmProviders.find(row => row.availability !== "available") ?? null;
       const rssProvider = providerRows.find(row => row.assetClass == null && row.provider === "RSS") ?? null;
@@ -411,7 +399,7 @@ export function createSystemRouteHandler(deps: SystemRouteDependencies) {
               : "RSS feeds are temporarily unavailable. Signal generation continues without fresh news.";
       const blockedProviders = providerRows.filter(row =>
         row.availability === "blocked" &&
-        !["OpenAI", "Gemini", "Anthropic", "RSS"].includes(row.provider)
+        !["Anthropic", "RSS"].includes(row.provider)
       );
       const topLevelStatus = coreStatus === "available"
         ? "ONLINE"

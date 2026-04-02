@@ -60,7 +60,6 @@ Optional fallbacks and enrichments:
 
 - `FRED_API_KEY`
 - `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`
 - `GEMINI_API_KEY`
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
@@ -95,11 +94,10 @@ Validate the web-service env locally:
 npm run env:validate
 ```
 
-For worker, scheduler, and rollout validation:
+For worker and rollout validation:
 
 ```bash
 node scripts/validate-env.mjs --service=worker --strict
-node scripts/validate-env.mjs --service=scheduler --strict
 npm run validate:rollout
 ```
 
@@ -148,9 +146,8 @@ node --import tsx --test tests/strategy-direction.test.ts tests/trade-plan-diagn
 2. Validate env with `npm run validate:rollout`.
 3. Deploy web.
 4. Deploy worker.
-5. Deploy scheduler.
-6. If historical replay is needed immediately, run a bounded backfill before the first backtest.
-7. Trigger a cycle and confirm:
+5. If historical replay is needed immediately, run a bounded backfill before the first backtest.
+6. Trigger a cycle manually and confirm:
    - `/api/system`
    - `/api/system/providers`
    - `/api/admin/system`

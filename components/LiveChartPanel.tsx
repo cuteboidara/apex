@@ -437,16 +437,6 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
             </span>
           </div>
 
-          {response && (response.marketStatus !== "LIVE" || response.stale) && (
-            <div className="mb-3 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-400">Chart State</p>
-              <p className="text-[10px] text-zinc-300 mt-1">
-                {response.reason ?? "Candle data is degraded or stale."}
-                {response.circuitState ? ` Circuit ${response.circuitState.toLowerCase()}.` : ""}
-              </p>
-            </div>
-          )}
-
           {!loading && usableCandles.length === 0 && (
             <div className="min-h-[300px] md:min-h-[420px] rounded-xl border border-zinc-900 bg-[#0b0b0b] flex items-center justify-center text-center px-6">
               <div>
@@ -496,7 +486,7 @@ export function LiveChartPanel({ latestTradePlans }: Props) {
 
             {!overlayPlan ? (
               <p className="text-[10px] text-zinc-500 mt-3">
-                No active or stale trade plan with usable levels was found for this symbol.
+                No active trade plan with usable levels was found for this symbol.
               </p>
             ) : (
               <div className="space-y-2 mt-3">

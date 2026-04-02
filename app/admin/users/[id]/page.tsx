@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { use, useEffect, useState } from "react";
+
 import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
 
 interface AdminUser {
@@ -19,10 +20,10 @@ interface AdminUser {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING:   "text-yellow-400 bg-yellow-400/10",
-  APPROVED:  "text-green-400  bg-green-400/10",
-  SUSPENDED: "text-orange-400 bg-orange-400/10",
-  BANNED:    "text-red-400    bg-red-400/10",
+  PENDING: "text-yellow-300 bg-yellow-300/10 border-yellow-300/20",
+  APPROVED: "text-[var(--apex-status-active-text)] bg-[var(--apex-status-active-bg)] border-[var(--apex-status-active-border)]",
+  SUSPENDED: "text-orange-300 bg-orange-300/10 border-orange-300/20",
+  BANNED: "text-[var(--apex-status-blocked-text)] bg-[var(--apex-status-blocked-bg)] border-[var(--apex-status-blocked-border)]",
 };
 
 export default function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +47,24 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   useEffect(() => {
-    void load();
+    let cancelled = false;
+    void (async () => {
+      const result = await fetchJsonResponse<AdminUser>(`/api/admin/users/${id}`);
+      if (cancelled) {
+        return;
+      }
+      if (result.ok && result.data) {
+        setUser(result.data);
+        setError(null);
+      } else {
+        setUser(null);
+        setError(formatApiError(result, "User not found."));
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   async function doAction(act: string, reason?: string) {
@@ -60,55 +78,64 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
     void load();
   }
 
-  if (loading) return <div className="text-zinc-500 text-sm">Loading...</div>;
-  if (!user)   return <div className="text-red-400 text-sm">{error ?? "User not found."}</div>;
+  if (loading) return <div className="apex-empty-state">Loading user detail…</div>;
+  if (!user) {
+    return (
+      <div className="apex-stack-card border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-sm text-[var(--apex-status-blocked-text)]">
+        {error ?? "User not found."}
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <Link href="/admin/users" className="text-zinc-500 hover:text-zinc-300 text-sm">← Users</Link>
-        <h1 className="text-xl font-bold text-zinc-100">{user.name ?? user.email}</h1>
-        <span className={`text-xs px-2 py-0.5 rounded font-medium ${STATUS_STYLE[user.status] ?? "text-zinc-400"}`}>
+    <div className="max-w-3xl space-y-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <Link href="/admin/users" className="apex-link-button px-3 py-2 text-[10px]">
+          Back To Users
+        </Link>
+        <h1 className="font-[var(--apex-font-display)] text-[32px] font-semibold tracking-[-0.05em] text-[var(--apex-text-primary)]">
+          {user.name ?? user.email}
+        </h1>
+        <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${STATUS_STYLE[user.status] ?? "text-[var(--apex-text-secondary)] border-[var(--apex-border-default)]"}`}>
           {user.status}
         </span>
       </div>
 
-      {/* Details card */}
-      <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-5 space-y-3">
-        <Row label="ID"             value={user.id} mono />
-        <Row label="Name"           value={user.name ?? "—"} />
-        <Row label="Email"          value={user.email} mono />
-        <Row label="Role"           value={user.role} />
-        <Row label="Status"         value={user.status} />
-        <Row label="Joined"         value={new Date(user.createdAt).toLocaleString()} />
-        <Row label="Last Login"     value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Never"} />
-        <Row label="Login Count"    value={String(user.loginCount)} />
-        <Row label="Approved At"    value={user.approvedAt ? new Date(user.approvedAt).toLocaleString() : "—"} />
-        <Row label="Approved By"    value={user.approvedBy ?? "—"} />
-        {user.suspendedReason && (
-          <Row label="Suspend Reason" value={user.suspendedReason} />
-        )}
+      <div className="apex-surface px-6 py-5">
+        <p className="apex-eyebrow">Identity Detail</p>
+        <div className="mt-5 grid gap-3">
+          <Row label="ID" value={user.id} mono />
+          <Row label="Name" value={user.name ?? "—"} />
+          <Row label="Email" value={user.email} mono />
+          <Row label="Role" value={user.role} />
+          <Row label="Status" value={user.status} />
+          <Row label="Joined" value={new Date(user.createdAt).toLocaleString()} />
+          <Row label="Last Login" value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Never"} />
+          <Row label="Login Count" value={String(user.loginCount)} />
+          <Row label="Approved At" value={user.approvedAt ? new Date(user.approvedAt).toLocaleString() : "—"} />
+          <Row label="Approved By" value={user.approvedBy ?? "—"} />
+          {user.suspendedReason ? <Row label="Suspend Reason" value={user.suspendedReason} /> : null}
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-5">
-        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          {user.status === "PENDING" && (
+      <div className="apex-surface px-6 py-5">
+        <p className="apex-eyebrow">Quick Actions</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {user.status === "PENDING" ? (
             <ActionButton label="Approve" color="green" disabled={actionLoading} onClick={() => doAction("approve")} />
-          )}
-          {user.status === "APPROVED" && (
+          ) : null}
+          {user.status === "APPROVED" ? (
             <>
               <ActionButton label="Suspend" color="orange" disabled={actionLoading} onClick={() => doAction("suspend")} />
-              <ActionButton label="Ban"     color="red"    disabled={actionLoading} onClick={() => doAction("ban")} />
+              <ActionButton label="Ban" color="red" disabled={actionLoading} onClick={() => doAction("ban")} />
             </>
-          )}
-          {user.status === "SUSPENDED" && (
+          ) : null}
+          {user.status === "SUSPENDED" ? (
             <ActionButton label="Restore" color="green" disabled={actionLoading} onClick={() => doAction("restore")} />
-          )}
-          {user.status === "BANNED" && (
+          ) : null}
+          {user.status === "BANNED" ? (
             <ActionButton label="Unban" color="green" disabled={actionLoading} onClick={() => doAction("unban")} />
-          )}
+          ) : null}
         </div>
       </div>
     </div>
@@ -117,15 +144,20 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex gap-4">
-      <span className="text-xs text-zinc-500 w-32 flex-shrink-0">{label}</span>
-      <span className={`text-sm text-zinc-200 ${mono ? "font-mono" : ""}`}>{value}</span>
+    <div className="apex-stack-card flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
+      <span className="w-32 flex-shrink-0 font-[var(--apex-font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--apex-text-tertiary)]">{label}</span>
+      <span className={`text-[14px] text-[var(--apex-text-primary)] ${mono ? "font-[var(--apex-font-mono)] text-[12px]" : "font-[var(--apex-font-body)]"}`}>
+        {value}
+      </span>
     </div>
   );
 }
 
 function ActionButton({
-  label, color, disabled, onClick,
+  label,
+  color,
+  disabled,
+  onClick,
 }: {
   label: string;
   color: "green" | "red" | "orange";
@@ -133,15 +165,16 @@ function ActionButton({
   onClick: () => void;
 }) {
   const colors = {
-    green:  "bg-green-500 hover:bg-green-400 text-black",
-    red:    "bg-red-600   hover:bg-red-500   text-white",
-    orange: "bg-orange-500 hover:bg-orange-400 text-black",
+    green: "border-[var(--apex-status-active-border)] bg-[var(--apex-status-active-bg)] text-[var(--apex-status-active-text)]",
+    red: "border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-[var(--apex-status-blocked-text)]",
+    orange: "border-yellow-300/20 bg-yellow-300/10 text-yellow-300",
   };
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 ${colors[color]}`}
+      className={`inline-flex rounded-full border px-4 py-2 text-[10px] font-medium uppercase tracking-[0.12em] transition-all disabled:opacity-40 ${colors[color]}`}
     >
       {disabled ? "..." : label}
     </button>

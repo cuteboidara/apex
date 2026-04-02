@@ -1,72 +1,9 @@
 @import "tailwindcss";
-
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --accent: #22c55e;
-}
+@import "../src/styles/apex-design-system.css";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-::selection {
-  background: rgb(34 197 94 / 35%);
-  color: #ffffff;
-}
-
-input[type="range"] {
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-}
-
-@keyframes rankPop {
-  0%   { opacity: 0; transform: scale(0.65); }
-  60%  { transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.rank-anim {
-  animation: rankPop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.toast-in {
-  animation: toastIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-  animation: fadeIn 0.25s ease-out;
-}
-
-/* ── Mobile optimizations ──────────────────────────────────────────────────── */
-
-/* Momentum scrolling for all overflow-x-auto containers */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Safe-area bottom padding (for devices with home indicator) */
-.pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  --color-background: var(--apex-bg-base);
+  --color-foreground: var(--apex-text-primary);
+  --font-sans: var(--apex-font-body);
+  --font-mono: var(--apex-font-mono);
 }

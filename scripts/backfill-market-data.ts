@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env.mjs";
 
 import { SUPPORTED_ASSETS } from "@/lib/assets";
 import { backfillAssetSet } from "@/lib/marketData/backfill";

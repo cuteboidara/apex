@@ -10,41 +10,44 @@
     "lint": "eslint",
     "env:validate": "node scripts/validate-env.mjs --service=web",
     "env:validate:worker": "node scripts/validate-env.mjs --service=worker --strict",
-    "env:validate:scheduler": "node scripts/validate-env.mjs --service=scheduler --strict",
     "validate:rollout": "node scripts/validate-rollout.mjs",
     "migrate:deploy": "prisma migrate deploy",
-    "backfill:market": "node --import tsx scripts/backfill-market-data.ts",
-    "worker:signal-cycle": "node --import tsx scripts/signal-cycle-worker.ts",
-    "service:scheduler": "node --import tsx scripts/scheduler-service.ts",
-    "worker:combined": "node --import tsx scripts/worker-with-scheduler.ts"
+    "apex:diagnostics": "node --import tsx scripts/apex-diagnostics.ts",
+    "apex:replay": "node --import tsx scripts/apex-replay.ts",
+    "apex:rollback": "node --import tsx scripts/apex-rollback.ts",
+    "test:apex": "node --import tsx --test --test-concurrency=1 --test-force-exit tests/apex-data-plant.test.ts tests/apex-feature-engine.test.ts tests/apex-market-scope.test.ts tests/apex-pods.test.ts tests/apex-pod-calibration.test.ts tests/apex-pod-aggregation.test.ts tests/apex-allocator.test.ts tests/apex-risk-governor.test.ts tests/apex-risk-engine-decomposition.test.ts tests/apex-risk-shadow-logging.test.ts tests/apex-signal-levels.test.ts tests/apex-signal-quality.test.ts tests/apex-signal-trust-model.test.ts tests/apex-recommendations.test.ts tests/apex-walk-forward-validation.test.ts tests/apex-trader-signal-layer.test.ts tests/apex-live-dashboard-pipeline.test.ts tests/apex-canonical-signal-pipeline.test.ts tests/apex-canonical-read-model.test.ts tests/apex-signal-view-model-builder.test.ts tests/apex-daily-signals.test.ts tests/apex-crypto-runtime.test.ts tests/apex-architecture-boundaries.test.ts tests/operator-control-routes.test.ts tests/password-change-route.test.ts tests/proxy-auth-boundaries.test.ts tests/stocks-module-health.test.ts tests/unified-signal-trust.test.ts tests/alpha-analytics-report.test.ts tests/provider-diagnostics.test.ts tests/apex-runtime-repair.test.ts tests/apex-nonfx-outcome-capture.test.ts tests/apex-calibration-validation.test.ts tests/env-validation.test.ts",
+    "backfill:market": "node --import tsx scripts/backfill-market-data.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@prisma/extension-accelerate": "^3.0.1",
+    "@tanstack/react-query": "^5.95.2",
     "@types/bcryptjs": "^2.4.6",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
+    "axios": "^1.14.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.71.0",
+    "cheerio": "^1.2.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^17.3.1",
     "ioredis": "^5.10.0",
     "lightweight-charts": "^4.2.3",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
-    "node-cron": "^4.2.1",
     "pg": "^8.20.0",
     "prisma": "^7.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
-    "resend": "^6.9.4"
+    "resend": "^6.9.4",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "^20",
-    "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -55,5 +58,8 @@
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

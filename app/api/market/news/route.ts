@@ -1,24 +1,9 @@
-import { NextResponse } from "next/server";
-import { fetchRssNews } from "@/lib/providers/newsRss";
-
-export const dynamic = "force-dynamic";
+import { deprecatedEndpointResponse } from "@/src/presentation/api/deprecated";
 
 export async function GET() {
-  try {
-    const articles = await fetchRssNews(null, { limit: 20 });
+  return deprecatedEndpointResponse();
+}
 
-    return NextResponse.json(
-      articles.map((article, index) => ({
-        id: index + 1,
-        headline: article.title,
-        source: article.source,
-        url: article.url,
-        publishedAt: article.publishedAt,
-        sentiment: article.sentiment,
-        affectedAssets: article.affectedAssets,
-      }))
-    );
-  } catch {
-    return NextResponse.json([]);
-  }
+export async function POST() {
+  return deprecatedEndpointResponse();
 }

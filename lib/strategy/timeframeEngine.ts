@@ -1,3 +1,8 @@
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import type { TradePlanStyle } from "@/lib/assets";
 import type { TimeframeProfile } from "@/lib/strategy/types";
 
@@ -11,3 +16,4 @@ export function getTimeframeProfile(style: TradePlanStyle): TimeframeProfile {
       return { style, execution: "1h-4h", confirmation: "1D", holdingPeriod: "days" };
   }
 }
+

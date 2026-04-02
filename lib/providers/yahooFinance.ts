@@ -19,7 +19,28 @@ export const YAHOO_SYMBOL_MAP: Record<string, string> = {
   GBPJPY:  "GBPJPY=X",
   XAUUSD:  "GC=F",
   XAGUSD:  "SI=F",
+  WTICOUSD: "CL=F",
+  BCOUSD: "BZ=F",
+  NATGASUSD: "NG=F",
+  SPX: "^GSPC",
+  NDX: "^NDX",
+  DJI: "^DJI",
+  UKX: "^FTSE",
+  DAX: "^GDAXI",
+  NKY: "^N225",
+  BTCUSD: "BTC-USD",
+  ETHUSD: "ETH-USD",
 };
+
+const YAHOO_CANONICAL_ALIASES: Record<string, string> = {
+  "GC=F": "XAUUSD",
+  GOLD: "XAUUSD",
+  "XAU/USD": "XAUUSD",
+};
+
+function normalizeYahooApexSymbol(apexSymbol: string): string {
+  return YAHOO_CANONICAL_ALIASES[apexSymbol.toUpperCase()] ?? apexSymbol;
+}
 
 interface YahooChartResult {
   timestamp?: (number | null)[];
@@ -161,7 +182,8 @@ export async function fetchYahooCandles(
     priority: "hot",
   };
 
-  const yahooSymbol = YAHOO_SYMBOL_MAP[apexSymbol];
+  const normalizedApexSymbol = normalizeYahooApexSymbol(apexSymbol);
+  const yahooSymbol = YAHOO_SYMBOL_MAP[normalizedApexSymbol];
   if (!yahooSymbol) return unavailable;
 
   const params = TIMEFRAME_PARAMS[timeframe] ?? TIMEFRAME_PARAMS["1D"];
@@ -173,7 +195,7 @@ export async function fetchYahooCandles(
     const fetched = await fetchYahooJson(path);
     if (!fetched) {
       await recordProviderHealth({
-        provider: "Yahoo Finance", requestSymbol: apexSymbol,
+        provider: "Yahoo Finance", requestSymbol: normalizedApexSymbol,
         latencyMs: Date.now() - startedAt, status: "ERROR", errorRate: 1,
         detail: "all_hosts_failed",
       });
@@ -184,7 +206,7 @@ export async function fetchYahooCandles(
 
     if (!result) {
       await recordProviderHealth({
-        provider: "Yahoo Finance", requestSymbol: apexSymbol,
+        provider: "Yahoo Finance", requestSymbol: normalizedApexSymbol,
         latencyMs: Date.now() - startedAt, status: "DEGRADED", errorRate: 1,
         detail: "empty_result",
       });
@@ -231,7 +253,7 @@ export async function fetchYahooCandles(
     const normalizedCandles = aggregateYahooCandles(candles, timeframe);
     const latencyMs = Date.now() - startedAt;
     await recordProviderHealth({
-      provider: "Yahoo Finance", requestSymbol: apexSymbol,
+      provider: "Yahoo Finance", requestSymbol: normalizedApexSymbol,
       latencyMs, status: normalizedCandles.length > 0 ? "OK" : "DEGRADED",
       errorRate: normalizedCandles.length > 0 ? 0 : 1,
       detail: normalizedCandles.length > 0 ? undefined : "no_candles",
@@ -256,7 +278,7 @@ export async function fetchYahooCandles(
     };
   } catch (err) {
     await recordProviderHealth({
-      provider: "Yahoo Finance", requestSymbol: apexSymbol,
+      provider: "Yahoo Finance", requestSymbol: normalizedApexSymbol,
       latencyMs: Date.now() - startedAt, status: "ERROR", errorRate: 1,
       detail: `exception:${String(err).slice(0, 120)}`,
     });
@@ -290,7 +312,8 @@ export async function fetchYahooHistoricalCandles(
     priority: "warm",
   };
 
-  const yahooSymbol = YAHOO_SYMBOL_MAP[apexSymbol];
+  const normalizedApexSymbol = normalizeYahooApexSymbol(apexSymbol);
+  const yahooSymbol = YAHOO_SYMBOL_MAP[normalizedApexSymbol];
   if (!yahooSymbol) return unavailable;
 
   const params = TIMEFRAME_PARAMS[timeframe] ?? TIMEFRAME_PARAMS["1D"];
@@ -304,7 +327,7 @@ export async function fetchYahooHistoricalCandles(
     if (!fetched) {
       await recordProviderHealth({
         provider: "Yahoo Finance",
-        requestSymbol: apexSymbol,
+        requestSymbol: normalizedApexSymbol,
         latencyMs: Date.now() - startedAt,
         status: "ERROR",
         errorRate: 1,
@@ -317,7 +340,7 @@ export async function fetchYahooHistoricalCandles(
     if (!result) {
       await recordProviderHealth({
         provider: "Yahoo Finance",
-        requestSymbol: apexSymbol,
+        requestSymbol: normalizedApexSymbol,
         latencyMs: Date.now() - startedAt,
         status: "DEGRADED",
         errorRate: 1,
@@ -377,7 +400,7 @@ export async function fetchYahooHistoricalCandles(
   } catch (error) {
     await recordProviderHealth({
       provider: "Yahoo Finance",
-      requestSymbol: apexSymbol,
+      requestSymbol: normalizedApexSymbol,
       latencyMs: Date.now() - startedAt,
       status: "ERROR",
       errorRate: 1,
@@ -396,7 +419,8 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
 }> {
   const empty = { price: null, closes: [], high14d: null, low14d: null, change24h: null };
 
-  const yahooSymbol = YAHOO_SYMBOL_MAP[apexSymbol];
+  const normalizedApexSymbol = normalizeYahooApexSymbol(apexSymbol);
+  const yahooSymbol = YAHOO_SYMBOL_MAP[normalizedApexSymbol];
   if (!yahooSymbol) return empty;
 
   const startedAt = Date.now();
@@ -406,10 +430,10 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
     const fetched = await fetchYahooJson(path);
 
     if (!fetched) {
-      console.error(`[APEX:yahoo] All hosts failed for ${apexSymbol} (${yahooSymbol})`);
+      console.error(`[APEX:yahoo] All hosts failed for ${normalizedApexSymbol} (${yahooSymbol})`);
       await recordProviderHealth({
         provider:      "Yahoo Finance",
-        requestSymbol: apexSymbol,
+        requestSymbol: normalizedApexSymbol,
         latencyMs:     Date.now() - startedAt,
         status:        "ERROR",
         errorRate:     1,
@@ -421,10 +445,10 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
     const result = fetched.data?.chart?.result?.[0];
 
     if (!result) {
-      console.error(`[APEX:yahoo] No chart result for ${apexSymbol}`);
+      console.error(`[APEX:yahoo] No chart result for ${normalizedApexSymbol}`);
       await recordProviderHealth({
         provider:      "Yahoo Finance",
-        requestSymbol: apexSymbol,
+        requestSymbol: normalizedApexSymbol,
         latencyMs:     Date.now() - startedAt,
         status:        "DEGRADED",
         errorRate:     1,
@@ -459,11 +483,11 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
     const high14d = highs.length ? Math.max(...highs.slice(-14)) : null;
     const low14d  = lows.length  ? Math.min(...lows.slice(-14))  : null;
 
-    console.log(`[APEX:yahoo] ${apexSymbol} → price=${price}, closes=${closes.length}, change24h=${change24h?.toFixed(3)}`);
+    console.log(`[APEX:yahoo] ${normalizedApexSymbol} → price=${price}, closes=${closes.length}, change24h=${change24h?.toFixed(3)}`);
 
     await recordProviderHealth({
       provider:      "Yahoo Finance",
-      requestSymbol: apexSymbol,
+      requestSymbol: normalizedApexSymbol,
       latencyMs:     Date.now() - startedAt,
       status:        price != null ? "OK" : "DEGRADED",
       errorRate:     price != null ? 0 : 1,
@@ -472,10 +496,10 @@ export async function fetchYahooPrice(apexSymbol: string): Promise<{
 
     return { price, closes, high14d, low14d, change24h };
   } catch (err) {
-    console.error(`[APEX:yahoo] Request failed for ${apexSymbol}:`, err);
+    console.error(`[APEX:yahoo] Request failed for ${normalizedApexSymbol}:`, err);
     await recordProviderHealth({
       provider:      "Yahoo Finance",
-      requestSymbol: apexSymbol,
+      requestSymbol: normalizedApexSymbol,
       latencyMs:     Date.now() - startedAt,
       status:        "ERROR",
       errorRate:     1,

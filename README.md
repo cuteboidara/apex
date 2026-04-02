@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# APEX Intelligence
 
-## Getting Started
+APEX is a Next.js multi-asset trading system with:
 
-First, run the development server:
+- FX runtime with canonical signal persistence
+- crypto runtime on Binance
+- stocks runtime on Polygon
+- commodities and indices with ranked fallback providers
+- meme-coin discovery/runtime on Binance + CoinGecko
+- Telegram delivery, admin tooling, diagnostics, and manual API triggers
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Runtime Environment
+
+Required core keys:
+
+```env
+DATABASE_URL=postgresql://...-pooler.../neondb
+DIRECT_DATABASE_URL=postgresql://.../neondb
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+APEX_SECRET=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+REDIS_URL=redis://localhost:6379
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For Neon, use the pooled `DATABASE_URL` for the running app and `DIRECT_DATABASE_URL` for Prisma schema and migration commands.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+FX provider keys:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+OANDA_API_TOKEN=
+OANDA_ENV=practice
+OANDA_API_BASE_URL=
+APEX_REQUIRE_LIVE_DATA=true
+```
 
-## Learn More
+Optional integrations:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+TWELVE_DATA_API_KEY=
+ANTHROPIC_API_KEY=
+APEX_DISABLE_LLM=false
+APEX_ENABLE_CRYPTO=true
+POLYGON_API_KEY=
+COINGECKO_API_KEY=
+APEX_DAILY_SIGNALS_SECRET=
+APEX_SHOW_ADMIN_TRIGGER=false
+APEX_ALLOW_DAILY_SIGNAL_MEMORY_FALLBACK=false
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Daily signal scheduling:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+APEX_DAILY_SIGNALS_ENABLED=false
+APEX_DAILY_SIGNALS_TIME=08:00
+APEX_DAILY_SIGNALS_ASIA_TIME=00:00
+APEX_DAILY_SIGNALS_LONDON_TIME=08:00
+APEX_DAILY_SIGNALS_NEW_YORK_TIME=13:00
+APEX_DAILY_SIGNALS_TIMEZONE=UTC
+APEX_DAILY_SIGNALS_MIN_GRADE=B
+APEX_DAILY_SIGNALS_TELEGRAM_ENABLED=true
+APEX_DAILY_SIGNALS_SEND_ZERO_SIGNAL_SUMMARY=true
+```
 
-## Deploy on Vercel
+## Local Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Useful commands:
+
+```bash
+npx tsc --noEmit
+npm run test:apex
+npm run apex:diagnostics -- --smoke
+npm run apex:diagnostics -- --alpha
+```
+
+## Manual Triggers
+
+APEX runs in manual-only mode. There is no deployed scheduler service or cron worker.
+
+Trigger the runtime directly through the API:
+
+```text
+POST /api/cycle
+Header: x-apex-secret: <APEX_SECRET>
+```
+
+```text
+POST /api/crypto-cycle-trigger
+POST /api/meme-cycle-trigger
+POST /api/meme-discovery-trigger
+POST /api/all-assets-cycle-trigger
+Auth: operator session
+```
+
+```text
+POST /api/jobs/daily-signals
+Header: x-apex-admin-secret: <APEX_DAILY_SIGNALS_SECRET or APEX_SECRET>
+```
+
+Health endpoint:
+
+```text
+GET /api/health
+```
+
+The health response exposes manual runtime heartbeat fields:
+
+- `scheduler.mode = "manual"`
+- `scheduler.lastRunAt`
+- `scheduler.nextRunAt = null`
+- `scheduler.intervalMinutes`
+- `scheduler.lastSource`
+
+## Deployment
+
+Typical split:
+
+- web/API: Vercel or Railway web service
+- manual trigger calls: direct API requests against the deployed web service

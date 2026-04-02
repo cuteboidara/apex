@@ -1,0 +1,2991 @@
+(node:3364) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"ts":"2026-03-28T08:40:58.041Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"cross-asset-rv","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+{"ts":"2026-03-28T08:40:58.043Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"breakout","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+{"ts":"2026-03-28T08:40:58.043Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"trend","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+{"ts":"2026-03-28T08:40:58.045Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"mean-reversion","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+{"ts":"2026-03-28T08:40:58.075Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"volatility-regime","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+{"ts":"2026-03-28T08:40:58.081Z","level":"warn","module":"runtime","message":"Failed to seed model registry entry during runtime construction","pod_id":"execution-advisory","error":"RepositoryUnavailableError: Repository unavailable during: modelRegistry.create"}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBMFs5sZmcmKquSb81Q"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:00 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBMFs5sZmcmKquSb81Q',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '158',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=159',
+    'set-cookie': '_cfuvid=TQ2OlwAQxwVzL8.sZOI8IZ4zfjmvd8i1gIQ2Md6dM.8-1774687260.6469042-1.0.1.1-8B3aLWPMorfX6bSSy4dKZsEmjKO2JCnNoF0eD4KWZ0g; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3555530bbe93a0-IST'
+  },
+  requestID: 'req_011CZVBMFs5sZmcmKquSb81Q',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBNDdBLSAvAew6SS2mx"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:13 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBNDdBLSAvAew6SS2mx',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=MDfrCMSI7ZN8iy_S_5fYobH5kzOW0p6tB8GagDj635g-1774687273.7036757-1.0.1.1-PhkLt8zZuOBtQIdh0xFB4uWIO_Oz8uY4PQSUWDjC_F4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3555a4ab151ae8-IST'
+  },
+  requestID: 'req_011CZVBNDdBLSAvAew6SS2mx',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBPC1y54LLt8soKRzf5"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:27 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBPC1y54LLt8soKRzf5',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=VxHFemftiGP19usv6.0pN.HZ5Jz3L3wqjOpfijklMUw-1774687286.8943162-1.0.1.1-gNo3OV8aGav9hbpUtV9R8l_7ytBoPWApB8kyDqS_t80; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3555f71ddd576b-IST'
+  },
+  requestID: 'req_011CZVBPC1y54LLt8soKRzf5',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBPJUf68zUjoh9xyb2W"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:28 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBPJUf68zUjoh9xyb2W',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '83',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=85',
+    'set-cookie': '_cfuvid=z2lm8p9gf4_0L_zyaKOpjqI0BDQ7iKFSJlqa_KU0OJI-1774687288.352694-1.0.1.1-3V8_CWuJTVD3c8cGXVXYnCgiEuIkfdPwmhuNr3ipspQ; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3556003ee2576b-IST'
+  },
+  requestID: 'req_011CZVBPJUf68zUjoh9xyb2W',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBQFysCkbH4tgdxdWvB"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:41 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBQFysCkbH4tgdxdWvB',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '20',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=21',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=Gyp7Hu1O1TfzS4CEx5dOJzrc_snSdDsxpe3PWHZHeTw-1774687301.3829303-1.0.1.1-xqIvj8WBKAUkfxBmO1gFPR0Ek1Yky0vS3Tibb2Y0rug; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e355651aeb998bc-IST'
+  },
+  requestID: 'req_011CZVBQFysCkbH4tgdxdWvB',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBQG3qTosocqAfT9VoZ"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:41 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBQG3qTosocqAfT9VoZ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=IK8aTW89I3SGOMeGklAUwOov6YJlSpLF9HimKMERXUo-1774687301.4010375-1.0.1.1-rGZ7Yq5b7_yZIH0S6bgHRKzTpqRLSaJZiemU3OTxcbg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e355651ca68ad60-IST'
+  },
+  requestID: 'req_011CZVBQG3qTosocqAfT9VoZ',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBQLLJiRhUUsa5UPgjB"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:41:42 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBQLLJiRhUUsa5UPgjB',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=8854K.Q49MQvpdeRL.yzCR_vHbN1NqNLAyTyZtmkeEY-1774687302.4022996-1.0.1.1-6v8Qjo6GrEcZXcwmaK7QXe5B0jUy0kaoBqD5hHcKy2s; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3556580f3298bc-IST'
+  },
+  requestID: 'req_011CZVBQLLJiRhUUsa5UPgjB',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBy1zAZizwHg7QPKMPH"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:49:05 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBy1zAZizwHg7QPKMPH',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '37',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=39',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=zWHVgJdq9crzx8f5bTk6vzsiXrhnAj2gd6Gm2Xkc9Ns-1774687745.7843442-1.0.1.1-sAgmmU5lWoPEBVvUtxBHUGBu0eGFd6KbCThrP0nk_v4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35612b29d2a64d-IST'
+  },
+  requestID: 'req_011CZVBy1zAZizwHg7QPKMPH',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVByv4Vz2WUuqidZuvKu"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:49:18 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVByv4Vz2WUuqidZuvKu',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=ijq8UbtDCw15GHPmUpKv.iUzpiKh2IOWlVlquXLrCtM-1774687757.9668088-1.0.1.1-XnJ7WJK9ZRBUv_lHIPEmbKZMw6igYZ013_hYu4PUyn4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3561774eb8d61b-IST'
+  },
+  requestID: 'req_011CZVByv4Vz2WUuqidZuvKu',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVBzts6LYyWCwVbHc65N"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:49:31 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVBzts6LYyWCwVbHc65N',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '18',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'set-cookie': '_cfuvid=zC483ZL7qE7LjS2LrcXmCYfdppK1qrHUlrVc4jtfeWY-1774687771.2519748-1.0.1.1-rpdwKpftAbGmcY8fQ5ul7VFFy6GWgqT7Har7trfpecg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3561ca5d6b515f-IST'
+  },
+  requestID: 'req_011CZVBzts6LYyWCwVbHc65N',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC1piajaX1BqNRYJ6an"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:49:43 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC1piajaX1BqNRYJ6an',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=vdpcNR18bBq_G3f6Vk48kYHH8gjX.BLV29McmkSG2dU-1774687783.8486938-1.0.1.1-YOtcabXJIwbl1Ke_RcYUtyHYKEzuHY2.nWy_GSbEFDk; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3562190dbce32f-IST'
+  },
+  requestID: 'req_011CZVC1piajaX1BqNRYJ6an',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC2jFxDqnNmsJS8ygr7"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:49:56 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC2jFxDqnNmsJS8ygr7',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=lam3pjIEFICt0nPCmpiEfDeaGdQ1pMpVDH9Qp47UyJw-1774687796.1390674-1.0.1.1-cAeU4tEQvu_oc04_dtPN7v8QaAZucClDmG58R.evwNw; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356265da715aaa-IST'
+  },
+  requestID: 'req_011CZVC2jFxDqnNmsJS8ygr7',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC3iPPQMa3BFhJmyC9y"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:50:09 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC3iPPQMa3BFhJmyC9y',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '141',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=143',
+    'set-cookie': '_cfuvid=unJkQ8i8cwBtHo8q3KxpN6jF.AjA1WQyIsiTvxgLojA-1774687809.4925523-1.0.1.1-JQRP4.Vl49KSoAB1ZTPVEYSEjPxKWW_K8Ky4JOxkAHw; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3562b959ecc546-IST'
+  },
+  requestID: 'req_011CZVC3iPPQMa3BFhJmyC9y',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC4hVqp1tPdkZQjMfWp"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:50:23 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC4hVqp1tPdkZQjMfWp',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=HP9vlg3Sr1ZFD0VHKM2nkpdMM4tGMUy96YoFiPb2BCc-1774687822.857469-1.0.1.1-Sw7wRVvsVjZzcRWyS4YDrgmJDRHFxC744Gjr3ALd5HQ; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35630cddfa51a7-IST'
+  },
+  requestID: 'req_011CZVC4hVqp1tPdkZQjMfWp',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC5cnMLw7HLZuhjx3Xg"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:50:35 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC5cnMLw7HLZuhjx3Xg',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=k07EHAiRpRXHAKyS_SGb7X6RmC3kN05xmoLhCR_ufFU-1774687835.320845-1.0.1.1-7qPtV_.GdPFKrgrmE4FH5_bIl5VkfBQGD6C5aBt71Eg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35635accbea42e-IST'
+  },
+  requestID: 'req_011CZVC5cnMLw7HLZuhjx3Xg',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC6ZXRYb7AsC6f6HWwd"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:50:48 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC6ZXRYb7AsC6f6HWwd',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=Zp5KQ_RTYx7Gj.yAggpdIEGVT1jMdOpyDtHdL6Z8Gmg-1774687848.1248415-1.0.1.1-o5ik0gszC0HfsI9FQE6eX3jor_iY1wymwcb5nzpjDLI; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3563aac97d559d-IST'
+  },
+  requestID: 'req_011CZVC6ZXRYb7AsC6f6HWwd',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC7Y4eGvEb5QKFgp53C"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:51:01 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC7Y4eGvEb5QKFgp53C',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'set-cookie': '_cfuvid=sBumA1rZKZA64tS2rb2lhd5A5WfWXS1euIW6SFTkm0c-1774687861.3454866-1.0.1.1-K.57JW7j0MIafMW4uWpQk_AEviVc.96RsbeCvEWIG9s; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3563fd6dadb0d2-IST'
+  },
+  requestID: 'req_011CZVC7Y4eGvEb5QKFgp53C',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC8ZMJp7vSALnPMWbnQ"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:51:15 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC8ZMJp7vSALnPMWbnQ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=lhvx..svlIfK8ootp0blNw0rKEyD_mC5Z8RYWX8c9SI-1774687875.2159672-1.0.1.1-cS_D_7q18zeI5fnEnkPJaPLVs_X2laAyxF.VbELVBvs; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35645419c1ae11-IST'
+  },
+  requestID: 'req_011CZVC8ZMJp7vSALnPMWbnQ',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVC9WtFszjszFCHt8nzD"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:51:28 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVC9WtFszjszFCHt8nzD',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=.vxx8.skQmnGEq7W2WwkYarST8HWkAvXhbfoWkTYrz0-1774687888.2027557-1.0.1.1-u3EiBT_Or7ng7e3Z6DzLZCcXLhPVsRLKHIrsvgvojDw; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3564a549fa3a71-IST'
+  },
+  requestID: 'req_011CZVC9WtFszjszFCHt8nzD',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCAUzgW1pjBPe187Tyj"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:51:41 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCAUzgW1pjBPe187Tyj',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=G8c5D9ZPW2DS7AIQoNmbGTcRXkryzlXhvrVHyC3aZRI-1774687901.329217-1.0.1.1-sPj0aDp_s3Rbdy6p5pRVEivwqpgky_5TpPk.iJYpUgM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3564f74ff9ae50-IST'
+  },
+  requestID: 'req_011CZVCAUzgW1pjBPe187Tyj',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCBRpxHK1tKJcfWeMui"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:51:54 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCBRpxHK1tKJcfWeMui',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '18',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=20',
+    'set-cookie': '_cfuvid=gX4DhqjgU0YBlNJqMVymCr7bxUTRmqD57oZig.0QLGM-1774687914.1530807-1.0.1.1-hsJcCPUojOrMz7rGg6HL7JJyu_o4IGXqTVatjnXdkfI; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3565477fb7de3c-IST'
+  },
+  requestID: 'req_011CZVCBRpxHK1tKJcfWeMui',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCCSXezDUYuKZaFGArX"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:52:08 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCCSXezDUYuKZaFGArX',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '64',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=65',
+    'set-cookie': '_cfuvid=VJUlIDmZazd4RAKS7HN1qWyN3RC3o0djBlVs_xHBukg-1774687927.8823245-1.0.1.1-60DLc5tkJpZD_kYXDjKhFtTAwK0pqjV1YS33dqAJhZQ; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35659d49fa5785-IST'
+  },
+  requestID: 'req_011CZVCCSXezDUYuKZaFGArX',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCDPY6iqPH4ynM99F6S"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:52:20 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCDPY6iqPH4ynM99F6S',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '35',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=36',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=E5cSwlCADHdyaq6.miDRVLW7Q52XBDmIyOFrMVw2O3M-1774687940.7481444-1.0.1.1-N1cPASUC7x4uIKDFmkX_hVh7PvF0Qcude7Eulu_nXbo; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3565edaceb1884-IST'
+  },
+  requestID: 'req_011CZVCDPY6iqPH4ynM99F6S',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCEK2GSXKzP4xdi5PeJ"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:52:33 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCEK2GSXKzP4xdi5PeJ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '18',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=20',
+    'set-cookie': '_cfuvid=CNfoLDpi39jClnYGvlZ.5V0flRAtLIfRt..ZGYAgJow-1774687953.1782174-1.0.1.1-R_XdAs7PNSX1g8cOto1mDPDrxb8wfeJ0spmNXHweEYc; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35663b5c72607f-IST'
+  },
+  requestID: 'req_011CZVCEK2GSXKzP4xdi5PeJ',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCFGJ5xKr3H8Soj5vg1"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:52:46 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCFGJ5xKr3H8Soj5vg1',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=AWDKgeqofpCxmtcyVfKHQ03TpbvrOrsdACv973VBFK8-1774687966.1885626-1.0.1.1-DvFRNXbuATkf_UW6n0dwbeKvfpJURmqxMeQVS.MUUQM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35668cab94e349-IST'
+  },
+  requestID: 'req_011CZVCFGJ5xKr3H8Soj5vg1',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCGDtFfUqzrbSwoGYV6"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:52:59 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCGDtFfUqzrbSwoGYV6',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '19',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=22',
+    'set-cookie': '_cfuvid=dA7l72i.oKpu685ZDK78K2vtupvRmh8Qe9FkgphsIRw-1774687979.1884146-1.0.1.1-6qP92d28N.ioeL09JyilJI5KcceUpjb3YneHu00azWo; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3566ddef35b0de-IST'
+  },
+  requestID: 'req_011CZVCGDtFfUqzrbSwoGYV6',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCHBMjKEqvTjQ8BnK4H"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:53:12 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCHBMjKEqvTjQ8BnK4H',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=n9Ep2Ld84fx71cezoOLpfNz0VHkvvDHEMrypa4LG9gA-1774687992.1629295-1.0.1.1-4A5ge_l4KvNDKiLf2SqUi8g0qY45svzaSwvlw7EFOfY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35672f08e22504-IST'
+  },
+  requestID: 'req_011CZVCHBMjKEqvTjQ8BnK4H',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCJDgeq2NhKTgNCXwzW"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:53:26 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCJDgeq2NhKTgNCXwzW',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '27',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=30',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=olb.VDn5TRjeby1Qz9acgrT2NqchzrU8XpTAON05Zio-1774688006.2651682-1.0.1.1-FCRx3c_wsQeCRSHFjdOPfBgQ254o_.lnTCRdOTBt0VM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3567872b5a5b02-IST'
+  },
+  requestID: 'req_011CZVCJDgeq2NhKTgNCXwzW',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCKBWhwUbN7Q9G2eyVk"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:53:39 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCKBWhwUbN7Q9G2eyVk',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=rx9EWN.F264VIKSN_LnpJP8ue_XXrlacCjKXvY5wpKo-1774688019.3315225-1.0.1.1-Z02tTego1yxREjKNbNg70_Z22fw3aDoZbbJ3W_f_n38; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3567d8d91c50e8-IST'
+  },
+  requestID: 'req_011CZVCKBWhwUbN7Q9G2eyVk',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCL8DYqfbwb5hUpX9o8"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:53:52 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCL8DYqfbwb5hUpX9o8',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=14',
+    'set-cookie': '_cfuvid=TJiQYF48J93iNC6Tji2mS_.QCZyB1XHFYJ.70VhmW_4-1774688032.1279728-1.0.1.1-Z4j5oOwMBH1rJtoqp.W2UC_2yPnBMh4etgLPSt4UZZ0; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356828cf9c5b08-IST'
+  },
+  requestID: 'req_011CZVCL8DYqfbwb5hUpX9o8',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCM66qDjrzUJRRpuozK"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:54:05 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCM66qDjrzUJRRpuozK',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=jjGniEFtm6lJ0HTz_ELfqfNGbu41IsosCxCHaTq3dfQ-1774688045.196159-1.0.1.1-N7rBoY4qMYVv9ub6IuL5pD9zwWAnD1xDMj60CsbfSVA; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35687a7a7b5c12-IST'
+  },
+  requestID: 'req_011CZVCM66qDjrzUJRRpuozK',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCN6oXWPD523y4ervFN"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:54:19 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCN6oXWPD523y4ervFN',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=14',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=dlteo4fdZ5TKI8dsqISxFsHdEx8A8Ebx_Tu_jj0mF4I-1774688058.930212-1.0.1.1-EDSV09ob3Z3exfNyym.Kqck89K3n_AGmC205Nge0ylM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3568d04cc75b02-IST'
+  },
+  requestID: 'req_011CZVCN6oXWPD523y4ervFN',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCP2aJZWGxpuiLYQQSY"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:54:31 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCP2aJZWGxpuiLYQQSY',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=F__YrIUYHosi1tssO8GbY2HkcO1pBMfPHiZzrWHmrz4-1774688071.505607-1.0.1.1-sxm4OlIc4IuIGTJj2Lvwnpg_sSyuwUVY7Pc_txajDVc; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35691ee82c3a71-IST'
+  },
+  requestID: 'req_011CZVCP2aJZWGxpuiLYQQSY',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCPxtLK7SuZPLSiH3A9"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:54:44 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCPxtLK7SuZPLSiH3A9',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '19',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=21',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=b6Ezv2Igsl0oOt6bx5nxQA8eVM3pgrzFq8weNw4V5Mc-1774688084.2086594-1.0.1.1-AsNqb.zPWN.hNMiOiS_J1uq4gUrzhj96H7xn5MlIAw4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35696e4d8932af-IST'
+  },
+  requestID: 'req_011CZVCPxtLK7SuZPLSiH3A9',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCQutH9WAVty4XHj9JH"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:54:57 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCQutH9WAVty4XHj9JH',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=x8iRjCrKMGRgJQkPeh7BbyM0PG.H8UObhfi_49zuAmM-1774688097.0705092-1.0.1.1-nnCoP7897um0vb7i73LQTFSs5DHG5nm0h8mfVJLbW0s; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3569bea9f04957-IST'
+  },
+  requestID: 'req_011CZVCQutH9WAVty4XHj9JH',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCRvSnvRJJm4i1u7fri"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:55:10 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCRvSnvRJJm4i1u7fri',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '54',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=55',
+    'set-cookie': '_cfuvid=0.UBx4yL.MfVIIL497m0FHQgUtvLPHGk7btz6r48OUE-1774688110.763985-1.0.1.1-ZGbMCfcOPmZkwHiB2PPOtjZvsXEDyTgX.ot.wtMluj4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356a144f9c9cd2-IST'
+  },
+  requestID: 'req_011CZVCRvSnvRJJm4i1u7fri',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCSpzQRpRnrL2QyHc4e"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:55:23 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCSpzQRpRnrL2QyHc4e',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '19',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=20',
+    'set-cookie': '_cfuvid=lViQq6TNnSfReY.0.U6TllEZiHdxM_1oyo3Z_BE8Fdo-1774688123.0595725-1.0.1.1-wmFHcE8zkgY4I92UclNMxa.xuip9LjZXDdqKebganGI; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356a6118aae33e-IST'
+  },
+  requestID: 'req_011CZVCSpzQRpRnrL2QyHc4e',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCToYrsXPWppyMekbCv"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:55:36 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCToYrsXPWppyMekbCv',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '39',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=40',
+    'set-cookie': '_cfuvid=zlMnqvtkcJ1KrcoJaNHIMNwK7jwZ_UJftARtSEDkKZk-1774688136.287878-1.0.1.1-muCt4IkyNQwrtDUjqm2r5zcRdyVWRO2aPOpNmNF3FQc; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356ab3cf3236ee-IST'
+  },
+  requestID: 'req_011CZVCToYrsXPWppyMekbCv',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCUk4nf6CmpEkLVuqu9"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:55:49 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCUk4nf6CmpEkLVuqu9',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '31',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=33',
+    'set-cookie': '_cfuvid=ikfk3Tqxtpr3RAVQ39D75pfA_D6aBbCPhjjcjjNuFCk-1774688149.0373504-1.0.1.1-eZeEobCUBYUWHkJTKfe_5A_lUwr9vIfUdrKYfcuqX0s; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356b037829b1f0-IST'
+  },
+  requestID: 'req_011CZVCUk4nf6CmpEkLVuqu9',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCVmGFjSLQLFSZNCqC5"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:56:03 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCVmGFjSLQLFSZNCqC5',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '11',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=13',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=Dpezl0YZ6EY_9fplV2dNnkp68R5P2J8qxdYvZ1t43L0-1774688162.8853269-1.0.1.1-.ZCTGd0loZpi4pxAfATxpz94geAu6N26wQnfqpiy2Bw; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e356b5a0e6f50e8-IST'
+  },
+  requestID: 'req_011CZVCVmGFjSLQLFSZNCqC5',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCWfEtFdsrot7MfXQNy"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:56:15 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCWfEtFdsrot7MfXQNy',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=lTvDEDukK.unO0o_JWd7hjYgpetaf5ccyaceX_RuSuU-1774688175.041997-1.0.1.1-ztdm8UCWNZ8X3Gor.qGIrbZY35c8tLqkc3THticbH4w; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356ba60c0b3101-IST'
+  },
+  requestID: 'req_011CZVCWfEtFdsrot7MfXQNy',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCXdA9ctBrxjuYdqWx1"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:56:28 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCXdA9ctBrxjuYdqWx1',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '30',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=32',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=cW16WX0iLiFW3wAL0G9Vjc_cPjigvdgoqGX3RwCVmVA-1774688188.1200004-1.0.1.1-EoQTrmdj7_vAnnf0QDaVA0urSEoDVKqN4zaSu7aVMts; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e356bf7b853a393-IST'
+  },
+  requestID: 'req_011CZVCXdA9ctBrxjuYdqWx1',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCYbdQGJvArz231anu4"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:56:41 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCYbdQGJvArz231anu4',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=wJC1PWbGcOPOodfPw3.w40HVz18nfN78X._BtYJdSkE-1774688201.3209982-1.0.1.1-kUzGfCtfRIm6774l2tRe54YZC512pQyJVoZBWYOut3E; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356c4a4d96e31f-IST'
+  },
+  requestID: 'req_011CZVCYbdQGJvArz231anu4',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCZYE3FYZTFMY9nJXyZ"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:56:54 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCZYE3FYZTFMY9nJXyZ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=HgkdWdvmG8E6dbzuE2.kIZwHRyml8aSF6PwdXw25A9U-1774688214.1009235-1.0.1.1-2fLlWGk_HNmRZ9w18JBGTrKxG5UlLL7R3MUmw5nOUKY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356c9a29a3c546-IST'
+  },
+  requestID: 'req_011CZVCZYE3FYZTFMY9nJXyZ',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCaZwFhGbRyCRUPi7FK"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:57:08 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCaZwFhGbRyCRUPi7FK',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '533',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=535',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=dDFGKqxpXrOcheQK35kr0F46FAtcOWAa0ZC6vEm5iWY-1774688227.684233-1.0.1.1-Yb240USuwz8qsZbtBcLBdngIWmaxzzTq3aieLRAt2Ls; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e356cef08a57a05-IST'
+  },
+  requestID: 'req_011CZVCaZwFhGbRyCRUPi7FK',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCbbBCcZYsRzQkCRdRK"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:57:22 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCbbBCcZYsRzQkCRdRK',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=crdKFNwsA.e20VYUgPiOVi11xIKKkzViBUkCj5FPhUs-1774688241.9216192-1.0.1.1-pzvzSUQEQpHW3gDV9.XoVqwQCGL4DGhPHcCIwzCZicw; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356d480c056852-IST'
+  },
+  requestID: 'req_011CZVCbbBCcZYsRzQkCRdRK',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCcVomM7vQEk7TBqWTi"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:57:34 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCcVomM7vQEk7TBqWTi',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=ralvyH1xH17tNKHkkF2ElQ36H7C2o2HrhTb2Z2Iub8s-1774688254.2322378-1.0.1.1-g44mLXP0ReNzGa1bMIH2cPP9LFXkrnB9_Ykcz_RUhyE; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356d94fdffd5ef-IST'
+  },
+  requestID: 'req_011CZVCcVomM7vQEk7TBqWTi',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCdU6MfzF9RzQQ1eVMP"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:57:47 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCdU6MfzF9RzQQ1eVMP',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '41',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=43',
+    'set-cookie': '_cfuvid=lt29FFSh4l7gDxq.9USO8a579lKj26qPsLj.kYf6bbs-1774688267.396627-1.0.1.1-BUuJkCfH9vBD640Irh.SRLrCQy80Plk.x7glPCqBpwU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356de7397fe349-IST'
+  },
+  requestID: 'req_011CZVCdU6MfzF9RzQQ1eVMP',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCeQBjmGWneuGtHM8jp"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:58:00 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCeQBjmGWneuGtHM8jp',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=3IAlpQYjF.EMAea9snnQBhu2Z3_bRD9kCo2j2.59yWg-1774688280.0490017-1.0.1.1-Tnj3jHvsdB_LMmq9.hxHpjhs03l4rCccXTwNUKZ1C9M; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e356e364a464f71-IST'
+  },
+  requestID: 'req_011CZVCeQBjmGWneuGtHM8jp',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCfQpDNAiQNgT4T5n6u"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:58:13 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCfQpDNAiQNgT4T5n6u',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=82ah76l6w9Enk0eX8oGKsskjiLDo6WTG7ordFQcSBs4-1774688293.761803-1.0.1.1-5gGRajzzd.0wn9IYPyNDmtQ0_KXVNIeyf9Uh8qHrWZY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356e8c0d7c8e15-IST'
+  },
+  requestID: 'req_011CZVCfQpDNAiQNgT4T5n6u',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCgKs6878Mtgg3X8piD"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:58:26 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCgKs6878Mtgg3X8piD',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=7CXoZabaaCF1EfMURVBhTbuLOs2rBJj7EDDXXtRZhbo-1774688306.0627208-1.0.1.1-vGKsXN8bSX673dRZgW137MGuxZNokHcZPhibaCOuWEU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356ed8ecbfb737-IST'
+  },
+  requestID: 'req_011CZVCgKs6878Mtgg3X8piD',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVChGporrXzNWMqqZqR2"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:58:39 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVChGporrXzNWMqqZqR2',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=68axs0HSEj4IaxY4uSYrh4GUaXXunK6qn2XUb3kozvU-1774688319.0228405-1.0.1.1-eU2jteBAMv80sKaW.R06HU5zyqA3h_mlu7LA8OH.Gow; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356f29e825d5f7-IST'
+  },
+  requestID: 'req_011CZVChGporrXzNWMqqZqR2',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCiFcQYv57Z5n3vuEAC"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:58:52 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCiFcQYv57Z5n3vuEAC',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=R5xKt.Apfhswu9acM6KtimtiOxdlNh9BQNu2rCtMUD4-1774688332.3068466-1.0.1.1-SUdqp41Fr.HolF36MehUoNiE92kz0GRpLjfi509yWIU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356f7cef9a2931-IST'
+  },
+  requestID: 'req_011CZVCiFcQYv57Z5n3vuEAC',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCjF7vHhDchxmJmptMc"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:59:05 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCjF7vHhDchxmJmptMc',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=b4NbrXujmGej0pfgc9YGsPXYvDayun0ZZjWkkHSQyMc-1774688345.7585936-1.0.1.1-6mNRqIjEPIORjzddk8SWCOOSGVOWMAVRFORzIDpBXDY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e356fd0f8f4d612-IST'
+  },
+  requestID: 'req_011CZVCjF7vHhDchxmJmptMc',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCkAkGk6gT6s9Kb5ZMh"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:59:18 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCkAkGk6gT6s9Kb5ZMh',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '93',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=94',
+    'set-cookie': '_cfuvid=IIXLSGw0rUfS7Sxt.CJutboXw_2qxzgWZHbyWv5T_.A-1774688358.2892878-1.0.1.1-dXfK7b_zdNfKR5MmmL1jBCLkNvfUu7U.iGDmxBeebmE; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35701f4da2d569-IST'
+  },
+  requestID: 'req_011CZVCkAkGk6gT6s9Kb5ZMh',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCm7g1DyxyG2fSUWdjy"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:59:31 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCm7g1DyxyG2fSUWdjy',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '13',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=mFfYLp.RjwLBdaNm96SvR8lgEM7JrwoMuNaJ0qB81b8-1774688371.1448462-1.0.1.1-Lh50H.FYeeZcN_RsSg2ylzUFF4VDAdAgLfJyfOg7pv0; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35706fad0ad064-IST'
+  },
+  requestID: 'req_011CZVCm7g1DyxyG2fSUWdjy',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCn5bX3unJeuE7BzBhL"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:59:44 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCn5bX3unJeuE7BzBhL',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=25ckW9Q5Y03rwr3rET5ZqFLTfYndMuuuVfBWraIXdvY-1774688384.2263436-1.0.1.1-fynZDk0Ia5era2RXdKZ68fg9hewz7JAdJB3_ECR5yLM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3570c1683f3f36-IST'
+  },
+  requestID: 'req_011CZVCn5bX3unJeuE7BzBhL',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCo5FxF2GxGvDMFyWjh"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 08:59:57 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCo5FxF2GxGvDMFyWjh',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=15',
+    'set-cookie': '_cfuvid=rivjffx5FAUFQt08kufGV93GHQ5QKDngCyhAc.X7tB0-1774688397.7128742-1.0.1.1-_3v.zhNA2msGl2pizb05qiu_5SiHDhyoEC4XfJnWGSs; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357115b91acc7d-IST'
+  },
+  requestID: 'req_011CZVCo5FxF2GxGvDMFyWjh',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCozHLRPc1enN6HD64S"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:00:10 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCozHLRPc1enN6HD64S',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=6KXJABAsws_ItxuecQ..7i9UxzMrSxheFROlliLRlU0-1774688410.1174285-1.0.1.1-9hSk7uOXUwkLvkPUxARCKMPjU3yoWasdRj5E7HhHitg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3571633f05cdd4-IST'
+  },
+  requestID: 'req_011CZVCozHLRPc1enN6HD64S',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCq13WHyR9nX4XMCRkx"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:00:24 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCq13WHyR9nX4XMCRkx',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=rUADk8z4xawQdwo5Mo9kFeOPiVec9kD1NalQUX8x3K8-1774688423.8616555-1.0.1.1-ImfyZoxKny27rGRXO2fOv13Ry9hcDjS6WffHz.OhlTg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3571b9298b576b-IST'
+  },
+  requestID: 'req_011CZVCq13WHyR9nX4XMCRkx',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCqudLwU3akx79av9LG"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:00:36 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCqudLwU3akx79av9LG',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '25',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=26',
+    'set-cookie': '_cfuvid=X3V8orL0NQpCMaiHh6cVClHeQufmvUyiw9JNnJG7eh8-1774688436.1588466-1.0.1.1-rqm.E.ti6C1HueWN7wJOn9hisM0l25ipFCOyNYvpED8; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357205fc7389db-IST'
+  },
+  requestID: 'req_011CZVCqudLwU3akx79av9LG',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCrs84WY239u2KF3bws"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:00:49 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCrs84WY239u2KF3bws',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=scS_nVrAUEAqdWH0lVQZKHG55pLW06aK.7ld5eitR7k-1774688449.1382601-1.0.1.1-gCimKOqMTswl1cIt0_j0gVE2ue0c9laNWL_.6aMDRlM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35725719caa5cc-IST'
+  },
+  requestID: 'req_011CZVCrs84WY239u2KF3bws',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCsrqURHLx6wAFzxoxv"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:01:02 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCsrqURHLx6wAFzxoxv',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '118',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=120',
+    'set-cookie': '_cfuvid=umIjBtbChVqlErnH5aauxL5BEWphVuzNpoe7u.OtPvA-1774688462.5975108-1.0.1.1-sgHHHwI.2BearzFxk71mAJlzy.xDqOdcGkW0LxbYPEU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3572ab3acde345-IST'
+  },
+  requestID: 'req_011CZVCsrqURHLx6wAFzxoxv',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCtqnkSAZ3UYW7fYayT"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:01:16 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCtqnkSAZ3UYW7fYayT',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '12',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=14',
+    'set-cookie': '_cfuvid=ZM0vrTg9RLnFGJilnYlvUKeB3eFmh7yCkUqL_TlmdJ4-1774688475.960001-1.0.1.1-S91KG5gbeMPMV3wRUHGY_tSZvhkSEgLszJ.eKdylM.g; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3572feb946609e-IST'
+  },
+  requestID: 'req_011CZVCtqnkSAZ3UYW7fYayT',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCuqJm2sHymQpbCoYrb"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:01:29 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCuqJm2sHymQpbCoYrb',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '18',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=20',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=vXgPEaKYudpSY5Osqzgh3UomheoyAlUH0EyMf71FVe4-1774688489.412963-1.0.1.1-TaJfPY.1DihVveMd8uGv0O5WLhb5eYR0E437lpJtbUU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e357352d8cd13c6-IST'
+  },
+  requestID: 'req_011CZVCuqJm2sHymQpbCoYrb',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCvmpSMtDoB34TwceGx"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:01:42 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCvmpSMtDoB34TwceGx',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '34',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=36',
+    'set-cookie': '_cfuvid=jTucn5VlBc4z3eqTvgF_dgyFv4TR.uWj_INdHwLXiSQ-1774688502.1600833-1.0.1.1-WcUd1r8UgdYhKP_xQOjtiYeHVAjaX5BD4VenjgLbhRo; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3573a2780489de-IST'
+  },
+  requestID: 'req_011CZVCvmpSMtDoB34TwceGx',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCwjgUoWAnkaMRsbqoQ"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:01:55 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCwjgUoWAnkaMRsbqoQ',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '31',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=33',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=AFQio46vClX6rqpfE54OieYzfMHJTtBj6dyA2AaeIYw-1774688515.2266414-1.0.1.1-ZDBkJrJZ27gO...av3QvwWMbu4lVznbm9ifwqxsMU_g; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3573f42f41d21d-IST'
+  },
+  requestID: 'req_011CZVCwjgUoWAnkaMRsbqoQ',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCxnvy4ZBqDbLeNCG2n"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:02:09 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCxnvy4ZBqDbLeNCG2n',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '51',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=52',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=bqZZdjLnpGed.EyC0R_vze6qovX0YiFiBTO8uwniILk-1774688529.5313187-1.0.1.1-EKW4mX3UC7ar9MhIHQl8ub2hf1XZNXzf532dwE5J00g; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35744d9e9da64d-IST'
+  },
+  requestID: 'req_011CZVCxnvy4ZBqDbLeNCG2n',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCyituFBUu5DjvtPUzF"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:02:22 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCyituFBUu5DjvtPUzF',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=ybuUbpn6u_S2SDJfJ5pYpekBX5.G4PL_bo2FkOASDJw-1774688542.1773546-1.0.1.1-lMapMBpuWa5xN.5NzTyyrdzO5UVlHVnKVC23f44DhkQ; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35749c9b58c0c5-IST'
+  },
+  requestID: 'req_011CZVCyituFBUu5DjvtPUzF',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVCzgGRtBGwesYWT3L4t"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:02:35 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVCzgGRtBGwesYWT3L4t',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '16',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=vnW_QTJyqaREMi5yny3nI7n5SlhPfzx_F6O7SGKoDUU-1774688555.1245925-1.0.1.1-c0Sv9iRBV7Fr.XSiaC2MYqAnBR0StU37394NMPtR27A; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3574ed88848836-IST'
+  },
+  requestID: 'req_011CZVCzgGRtBGwesYWT3L4t',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD1dgBMtmTv3xjuBnXC"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:02:48 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD1dgBMtmTv3xjuBnXC',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '51',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=53',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=4mFom0SSPoa3CiTNsrFi5.59kYMVNhXCZ9rCrqvczxM-1774688568.0852325-1.0.1.1-f2Eitd40Tk2q3ppU3OH_lO2KDlw3Ygm0yiOgFYO.2Yo; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35753e8cd913c6-IST'
+  },
+  requestID: 'req_011CZVD1dgBMtmTv3xjuBnXC',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD2efk2QkbT89A1qaUf"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:03:02 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD2efk2QkbT89A1qaUf',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=pZXzUqfE_f_g0e1nWsQzUVYbXKY91slY3iEbdrXAcU4-1774688581.884041-1.0.1.1-bg48jZ_Sg_daLOl4nBkDi8N82.S11pkpSiVWTznlTJU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357594ca9c8b96-IST'
+  },
+  requestID: 'req_011CZVD2efk2QkbT89A1qaUf',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD3b4URRu2StsywNTyn"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:03:14 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD3b4URRu2StsywNTyn',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=qlzKTaJ_cD.CYQx1GjZThvOUn7Qv4oiv9GSr.zIPoV4-1774688594.6081114-1.0.1.1-fqzgxqPiBQH5t.hgbOzbGaWWwMwkakN_0rdxFVu1oMg; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3575e44ed58b96-IST'
+  },
+  requestID: 'req_011CZVD3b4URRu2StsywNTyn',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD4Wtypj3DWJ8PKLMLf"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:03:27 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD4Wtypj3DWJ8PKLMLf',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=Ie31AdhohWVVgkjH0Z07sDrKWMUt6DZpJvwA0cscxtg-1774688607.2000868-1.0.1.1-hGg4j0FeooLroYbbt_stUNwfAGNF2ES3rWjzXb7.gy4; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e357632fb028902-IST'
+  },
+  requestID: 'req_011CZVD4Wtypj3DWJ8PKLMLf',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD5UsU8GAfXGdtSCDRt"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:03:40 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD5UsU8GAfXGdtSCDRt',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '214',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=218',
+    'set-cookie': '_cfuvid=aE2xIDyAaYcJfcAZ5At3yPKVS_FsjNVZsTZCVyqV5tY-1774688620.2773046-1.0.1.1-DaG5D4z3WjLetzL0vSbHP1Xx8.R.sQVB8C2iulw9_2I; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357684be7974c7-IST'
+  },
+  requestID: 'req_011CZVD5UsU8GAfXGdtSCDRt',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD6RiVP4bJNWbC6nMLS"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:03:53 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD6RiVP4bJNWbC6nMLS',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '24',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=26',
+    'set-cookie': '_cfuvid=xuTr1TyjTlHn4gWWSQOwvpkK9e8FGqh66eCrzJsj0Ok-1774688633.115729-1.0.1.1-61ULeKAQekHFJfQSuh6oalLwvm.ya_QG8IkUfbRdeCY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3576d4ffac1270-IST'
+  },
+  requestID: 'req_011CZVD6RiVP4bJNWbC6nMLS',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD7PS6e2AwKTZZzgutK"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:04:06 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD7PS6e2AwKTZZzgutK',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '39',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=41',
+    'set-cookie': '_cfuvid=d4dw0EeMiLW2AGYwTpruAkK8AEkEo1kdYfNrWayyOTM-1774688646.1504316-1.0.1.1-B5h_ynXPdvdnq59BUC.8hzlhGK1zP3q2MolH2O.AinU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3577266a9335c7-IST'
+  },
+  requestID: 'req_011CZVD7PS6e2AwKTZZzgutK',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD8RbMGVKWAtWYQ22m3"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:04:20 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD8RbMGVKWAtWYQ22m3',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'set-cookie': '_cfuvid=LX_ia57Qpa_YJ2hJ2WZXzdY7DIzEClusUm9gaZ__UZk-1774688660.2223947-1.0.1.1-ceQttdnBcm0ndfGTI18X.27U5pky9EsOqwvTccMcv6A; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35777e6f1f3101-IST'
+  },
+  requestID: 'req_011CZVD8RbMGVKWAtWYQ22m3',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVD9NueZcAbJN7gsq3uz"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:04:33 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVD9NueZcAbJN7gsq3uz',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '14',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=IU66pde9J8rbFv4AB8vy6EcR6eruaK5sBdofyidFqHA-1774688673.161084-1.0.1.1-B_n4PuT5EFtb9FNTlU2je4uycViwiMYewOX5KKMJm1U; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3577cf3d9074c7-IST'
+  },
+  requestID: 'req_011CZVD9NueZcAbJN7gsq3uz',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDAM5no5ocfi8RNV45f"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:04:46 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDAM5no5ocfi8RNV45f',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '47',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=48',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=JZ00RimxgCpQZWD1cIrbNVFMFiJOvj0x53KmviUb2og-1774688686.287201-1.0.1.1-knlUXMA2MPKxlsOVm0p5U8BBPR.wXdIHYNbIzc_fvZU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e3578214f85c154-IST'
+  },
+  requestID: 'req_011CZVDAM5no5ocfi8RNV45f',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDBJmQzEmkzmSsGX6bh"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:04:59 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDBJmQzEmkzmSsGX6bh',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=17',
+    'set-cookie': '_cfuvid=thuCFGBwjDIiIDRt8Gd8FEIohAbidDNVBDUmtb_4qy8-1774688699.3230927-1.0.1.1-grmPqASwEH.r0Ke_43Oc.SnFbGWfufUY5g0GvCcVR.c; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357872cbd2e31f-IST'
+  },
+  requestID: 'req_011CZVDBJmQzEmkzmSsGX6bh',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDCKuu6mXK8GJPpnFgG"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:05:13 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDCKuu6mXK8GJPpnFgG',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=19',
+    'set-cookie': '_cfuvid=j8x9MclnI7pBBkOVp6T97HD.ts2Aeaw0G6Nq.sDr7qQ-1774688713.15679-1.0.1.1-4eZywN6YQeRZxheULS39ZVE_inWuprFNIr2VRl4gHPk; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3578c93b9c11bf-IST'
+  },
+  requestID: 'req_011CZVDCKuu6mXK8GJPpnFgG',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDDJpCabgnyvA6qBkSE"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:05:26 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDDJpCabgnyvA6qBkSE',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '56',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=58',
+    'set-cookie': '_cfuvid=cuXOmftH4h5Yn6xqGufh7EYyZFTFDZ8bccPHa2V4GnQ-1774688726.4485364-1.0.1.1-TF_oh_KJWTQ3P2jrAn9G.5l1leEj6L2dqZP7rBJhSpU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e35791c4a08355c-IST'
+  },
+  requestID: 'req_011CZVDDJpCabgnyvA6qBkSE',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDEFDS2GpftAsM1LKDX"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:05:39 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDEFDS2GpftAsM1LKDX',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '183',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=184',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=w3enOKY7hRzZp7ZbPmj3KHsORweBjeOxx3Clenw9YIM-1774688739.170792-1.0.1.1-vIEyBIEWwL_PMm33QrGYnrwEVOzz5SABj6w6CqiLX1M; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e35796bd843a64d-IST'
+  },
+  requestID: 'req_011CZVDEFDS2GpftAsM1LKDX',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDFDR4Zw3V4bRy9iE2Z"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:05:52 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDFDR4Zw3V4bRy9iE2Z',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '12',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=13',
+    'set-cookie': '_cfuvid=UIIV.S5FfkJSAhzJeDDE8vnxjAZKiad13x3EhU07IqA-1774688752.3353024-1.0.1.1-ejISeVBL4Rua7ycDUoKy2TAw9wVLAeWSG3SGz_vGmDk; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e3579be1d36d2a3-IST'
+  },
+  requestID: 'req_011CZVDFDR4Zw3V4bRy9iE2Z',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDGDXHhQtg8Q8nheXkW"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:06:06 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDGDXHhQtg8Q8nheXkW',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '52',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=55',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=24L52qpa4_O2mboaihlZ0IgPnuWZSio3JJHGNVnTEqs-1774688765.8932114-1.0.1.1-Vc_sYiAQZRZY4JKgqMT5pLtUE8DnilU.sd7ik_clLNU; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e357a12dea3e00b-IST'
+  },
+  requestID: 'req_011CZVDGDXHhQtg8Q8nheXkW',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDHCFB4uaXbzFQD75ND"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:06:19 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDHCFB4uaXbzFQD75ND',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '148',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=149',
+    'set-cookie': '_cfuvid=rfEQi1X2KmhdK91_YnwDp8VWmP5HTNBbkWqctqhyI18-1774688779.1711848-1.0.1.1-IoGY88skNnsYxnY.3Jno0e4N5LQjbadAvrnfQDyvk3A; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357a65d886237e-IST'
+  },
+  requestID: 'req_011CZVDHCFB4uaXbzFQD75ND',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDJApsn7KsA8QwAzjF7"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:06:32 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDJApsn7KsA8QwAzjF7',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '39',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=41',
+    'set-cookie': '_cfuvid=P01v5YYeok2QXTFS6DCSAzCCuQiFx3KcQIFmX.rHZVA-1774688792.425141-1.0.1.1-r9zEfRf2_ThyRgwGewTnUm0XgXf8IUlR1h4aKryYXiM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357ab8a91bd60f-IST'
+  },
+  requestID: 'req_011CZVDJApsn7KsA8QwAzjF7',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDK7S1NfBk2jXaeBdZa"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:06:45 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDK7S1NfBk2jXaeBdZa',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '17',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=18',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '_cfuvid=k7g69U8xeFT6rOxJgGQYPedTDNueafB66y4dtLZH2Fc-1774688805.2006383-1.0.1.1-Xuinx4mS700R3z6iPk2QUaXpWWjqRg3gOkZPaSBRvO0; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'x-robots-tag': 'none',
+    'cf-ray': '9e357b0878bd8902-IST'
+  },
+  requestID: 'req_011CZVDK7S1NfBk2jXaeBdZa',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDL4moFAtozsy2UfGZB"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:06:58 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDL4moFAtozsy2UfGZB',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '19',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=21',
+    'set-cookie': '_cfuvid=QBCk7OAL_vlTwQN5B2SjVK9tFRdSdExkcxK74J7tE8Y-1774688818.144136-1.0.1.1-tyMi3fQUsg5x7bidqVlnP43aFj9Rie83v1yDAG0YnsM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357b5969070d26-IST'
+  },
+  requestID: 'req_011CZVDL4moFAtozsy2UfGZB',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDM2ZsZDcSyQyxoTDnW"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:07:11 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDM2ZsZDcSyQyxoTDnW',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '15',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=16',
+    'set-cookie': '_cfuvid=eK_B3ZPvhQ_4NnmCOKSI9vC.VYvdETjXrtvv4HBnBNY-1774688831.194331-1.0.1.1-JOjukdZ6n8uqaxSPhwqVapVg7tXce2wiNRsBFqpW6wI; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357baafcd15b08-IST'
+  },
+  requestID: 'req_011CZVDM2ZsZDcSyQyxoTDnW',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDN3C6fSX9u7egK2qhk"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:07:25 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDN3C6fSX9u7egK2qhk',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '26',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=27',
+    'set-cookie': '_cfuvid=IbGVmJoDJOTF.mS8kvsgdqS04ekvQ24jlnOgRvmnNyA-1774688844.905075-1.0.1.1-J5uwVBHjx2L18Y7g9_qIgx5rmAF1Jy8DTh37EiNjsH0; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357c00a8edd60b-IST'
+  },
+  requestID: 'req_011CZVDN3C6fSX9u7egK2qhk',
+  error: [Object]
+}
+[apex-llm] Market commentary failed: Error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011CZVDNyeoXS2hh9u5MyUS2"}
+    at c.generate (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:1:16262)
+    at tt.makeStatusError (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:4742)
+    at tt.makeRequest (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:28:7970)
+    at async tf (C:\Users\daram\apex\.next\server\chunks\src_225d1512._.js:87:7)
+    at async M (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:11568)
+    at async O (C:\Users\daram\apex\.next\server\chunks\src_presentation_api_signals_ts_a186316b._.js:1:13091)
+    at async E (C:\Users\daram\apex\.next\server\chunks\[root-of-the-server]__b66fdb93._.js:1:6919) {
+  status: 400,
+  headers: Headers {
+    date: 'Sat, 28 Mar 2026 09:07:37 GMT',
+    'content-type': 'application/json',
+    'transfer-encoding': 'chunked',
+    connection: 'keep-alive',
+    'x-should-retry': 'false',
+    'request-id': 'req_011CZVDNyeoXS2hh9u5MyUS2',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'anthropic-organization-id': 'e6a060d3-415c-4aa5-87d5-9f5be4b8db93',
+    server: 'cloudflare',
+    'x-envoy-upstream-service-time': '64',
+    'content-encoding': 'gzip',
+    vary: 'Accept-Encoding',
+    'server-timing': 'x-originResponse;dur=66',
+    'set-cookie': '_cfuvid=AVCLfX.dBEhBxkTHxjzeXqepIDA94e.5pY9TCZyzmeY-1774688857.6429071-1.0.1.1-ZwI_5jjWE78AXwm6xkYXggrCNctPn7kOm3B9yedM2tE; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.anthropic.com',
+    'x-robots-tag': 'none',
+    'cf-cache-status': 'DYNAMIC',
+    'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
+    'cf-ray': '9e357c50480fe342-IST'
+  },
+  requestID: 'req_011CZVDNyeoXS2hh9u5MyUS2',
+  error: [Object]
+}

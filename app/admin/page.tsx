@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
+import { RunControlPanel } from "@/src/presentation/dashboard/components/overview/RunControlPanel";
 
 interface Stats {
   users: { total: number; pending: number; activeToday: number; banned: number };
@@ -11,24 +13,24 @@ interface Stats {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING:   "text-yellow-400 bg-yellow-400/10",
-  APPROVED:  "text-green-400 bg-green-400/10",
-  SUSPENDED: "text-orange-400 bg-orange-400/10",
-  BANNED:    "text-red-400 bg-red-400/10",
+  PENDING: "text-yellow-300 bg-yellow-300/10 border-yellow-300/20",
+  APPROVED: "text-[var(--apex-status-active-text)] bg-[var(--apex-status-active-bg)] border-[var(--apex-status-active-border)]",
+  SUSPENDED: "text-orange-300 bg-orange-300/10 border-orange-300/20",
+  BANNED: "text-[var(--apex-status-blocked-text)] bg-[var(--apex-status-blocked-bg)] border-[var(--apex-status-blocked-border)]",
 };
 
 const RANK_COLORS: Record<string, string> = {
-  S: "text-amber-300",
-  A: "text-emerald-400",
-  B: "text-sky-400",
+  S: "text-[var(--apex-grade-s)]",
+  A: "text-[var(--apex-grade-a)]",
+  B: "text-[var(--apex-grade-b)]",
 };
 
 function StatCard({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
   return (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-5">
-      <p className="text-xs text-zinc-500 tracking-widest uppercase mb-1">{label}</p>
-      <p className="text-3xl font-bold text-zinc-100">{value}</p>
-      {sub && <p className="text-xs text-zinc-600 mt-1">{sub}</p>}
+    <div className="apex-admin-kpi">
+      <p className="apex-admin-kpi-label">{label}</p>
+      <p className="apex-admin-kpi-value">{value}</p>
+      {sub ? <p className="apex-admin-kpi-detail">{sub}</p> : null}
     </div>
   );
 }
@@ -54,100 +56,118 @@ export default function AdminOverview() {
   }, []);
 
   if (loading) {
-    return <div className="text-zinc-500 text-sm">Loading...</div>;
+    return <div className="apex-empty-state">Loading admin overview…</div>;
   }
+
   if (!stats) {
-    return <div className="text-red-400 text-sm">{error ?? "Failed to load stats."}</div>;
+    return (
+      <div className="apex-stack-card border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-sm text-[var(--apex-status-blocked-text)]">
+        {error ?? "Failed to load stats."}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-bold text-zinc-100 mb-1">Overview</h1>
-        <p className="text-xs text-zinc-500">System health and recent activity</p>
-      </div>
-
-      {/* User stats */}
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Users</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Users"       value={stats.users.total} />
-          <StatCard label="Pending Approval"  value={stats.users.pending}    sub="Awaiting review" />
-          <StatCard label="Active Today"       value={stats.users.activeToday} sub="Logged in today" />
-          <StatCard label="Banned"             value={stats.users.banned} />
+      <section className="apex-surface px-6 py-6">
+        <div className="apex-toolbar gap-6">
+          <div>
+            <p className="apex-eyebrow">Control Overview</p>
+            <h2 className="mt-3 font-[var(--apex-font-display)] text-[28px] font-semibold tracking-[-0.05em] text-[var(--apex-text-primary)]">
+              Runtime health and operator activity
+            </h2>
+            <p className="mt-3 max-w-[760px] text-[14px] text-[var(--apex-text-secondary)]">
+              Unified visibility for user approvals, runtime signal quality, and the latest control-surface activity.
+            </p>
+          </div>
+          <div className="apex-stack-card min-w-[220px]">
+            <p className="apex-admin-kpi-label">Operator Snapshot</p>
+            <p className="mt-3 font-[var(--apex-font-display)] text-[28px] font-semibold tracking-[-0.06em] text-[var(--apex-text-primary)]">
+              {stats.users.activeToday}
+            </p>
+            <p className="mt-2 text-[12px] text-[var(--apex-text-tertiary)]">Active today across the private operator surface.</p>
+          </div>
         </div>
       </section>
 
-      {/* Signal stats */}
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Signals</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <RunControlPanel adminMode />
+
+      <section className="space-y-4">
+        <div>
+          <p className="apex-eyebrow">User Signals</p>
+          <h3 className="mt-2 text-[18px] font-semibold tracking-[-0.03em] text-[var(--apex-text-primary)]">Core metrics</h3>
+        </div>
+        <div className="apex-admin-kpi-grid">
+          <StatCard label="Total Users" value={stats.users.total} />
+          <StatCard label="Pending Approval" value={stats.users.pending} sub="Awaiting review" />
+          <StatCard label="Active Today" value={stats.users.activeToday} sub="Live sessions in the last day" />
+          <StatCard label="Banned" value={stats.users.banned} />
           <StatCard label="Total Signals" value={stats.signals.total} />
-          <StatCard label="S Rank"         value={stats.signals.s} sub="Score ≥85" />
-          <StatCard label="A Rank"         value={stats.signals.a} sub="Score 70-84" />
-          <StatCard label="B Rank"         value={stats.signals.b} sub="Score 55-69" />
+          <StatCard label="S Rank" value={stats.signals.s} sub="Score ≥ 85" />
+          <StatCard label="A Rank" value={stats.signals.a} sub="Score 70–84" />
+          <StatCard label="B Rank" value={stats.signals.b} sub="Score 55–69" />
         </div>
       </section>
 
-      {/* Recent signups */}
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Recent Signups</h2>
-        <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+      <section className="grid gap-6 xl:grid-cols-2">
+        <div className="apex-table-shell px-6 py-5">
+          <div className="mb-4">
+            <p className="apex-eyebrow">Recent Signups</p>
+            <h3 className="mt-2 text-[18px] font-semibold tracking-[-0.03em] text-[var(--apex-text-primary)]">New user intake</h3>
+          </div>
+          <table className="apex-table">
             <thead>
-              <tr className="border-b border-zinc-800 text-zinc-500 text-xs">
-                <th className="text-left px-4 py-3">Name</th>
-                <th className="text-left px-4 py-3">Email</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">Joined</th>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Joined</th>
               </tr>
             </thead>
             <tbody>
-              {stats.recentUsers.map(u => (
-                <tr key={u.id} className="border-b border-zinc-900 hover:bg-zinc-900/50">
-                  <td className="px-4 py-3 text-zinc-100">{u.name ?? "—"}</td>
-                  <td className="px-4 py-3 text-zinc-400">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded font-medium ${STATUS_COLORS[u.status] ?? "text-zinc-400"}`}>
-                      {u.status}
+              {stats.recentUsers.map(user => (
+                <tr key={user.id}>
+                  <td className="font-[var(--apex-font-body)] text-[var(--apex-text-primary)]">{user.name ?? "—"}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${STATUS_COLORS[user.status] ?? "text-[var(--apex-text-secondary)] border-[var(--apex-border-default)]"}`}>
+                      {user.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500 text-xs">
-                    {new Date(u.createdAt).toLocaleDateString()}
-                  </td>
+                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
 
-      {/* Recent signals */}
-      <section>
-        <h2 className="text-xs font-semibold tracking-widest text-zinc-500 uppercase mb-3">Recent Signals</h2>
-        <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="apex-table-shell px-6 py-5">
+          <div className="mb-4">
+            <p className="apex-eyebrow">Recent Signals</p>
+            <h3 className="mt-2 text-[18px] font-semibold tracking-[-0.03em] text-[var(--apex-text-primary)]">Live runtime output</h3>
+          </div>
+          <table className="apex-table">
             <thead>
-              <tr className="border-b border-zinc-800 text-zinc-500 text-xs">
-                <th className="text-left px-4 py-3">Asset</th>
-                <th className="text-left px-4 py-3">Direction</th>
-                <th className="text-left px-4 py-3">Rank</th>
-                <th className="text-left px-4 py-3">Score</th>
-                <th className="text-left px-4 py-3">Generated</th>
+              <tr>
+                <th>Asset</th>
+                <th>Direction</th>
+                <th>Rank</th>
+                <th>Score</th>
+                <th>Generated</th>
               </tr>
             </thead>
             <tbody>
-              {stats.recentSignals.map(s => (
-                <tr key={s.id} className="border-b border-zinc-900 hover:bg-zinc-900/50">
-                  <td className="px-4 py-3 font-mono text-zinc-100">{s.asset}</td>
-                  <td className={`px-4 py-3 font-medium ${s.direction === "LONG" ? "text-green-400" : "text-red-400"}`}>
-                    {s.direction}
+              {stats.recentSignals.map(signal => (
+                <tr key={signal.id}>
+                  <td className="font-[var(--apex-font-mono)] text-[var(--apex-text-primary)]">{signal.asset}</td>
+                  <td className={signal.direction === "LONG" ? "text-[var(--apex-status-active-text)]" : "text-[var(--apex-status-blocked-text)]"}>
+                    {signal.direction}
                   </td>
-                  <td className={`px-4 py-3 font-bold ${RANK_COLORS[s.rank] ?? "text-zinc-400"}`}>{s.rank}</td>
-                  <td className="px-4 py-3 text-zinc-400">{s.total}/100</td>
-                  <td className="px-4 py-3 text-zinc-500 text-xs">
-                    {new Date(s.createdAt).toLocaleString()}
+                  <td className={`font-[var(--apex-font-display)] text-[15px] ${RANK_COLORS[signal.rank] ?? "text-[var(--apex-text-secondary)]"}`}>
+                    {signal.rank}
                   </td>
+                  <td>{signal.total}/100</td>
+                  <td>{new Date(signal.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

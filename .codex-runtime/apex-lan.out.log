@@ -1,0 +1,7 @@
+▲ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+
+✓ Starting...
+✓ Ready in 554ms
+{"ts":"2026-03-28T08:40:56.817Z","level":"info","module":"runtime","message":"APEX market scope configured","active_symbols":["EURUSD","GBPUSD","USDJPY","EURJPY","AUDUSD","NZDUSD","USDCHF","USDCAD"],"primary_entry_style":"trend_pullback","enabled_entry_styles":["trend_pullback","session_breakout","range_reversal"],"disabled_entry_styles":[],"active_pods":["trend","breakout","mean-reversion","volatility-regime","execution-advisory"],"skipped_symbols":[],"skipped_pods":[]}

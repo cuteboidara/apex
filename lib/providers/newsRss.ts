@@ -22,7 +22,7 @@ type FeedDefinition = {
 
 const REQUEST_TIMEOUT_MS = 8_000;
 const RSS_USER_AGENT = "APEX/1.0 (+https://apex1-wine.vercel.app; rss-monitor)";
-const ALL_ASSETS = ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAGUSD", "BTCUSDT", "ETHUSDT"];
+const ALL_ASSETS = ["EURUSD", "GBPUSD", "USDJPY", "XAGUSD", "BTCUSDT", "ETHUSDT"];
 
 const RSS_FEEDS: FeedDefinition[] = [
   { source: "Reuters", url: "https://feeds.reuters.com/reuters/businessNews" },
@@ -97,7 +97,6 @@ const QUERY_ALIASES: Record<string, string[]> = {
   ETH: ["eth", "ethereum", "crypto", "cryptocurrency", "digital asset"],
   ETHUSDT: ["eth", "ethereum", "crypto", "cryptocurrency", "digital asset"],
   GOLD: ["gold", "xau", "bullion", "precious metal", "commodity"],
-  XAUUSD: ["gold", "xau", "bullion", "precious metal", "commodity"],
   SILVER: ["silver", "xag", "precious metal", "commodity"],
   XAGUSD: ["silver", "xag", "precious metal", "commodity"],
   EURUSD: ["eur", "euro", "ecb", "eurozone", "forex", "currency"],
@@ -205,7 +204,6 @@ export function getAffectedAssets(text: string): string[] {
   if (/\bgbp\b|pound|sterling|\bboe\b|bank of england/.test(normalized)) assets.add("GBPUSD");
   if (/\bjpy\b|\byen\b|\bboj\b|bank of japan/.test(normalized)) assets.add("USDJPY");
   if (/\bgold\b|\bxau\b|bullion|precious metal/.test(normalized)) {
-    assets.add("XAUUSD");
     assets.add("XAGUSD");
   }
   if (/\bsilver\b|\bxag\b/.test(normalized)) assets.add("XAGUSD");

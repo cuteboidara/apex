@@ -1,27 +1,27 @@
 "use client";
 
-import { Suspense, useState, FormEvent } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { resolveSignInErrorMessage } from "@/src/lib/authErrors";
 
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/account";
 
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
     setError("");
     setLoading(true);
 
     const result = await signIn("credentials", {
-      email:    email.trim(),
+      email: email.trim(),
       password,
       redirect: false,
     });
@@ -29,57 +29,50 @@ function SignInForm() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      setError(resolveSignInErrorMessage(result.error));
       return;
     }
+
     router.push(callbackUrl);
     router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1.5">
-          Email
-        </label>
+        <label className="apex-form-label">Email Address</label>
         <input
           type="email"
           autoComplete="email"
           required
           value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-700 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-colors"
-          placeholder="you@example.com"
+          onChange={event => setEmail(event.target.value)}
+          placeholder="operator@apex.local"
+          className="apex-form-input"
         />
       </div>
 
       <div>
-        <label className="block text-[10px] font-bold tracking-widest uppercase text-zinc-500 mb-1.5">
-          Password
-        </label>
+        <label className="apex-form-label">Password</label>
         <input
           type="password"
           autoComplete="current-password"
           required
           value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full bg-black border border-zinc-800 rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-700 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-colors"
+          onChange={event => setPassword(event.target.value)}
           placeholder="••••••••"
+          className="apex-form-input"
         />
       </div>
 
-      {error && (
-        <p className="text-[11px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+      {error ? (
+        <div className="apex-stack-card border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] px-4 py-3 text-[13px] text-[var(--apex-status-blocked-text)]">
           {error}
-        </p>
-      )}
+        </div>
+      ) : null}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-bold tracking-widest uppercase py-2.5 rounded-lg transition-colors mt-2"
-      >
-        {loading ? "Signing in…" : "Sign In"}
+      <button type="submit" disabled={loading} className="apex-button apex-button-amber w-full disabled:opacity-60">
+        {loading ? "Signing In" : "Sign In"}
       </button>
     </form>
   );
@@ -87,35 +80,80 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="grid min-h-screen bg-transparent lg:grid-cols-[1.15fr_0.95fr]">
+      <section className="relative hidden overflow-hidden border-r border-[var(--apex-border-subtle)] px-12 py-14 lg:block xl:px-16">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 16% 18%, rgba(141,244,206,0.18), transparent 34%), radial-gradient(circle at 78% 22%, rgba(125,211,252,0.16), transparent 26%), linear-gradient(180deg, rgba(8,15,28,0.52), rgba(4,9,22,0.04))",
+          }}
+        />
 
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4">
-            <div className="w-4 h-4 rounded-sm bg-green-400" />
+        <div className="relative flex h-full flex-col justify-between">
+          <div className="space-y-10">
+            <div className="inline-flex items-center gap-4 rounded-[26px] border border-[var(--apex-border-default)] bg-[rgba(255,255,255,0.03)] px-5 py-4 backdrop-blur-xl">
+              <div className="apex-sidebar-brand-mark">A</div>
+              <div>
+                <p className="font-[var(--apex-font-display)] text-[26px] font-semibold tracking-[-0.06em] text-[var(--apex-text-primary)]">
+                  APEX
+                </p>
+                <p className="apex-sidebar-brand-caption">Operator Runtime</p>
+              </div>
+            </div>
+
+            <div className="max-w-[560px]">
+              <p className="apex-eyebrow">FX Signal Command Surface</p>
+              <h1 className="mt-5 font-[var(--apex-font-display)] text-[clamp(60px,7vw,104px)] font-semibold leading-[0.92] tracking-[-0.08em] text-[var(--apex-text-primary)]">
+                Precision
+                <br />
+                signal ops.
+              </h1>
+              <p className="mt-6 max-w-[440px] text-[17px] leading-8 text-[var(--apex-text-secondary)]">
+                One private runtime for eight liquid FX pairs, governed cycle control, and high-signal delivery across trader and admin surfaces.
+              </p>
+            </div>
           </div>
-          <h1 className="text-lg font-black tracking-[0.28em] uppercase text-white">APEX</h1>
-          <p className="text-[9px] text-green-400 tracking-[0.3em] uppercase mt-0.5">Institutional Signal Operations</p>
-        </div>
 
-        {/* Card */}
-        <div className="bg-[#0a0a0a] border border-zinc-900 rounded-2xl p-7">
-          <h2 className="text-sm font-bold tracking-widest uppercase text-white mb-1">Sign In</h2>
-          <p className="text-[11px] text-zinc-500 mb-6">Enter your credentials to access the dashboard.</p>
+          <div className="grid gap-4 xl:grid-cols-3">
+            {[
+              { label: "Pairs", value: "8", detail: "Focused FX universe" },
+              { label: "Strategies", value: "3", detail: "Trend, breakout, mean reversion" },
+              { label: "Delivery", value: "Daily", detail: "Scheduled signals with retryable delivery" },
+            ].map(item => (
+              <div key={item.label} className="apex-admin-kpi">
+                <p className="apex-admin-kpi-label">{item.label}</p>
+                <p className="apex-admin-kpi-value">{item.value}</p>
+                <p className="apex-admin-kpi-detail">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="flex min-h-screen items-center justify-center px-6 py-10 md:px-8">
+        <div className="apex-surface w-full max-w-[440px] px-7 py-8 sm:px-8 sm:py-10">
+          <div className="mb-8">
+            <p className="apex-eyebrow">Private Access</p>
+            <h1 className="mt-4 font-[var(--apex-font-display)] text-[34px] font-semibold tracking-[-0.06em] text-[var(--apex-text-primary)]">
+              Operator sign in
+            </h1>
+            <p className="mt-3 text-[15px] leading-7 text-[var(--apex-text-secondary)]">
+              Authenticate to access the live trader runtime and unified admin control surface.
+            </p>
+          </div>
 
           <Suspense fallback={null}>
             <SignInForm />
           </Suspense>
-        </div>
 
-        <p className="text-center text-[11px] text-zinc-600 mt-5">
-          No account?{" "}
-          <Link href="/auth/signup" className="text-green-400 hover:text-green-300 transition-colors">
-            Create one
-          </Link>
-        </p>
-      </div>
+          <div className="mt-8 flex items-center gap-3 text-[12px] text-[var(--apex-text-tertiary)]">
+            <div className="apex-amber-rule" />
+            Registration is closed. Operator access is controlled centrally.
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

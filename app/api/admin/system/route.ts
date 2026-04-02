@@ -3,28 +3,25 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { validateRuntimeEnv } from "@/scripts/validate-env.mjs";
+import { getLatestAlphaAnalyticsReport, runAlphaAnalyticsRefresh } from "@/src/application/analytics/alphaReport";
+import { generateDailyAlphaReport } from "@/src/application/analytics/dailyAlphaReport";
+import { getProviderReliabilitySummaries } from "@/src/application/analytics/providerDiagnostics";
+import { getLatestLiveRuntimeSmokeReport, getLiveRuntimeSmokeDashboard, runLiveRuntimeSmokeVerification } from "@/src/application/analytics/liveRuntimeVerification";
 
 export const dynamic = "force-dynamic";
 
 const ENV_KEYS = [
   "DATABASE_URL",
-  "DIRECT_DATABASE_URL",
-  "REDIS_URL",
-  "UPSTASH_REDIS_REST_URL",
-  "ANTHROPIC_API_KEY",
-  "OPENAI_API_KEY",
-  "GEMINI_API_KEY",
-  "APEX_LLM_OPTIONAL",
-  "APEX_DISABLE_LLM",
-  "APEX_DISABLE_NEWS",
-  "APEX_CORE_SIGNAL_MODE",
-  "TELEGRAM_BOT_TOKEN",
-  "FRED_API_KEY",
-  "RESEND_API_KEY",
   "NEXTAUTH_SECRET",
-  "APEX_EVIDENCE_GATE_MIN_SAMPLE_SIZE",
-  "APEX_EVIDENCE_GATE_MIN_WIN_RATE",
-  "APEX_EVIDENCE_GATE_MIN_EXPECTANCY",
+  "NEXTAUTH_URL",
+  "APEX_SECRET",
+  "TWELVE_DATA_API_KEY",
+  "TELEGRAM_BOT_TOKEN",
+  "TELEGRAM_CHAT_ID",
+  "ANTHROPIC_API_KEY",
+  "APEX_DISABLE_LLM",
+  "APEX_DAILY_SIGNALS_SECRET",
+  "REDIS_URL",
 ] as const;
 
 export async function GET() {
@@ -39,7 +36,7 @@ export async function GET() {
     const auth = await requireAdmin();
     if (!auth.ok) return auth.response;
 
-    const [latestRun, pendingAlerts, failedAlerts, recentProviderHealth] = await Promise.all([
+    const [latestRun, pendingAlerts, failedAlerts, recentProviderHealth, liveSmokeReport, alphaAnalytics, providerReliability, latestDailyAlphaReport] = await Promise.all([
       prisma.signalRun.findFirst({ orderBy: { queuedAt: "desc" } }),
       prisma.alert.count({ where: { status: "PENDING" } }),
       prisma.alert.count({ where: { status: "FAILED" } }),
@@ -48,7 +45,22 @@ export async function GET() {
         take: 10,
         select: { provider: true, status: true, latencyMs: true, errorRate: true, recordedAt: true },
       }),
+      getLatestLiveRuntimeSmokeReport(),
+      getLatestAlphaAnalyticsReport(),
+      getProviderReliabilitySummaries({ lookbackHours: 72 }),
+      prisma.systemEvent.findFirst({
+        where: {
+          type: "daily_alpha_report_generated",
+        },
+        orderBy: {
+          ts: "desc",
+        },
+        select: {
+          payload: true,
+        },
+      }),
     ]);
+    const liveSmokeDashboard = await getLiveRuntimeSmokeDashboard(liveSmokeReport);
 
     const envStatus = Object.fromEntries(
       ENV_KEYS.map(key => [key, !!process.env[key]]),
@@ -57,11 +69,10 @@ export async function GET() {
     const envChecks = {
       web: validateRuntimeEnv({ service: "web", strict: process.env.NODE_ENV === "production" }),
       worker: validateRuntimeEnv({ service: "worker", strict: process.env.NODE_ENV === "production" }),
-      scheduler: validateRuntimeEnv({ service: "scheduler", strict: process.env.NODE_ENV === "production" }),
       backfill: validateRuntimeEnv({ service: "backfill", strict: process.env.NODE_ENV === "production" }),
     };
 
-    const OPTIONAL_PROVIDERS = new Set(["OpenAI", "Gemini", "Anthropic", "RSS"]);
+    const OPTIONAL_PROVIDERS = new Set(["Anthropic", "RSS"]);
     const coreProviderHealth = recentProviderHealth.filter(row => !OPTIONAL_PROVIDERS.has(row.provider));
     const optionalProviderHealth = recentProviderHealth.filter(row => OPTIONAL_PROVIDERS.has(row.provider));
 
@@ -74,10 +85,65 @@ export async function GET() {
       dbStatus,
       providerHealth: coreProviderHealth,
       optionalProviderHealth,
+      liveSmokeReport,
+      liveSmokeDashboard,
+      alphaAnalytics,
+      providerReliability,
+      latestDailyAlphaReport: latestDailyAlphaReport?.payload ?? null,
     });
   } catch (error) {
     return buildRouteErrorResponse(error, {
       publicMessage: "System control data",
+    });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.response;
+
+    const body = await request.json().catch(() => null) as { action?: string; includeSmoke?: boolean } | null;
+    const action = body?.action ?? "";
+
+    if (action === "run_live_smoke") {
+      const liveSmokeReport = await runLiveRuntimeSmokeVerification();
+      return NextResponse.json({
+        ok: true,
+        action,
+        liveSmokeReport,
+      });
+    }
+
+    if (action === "refresh_alpha_analytics") {
+      const alphaAnalytics = await runAlphaAnalyticsRefresh({
+        includeSmoke: body?.includeSmoke !== false,
+      });
+      return NextResponse.json({
+        ok: true,
+        action,
+        alphaAnalytics,
+      });
+    }
+
+    if (action === "run_daily_alpha_report") {
+      const dailyAlphaReport = await generateDailyAlphaReport({
+        includeSmoke: body?.includeSmoke !== false,
+      });
+      return NextResponse.json({
+        ok: true,
+        action,
+        dailyAlphaReport,
+      });
+    }
+
+    return NextResponse.json({
+      ok: false,
+      error: "unsupported_action",
+    }, { status: 400 });
+  } catch (error) {
+    return buildRouteErrorResponse(error, {
+      publicMessage: "System control action",
     });
   }
 }

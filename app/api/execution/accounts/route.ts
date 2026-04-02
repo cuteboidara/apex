@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/src/infrastructure/auth/auth";
 import { recordAuditEvent } from "@/lib/audit";
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { getOrCreatePaperAccount, listPaperAccounts } from "@/lib/execution/paperBroker";

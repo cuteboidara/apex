@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/src/infrastructure/auth/auth";
+import { prisma } from "@/src/infrastructure/db/prisma";
 import { recordAuditEvent } from "@/lib/audit";
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { closePaperPosition, markPaperPosition, openPaperPositionFromTradePlan, listPaperAccounts } from "@/lib/execution/paperBroker";

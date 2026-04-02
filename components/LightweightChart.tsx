@@ -104,8 +104,6 @@ export function LightweightChart({ candles, overlayLevels = [] }: Props) {
       chart.remove();
       chartRef.current = null;
     };
-  // Re-render when candle data or overlay levels change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candles, overlayLevels]);
 
   return <div ref={containerRef} className="w-full h-[420px]" />;

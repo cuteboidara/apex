@@ -1,3 +1,9 @@
+// DEPRECATED: Use src/lib/telegram.ts for all active signal delivery.
+/**
+ * @deprecated LEGACY — Not used by the focused APEX runtime.
+ * This file is retained to avoid breaking legacy routes during transition.
+ * Do not add new imports of this file.
+ */
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/lib/logging";
 import { recordAuditEvent } from "@/lib/audit";
@@ -77,15 +83,6 @@ async function postToTelegram(text: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-async function getOrCreateSettings() {
-  // Load settings (create default if missing)
-  let settings = await prisma.telegramSettings.findFirst();
-  if (!settings) {
-    settings = await prisma.telegramSettings.create({ data: {} });
-  }
-  return settings;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -327,3 +324,4 @@ const telegramService = createTelegramService({
 export const sendSignal = telegramService.sendSignal;
 export const requeueAlerts = telegramService.requeueAlerts;
 export const setAlertSendingPaused = telegramService.setAlertSendingPaused;
+

@@ -1,0 +1,678 @@
+
+> apex@0.1.0 test:apex
+> node --import tsx --test --test-concurrency=1 --test-force-exit tests/apex-data-plant.test.ts tests/apex-feature-engine.test.ts tests/apex-market-scope.test.ts tests/apex-pods.test.ts tests/apex-pod-calibration.test.ts tests/apex-pod-aggregation.test.ts tests/apex-allocator.test.ts tests/apex-risk-governor.test.ts tests/apex-risk-engine-decomposition.test.ts tests/apex-risk-shadow-logging.test.ts tests/apex-signal-levels.test.ts tests/apex-signal-quality.test.ts tests/apex-signal-trust-model.test.ts tests/apex-recommendations.test.ts tests/apex-walk-forward-validation.test.ts tests/apex-scheduler.test.ts tests/apex-trader-signal-layer.test.ts tests/apex-live-dashboard-pipeline.test.ts tests/apex-canonical-signal-pipeline.test.ts tests/apex-canonical-read-model.test.ts tests/apex-signal-view-model-builder.test.ts tests/apex-daily-signals.test.ts tests/apex-crypto-runtime.test.ts tests/apex-architecture-boundaries.test.ts tests/operator-control-routes.test.ts tests/password-change-route.test.ts tests/proxy-auth-boundaries.test.ts tests/stocks-module-health.test.ts tests/unified-signal-trust.test.ts tests/alpha-analytics-report.test.ts tests/provider-diagnostics.test.ts tests/apex-runtime-repair.test.ts tests/apex-nonfx-outcome-capture.test.ts tests/apex-calibration-validation.test.ts tests/env-validation.test.ts
+
+TAP version 13
+# Subtest: C:\\Users\\daram\\apex\\tests\\alpha-analytics-report.test.ts
+not ok 1 - C:\\Users\\daram\\apex\\tests\\alpha-analytics-report.test.ts
+  ---
+  duration_ms: 4.4931
+  location: 'C:\\Users\\daram\\apex\\tests\\alpha-analytics-report.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    FileTest.start (node:internal/test_runner/test:702:17)
+    runTestFile (node:internal/test_runner/runner:449:32)
+    node:internal/test_runner/runner:613:23
+    node:internal/per_context/primordials:577:37
+    new Promise (<anonymous>)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-allocator.test.ts
+not ok 2 - C:\\Users\\daram\\apex\\tests\\apex-allocator.test.ts
+  ---
+  duration_ms: 0.7706
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-allocator.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-architecture-boundaries.test.ts
+not ok 3 - C:\\Users\\daram\\apex\\tests\\apex-architecture-boundaries.test.ts
+  ---
+  duration_ms: 0.5898
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-architecture-boundaries.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-calibration-validation.test.ts
+not ok 4 - C:\\Users\\daram\\apex\\tests\\apex-calibration-validation.test.ts
+  ---
+  duration_ms: 0.6247
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-calibration-validation.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-canonical-read-model.test.ts
+not ok 5 - C:\\Users\\daram\\apex\\tests\\apex-canonical-read-model.test.ts
+  ---
+  duration_ms: 1.1138
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-canonical-read-model.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-canonical-signal-pipeline.test.ts
+not ok 6 - C:\\Users\\daram\\apex\\tests\\apex-canonical-signal-pipeline.test.ts
+  ---
+  duration_ms: 0.5659
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-canonical-signal-pipeline.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-crypto-runtime.test.ts
+not ok 7 - C:\\Users\\daram\\apex\\tests\\apex-crypto-runtime.test.ts
+  ---
+  duration_ms: 0.5407
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-crypto-runtime.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-daily-signals.test.ts
+not ok 8 - C:\\Users\\daram\\apex\\tests\\apex-daily-signals.test.ts
+  ---
+  duration_ms: 0.6158
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-daily-signals.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-data-plant.test.ts
+not ok 9 - C:\\Users\\daram\\apex\\tests\\apex-data-plant.test.ts
+  ---
+  duration_ms: 0.7022
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-data-plant.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-feature-engine.test.ts
+not ok 10 - C:\\Users\\daram\\apex\\tests\\apex-feature-engine.test.ts
+  ---
+  duration_ms: 0.6628
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-feature-engine.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-live-dashboard-pipeline.test.ts
+not ok 11 - C:\\Users\\daram\\apex\\tests\\apex-live-dashboard-pipeline.test.ts
+  ---
+  duration_ms: 0.5891
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-live-dashboard-pipeline.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-market-scope.test.ts
+not ok 12 - C:\\Users\\daram\\apex\\tests\\apex-market-scope.test.ts
+  ---
+  duration_ms: 0.5453
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-market-scope.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-nonfx-outcome-capture.test.ts
+not ok 13 - C:\\Users\\daram\\apex\\tests\\apex-nonfx-outcome-capture.test.ts
+  ---
+  duration_ms: 0.8004
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-nonfx-outcome-capture.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-pod-aggregation.test.ts
+not ok 14 - C:\\Users\\daram\\apex\\tests\\apex-pod-aggregation.test.ts
+  ---
+  duration_ms: 0.6582
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-pod-aggregation.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-pod-calibration.test.ts
+not ok 15 - C:\\Users\\daram\\apex\\tests\\apex-pod-calibration.test.ts
+  ---
+  duration_ms: 0.66
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-pod-calibration.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-pods.test.ts
+not ok 16 - C:\\Users\\daram\\apex\\tests\\apex-pods.test.ts
+  ---
+  duration_ms: 0.589
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-pods.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-recommendations.test.ts
+not ok 17 - C:\\Users\\daram\\apex\\tests\\apex-recommendations.test.ts
+  ---
+  duration_ms: 0.6
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-recommendations.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-risk-engine-decomposition.test.ts
+not ok 18 - C:\\Users\\daram\\apex\\tests\\apex-risk-engine-decomposition.test.ts
+  ---
+  duration_ms: 0.8279
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-risk-engine-decomposition.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-risk-governor.test.ts
+not ok 19 - C:\\Users\\daram\\apex\\tests\\apex-risk-governor.test.ts
+  ---
+  duration_ms: 0.6783
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-risk-governor.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-risk-shadow-logging.test.ts
+not ok 20 - C:\\Users\\daram\\apex\\tests\\apex-risk-shadow-logging.test.ts
+  ---
+  duration_ms: 0.5985
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-risk-shadow-logging.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-runtime-repair.test.ts
+not ok 21 - C:\\Users\\daram\\apex\\tests\\apex-runtime-repair.test.ts
+  ---
+  duration_ms: 0.83
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-runtime-repair.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-scheduler.test.ts
+not ok 22 - C:\\Users\\daram\\apex\\tests\\apex-scheduler.test.ts
+  ---
+  duration_ms: 0.5419
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-scheduler.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-signal-levels.test.ts
+not ok 23 - C:\\Users\\daram\\apex\\tests\\apex-signal-levels.test.ts
+  ---
+  duration_ms: 0.5188
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-signal-levels.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-signal-quality.test.ts
+not ok 24 - C:\\Users\\daram\\apex\\tests\\apex-signal-quality.test.ts
+  ---
+  duration_ms: 0.5645
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-signal-quality.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-signal-trust-model.test.ts
+not ok 25 - C:\\Users\\daram\\apex\\tests\\apex-signal-trust-model.test.ts
+  ---
+  duration_ms: 0.51
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-signal-trust-model.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-signal-view-model-builder.test.ts
+not ok 26 - C:\\Users\\daram\\apex\\tests\\apex-signal-view-model-builder.test.ts
+  ---
+  duration_ms: 0.5498
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-signal-view-model-builder.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-trader-signal-layer.test.ts
+not ok 27 - C:\\Users\\daram\\apex\\tests\\apex-trader-signal-layer.test.ts
+  ---
+  duration_ms: 0.5574
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-trader-signal-layer.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\apex-walk-forward-validation.test.ts
+not ok 28 - C:\\Users\\daram\\apex\\tests\\apex-walk-forward-validation.test.ts
+  ---
+  duration_ms: 0.5095
+  location: 'C:\\Users\\daram\\apex\\tests\\apex-walk-forward-validation.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\env-validation.test.ts
+not ok 29 - C:\\Users\\daram\\apex\\tests\\env-validation.test.ts
+  ---
+  duration_ms: 0.5291
+  location: 'C:\\Users\\daram\\apex\\tests\\env-validation.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\operator-control-routes.test.ts
+not ok 30 - C:\\Users\\daram\\apex\\tests\\operator-control-routes.test.ts
+  ---
+  duration_ms: 0.5531
+  location: 'C:\\Users\\daram\\apex\\tests\\operator-control-routes.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\password-change-route.test.ts
+not ok 31 - C:\\Users\\daram\\apex\\tests\\password-change-route.test.ts
+  ---
+  duration_ms: 0.6229
+  location: 'C:\\Users\\daram\\apex\\tests\\password-change-route.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\provider-diagnostics.test.ts
+not ok 32 - C:\\Users\\daram\\apex\\tests\\provider-diagnostics.test.ts
+  ---
+  duration_ms: 0.7127
+  location: 'C:\\Users\\daram\\apex\\tests\\provider-diagnostics.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\proxy-auth-boundaries.test.ts
+not ok 33 - C:\\Users\\daram\\apex\\tests\\proxy-auth-boundaries.test.ts
+  ---
+  duration_ms: 0.5761
+  location: 'C:\\Users\\daram\\apex\\tests\\proxy-auth-boundaries.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\stocks-module-health.test.ts
+not ok 34 - C:\\Users\\daram\\apex\\tests\\stocks-module-health.test.ts
+  ---
+  duration_ms: 0.5433
+  location: 'C:\\Users\\daram\\apex\\tests\\stocks-module-health.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: C:\\Users\\daram\\apex\\tests\\unified-signal-trust.test.ts
+not ok 35 - C:\\Users\\daram\\apex\\tests\\unified-signal-trust.test.ts
+  ---
+  duration_ms: 0.5336
+  location: 'C:\\Users\\daram\\apex\\tests\\unified-signal-trust.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  error: 'spawn EPERM'
+  code: 'EPERM'
+  stack: |-
+    ChildProcess.spawn (node:internal/child_process:420:11)
+    spawn (node:child_process:762:9)
+    TestContext.<anonymous> (node:internal/test_runner/runner:379:19)
+    FileTest.runInAsyncScope (node:async_hooks:206:9)
+    FileTest.run (node:internal/test_runner/test:796:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:526:18)
+    FileTest.postRun (node:internal/test_runner/test:889:19)
+    FileTest.run (node:internal/test_runner/test:835:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 0
+# fail 35
+# cancelled 0
+# skipped 0
+# todo 0

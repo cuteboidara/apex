@@ -1,3 +1,3 @@
 export async function register() {
-  // Scheduler execution has been removed from the Next.js runtime.
+  // Manual-only deployment: no embedded scheduler bootstrap.
 }
