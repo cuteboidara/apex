@@ -1,5 +1,6 @@
 import type { MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import type { Candle } from "@/src/assets/shared/types";
+import { canonicalizeMarketSymbol } from "@/src/lib/marketSymbols";
 import { resolveYahooSymbol } from "@/src/lib/yahooFinance";
 
 const YAHOO_HOSTS = [
@@ -25,14 +26,8 @@ const FALLBACK_SYMBOL_MAP: Record<string, string> = {
   AVAXUSDT: "AVAX-USD",
 };
 
-const CANONICAL_YAHOO_ALIASES: Record<string, string> = {
-  "GC=F": "XAUUSD",
-  GOLD: "XAUUSD",
-  "XAU/USD": "XAUUSD",
-};
-
 function normalizeApexSymbol(symbol: string): string {
-  return CANONICAL_YAHOO_ALIASES[symbol.toUpperCase()] ?? symbol;
+  return canonicalizeMarketSymbol(symbol) ?? symbol.toUpperCase();
 }
 
 function toYahooSymbol(symbol: string): string | null {

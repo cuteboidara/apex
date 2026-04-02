@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCachedJson, setCachedJson } from "@/src/lib/redis";
+import { YAHOO_DIRECT_METAL_SYMBOL_MAP } from "@/src/lib/marketSymbols";
 import { fetchYahooBars } from "@/src/lib/yahooFinance";
 import { fetchYahooPrice } from "@/lib/providers/yahooFinance";
 
@@ -67,8 +68,7 @@ const TWELVE_DATA_SYMBOL_MAP: Record<(typeof PAIRS)[number], string> = {
   XAGUSD: "XAG/USD",
 };
 const YAHOO_DIRECT_SYMBOL_MAP: Partial<Record<(typeof PAIRS)[number], string>> = {
-  XAUUSD: "XAUUSD=X",
-  XAGUSD: "XAGUSD=X",
+  ...YAHOO_DIRECT_METAL_SYMBOL_MAP,
 };
 
 function parseNumber(value: unknown): number | null {

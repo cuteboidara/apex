@@ -66,6 +66,7 @@ import {
   SIGNAL_CONFIDENCE_BUCKETS,
 } from "@/src/interfaces/contracts";
 
+import { prepareSignalViewModelForPersistence } from "@/src/assets/shared/persistedSignalViewModel";
 import { createId } from "@/src/lib/ids";
 import { logger } from "@/src/lib/logger";
 import type { TraderPairRuntimeState } from "@/src/lib/traderContracts";
@@ -961,19 +962,20 @@ export class ApexRepository {
   }
 
   async appendSignalViewModel(view: SignalViewModel) {
-    this.signalViewModels.push(this.cloneJson(view));
+    const preparedView = prepareSignalViewModelForPersistence(view);
+    this.signalViewModels.push(this.cloneJson(preparedView));
     await this.mirror("signalViewModel", {
-      view_id: view.view_id,
-      entity_ref: view.entity_ref,
-      display_type: view.display_type,
-      headline: view.headline,
-      summary: view.summary,
-      reason_labels: view.reason_labels,
-      confidence_label: view.confidence_label,
-      ui_sections: this.cloneJson(view.ui_sections),
-      commentary: this.cloneJson(view.commentary),
-      ui_version: view.ui_version,
-      generated_at: new Date(view.generated_at),
+      view_id: preparedView.view_id,
+      entity_ref: preparedView.entity_ref,
+      display_type: preparedView.display_type,
+      headline: preparedView.headline,
+      summary: preparedView.summary,
+      reason_labels: preparedView.reason_labels,
+      confidence_label: preparedView.confidence_label,
+      ui_sections: this.cloneJson(preparedView.ui_sections),
+      commentary: this.cloneJson(preparedView.commentary),
+      ui_version: preparedView.ui_version,
+      generated_at: new Date(preparedView.generated_at),
     });
   }
 

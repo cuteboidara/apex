@@ -1,4 +1,5 @@
 import { fetchYahooBars } from "@/src/lib/yahooFinance";
+import { YAHOO_DIRECT_METAL_SYMBOL_MAP } from "@/src/lib/marketSymbols";
 import { fetchYahooPrice } from "@/lib/providers/yahooFinance";
 
 export type TraderLivePriceMap = Record<string, number | null>;
@@ -30,8 +31,7 @@ const OANDA_SYMBOL_MAP: Record<string, string> = {
 };
 
 const YAHOO_DIRECT_SYMBOL_MAP: Record<string, string> = {
-  XAUUSD: "XAUUSD=X",
-  XAGUSD: "XAGUSD=X",
+  ...YAHOO_DIRECT_METAL_SYMBOL_MAP,
 };
 
 const TWELVE_DATA_PRICE_URL = "https://api.twelvedata.com/price";

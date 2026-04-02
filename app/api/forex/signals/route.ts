@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { readPersistedMarketSymbol } from "@/src/assets/shared/persistedSignalViewModel";
 import { SignalViewModelBuilder } from "@/src/domain/services/viewModelBuilder";
 import { prisma } from "@/src/infrastructure/db/prisma";
+import { expandMarketSymbolAliases } from "@/src/lib/marketSymbols";
 import type { TraderPairRuntimeState } from "@/src/lib/traderContracts";
 import { getApexRuntime } from "@/src/lib/runtime";
 
@@ -141,9 +142,7 @@ export async function GET() {
 
   const missingPairs = PAIRS.filter(symbol => !latest.has(symbol));
   if (missingPairs.length > 0) {
-    const querySymbols = missingPairs.includes("XAUUSD")
-      ? [...missingPairs, "GOLD", "GC=F", "XAU/USD"]
-      : [...missingPairs];
+    const querySymbols = expandMarketSymbolAliases(missingPairs);
 
     const rows = await prisma.$queryRaw<Array<{
       view_id: string;

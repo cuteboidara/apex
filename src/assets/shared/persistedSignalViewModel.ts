@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import type { SignalViewModel } from "@/src/domain/models/signalPipeline";
 import { prisma } from "@/src/infrastructure/db/prisma";
+import { canonicalizeMarketSymbol } from "@/src/lib/marketSymbols";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -11,22 +12,6 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 type PersistableSignalViewModel = Omit<SignalViewModel, "ui_sections">;
 
-function canonicalizeGoldSymbol(value: unknown): string | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  switch (value.toUpperCase()) {
-    case "XAUUSD":
-    case "GC=F":
-    case "GOLD":
-    case "XAU/USD":
-      return "XAUUSD";
-    default:
-      return value;
-  }
-}
-
 export function readPersistedSignalModel(uiSections: unknown): Record<string, unknown> {
   return asRecord(asRecord(uiSections).model);
 }
@@ -34,9 +19,9 @@ export function readPersistedSignalModel(uiSections: unknown): Record<string, un
 export function readPersistedMarketSymbol(uiSections: unknown): string | null {
   const sections = asRecord(uiSections);
   const model = readPersistedSignalModel(sections);
-  const topLevel = canonicalizeGoldSymbol(sections.marketSymbol);
-  const persistedMarketSymbol = canonicalizeGoldSymbol(model.marketSymbol);
-  const persistedSymbol = canonicalizeGoldSymbol(model.symbol);
+  const topLevel = canonicalizeMarketSymbol(sections.marketSymbol);
+  const persistedMarketSymbol = canonicalizeMarketSymbol(model.marketSymbol);
+  const persistedSymbol = canonicalizeMarketSymbol(model.symbol);
   return persistedMarketSymbol ?? topLevel ?? persistedSymbol;
 }
 
@@ -45,8 +30,8 @@ export function prepareSignalViewModelForPersistence<T extends SignalViewModel>(
   const refs = asRecord(uiSections.refs);
   const health = asRecord(uiSections.health);
   const { ui_sections: _ignoredUiSections, ...persistedModel } = model;
-  const persistedSymbol = canonicalizeGoldSymbol(persistedModel.symbol) ?? persistedModel.symbol;
-  const marketSymbol = canonicalizeGoldSymbol(uiSections.marketSymbol) ?? persistedSymbol;
+  const persistedSymbol = canonicalizeMarketSymbol(persistedModel.symbol) ?? persistedModel.symbol;
+  const marketSymbol = canonicalizeMarketSymbol(uiSections.marketSymbol) ?? persistedSymbol;
 
   return {
     ...model,

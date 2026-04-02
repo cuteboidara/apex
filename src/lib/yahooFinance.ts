@@ -1,4 +1,5 @@
 import { recordProviderHealth } from "@/lib/providerHealth";
+import { canonicalizeMarketSymbol } from "@/src/lib/marketSymbols";
 
 type YahooTimeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1D";
 
@@ -60,12 +61,6 @@ const YAHOO_SYMBOL_MAP: Record<string, string> = {
   NKY: "^N225",
   BTCUSD: "BTC-USD",
   ETHUSD: "ETH-USD",
-};
-
-const YAHOO_CANONICAL_ALIASES: Record<string, string> = {
-  "GC=F": "XAUUSD",
-  GOLD: "XAUUSD",
-  "XAU/USD": "XAUUSD",
 };
 
 const TIMEFRAME_PARAMS: Record<YahooTimeframe, { interval: string; range: string }> = {
@@ -136,7 +131,7 @@ export function normalizeYahooTimeframe(interval: string): YahooTimeframe {
 }
 
 export function resolveYahooSymbol(apexSymbol: string): string | null {
-  const normalizedApexSymbol = YAHOO_CANONICAL_ALIASES[apexSymbol.toUpperCase()] ?? apexSymbol;
+  const normalizedApexSymbol = canonicalizeMarketSymbol(apexSymbol) ?? apexSymbol.toUpperCase();
 
   if (YAHOO_SYMBOL_MAP[normalizedApexSymbol]) {
     return YAHOO_SYMBOL_MAP[normalizedApexSymbol];
@@ -186,7 +181,7 @@ export async function fetchYahooBars(apexSymbol: string, interval: string): Prom
   interval: YahooTimeframe;
   values: YahooBar[];
 } | null> {
-  const normalizedApexSymbol = YAHOO_CANONICAL_ALIASES[apexSymbol.toUpperCase()] ?? apexSymbol;
+  const normalizedApexSymbol = canonicalizeMarketSymbol(apexSymbol) ?? apexSymbol.toUpperCase();
   const sourceSymbol = resolveYahooSymbol(normalizedApexSymbol);
   if (!sourceSymbol) {
     return null;

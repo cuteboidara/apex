@@ -1,4 +1,5 @@
 import { recordProviderHealth } from "@/lib/providerHealth";
+import { canonicalizeMarketSymbol } from "@/src/lib/marketSymbols";
 
 // Try query2 when query1 is blocked (common on cloud/Railway IPs)
 const YAHOO_HOSTS = [
@@ -32,14 +33,8 @@ export const YAHOO_SYMBOL_MAP: Record<string, string> = {
   ETHUSD: "ETH-USD",
 };
 
-const YAHOO_CANONICAL_ALIASES: Record<string, string> = {
-  "GC=F": "XAUUSD",
-  GOLD: "XAUUSD",
-  "XAU/USD": "XAUUSD",
-};
-
 function normalizeYahooApexSymbol(apexSymbol: string): string {
-  return YAHOO_CANONICAL_ALIASES[apexSymbol.toUpperCase()] ?? apexSymbol;
+  return canonicalizeMarketSymbol(apexSymbol) ?? apexSymbol.toUpperCase();
 }
 
 interface YahooChartResult {
