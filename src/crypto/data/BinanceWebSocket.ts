@@ -1,3 +1,5 @@
+import NodeWebSocket from "ws";
+
 import type { CryptoSymbol } from "@/src/crypto/config/cryptoScope";
 import { CRYPTO_ACTIVE_SYMBOLS } from "@/src/crypto/config/cryptoScope";
 import { fromBinanceSymbol } from "@/src/crypto/data/binanceSymbols";
@@ -15,9 +17,20 @@ type BinanceTickerMessage = {
   };
 };
 
+type WebSocketLike = {
+  readyState: number;
+  close: () => void;
+  onopen: ((event?: unknown) => void) | null;
+  onmessage: ((event: { data: unknown }) => void) | null;
+  onerror: ((event?: unknown) => void) | null;
+  onclose: ((event?: unknown) => void) | null;
+};
+
+type WebSocketConstructor = new (url: string) => WebSocketLike;
+
 type CryptoWebSocketState = {
   livePrices: Map<CryptoSymbol, LivePriceEntry>;
-  wsInstance: WebSocket | null;
+  wsInstance: WebSocketLike | null;
   isConnecting: boolean;
   intentionalClose: boolean;
 };
@@ -40,7 +53,7 @@ function buildStreamUrl(): string {
   return `${BINANCE_WS_BASE}?streams=${streams}`;
 }
 
-function readMessageData(event: MessageEvent): string | null {
+function readMessageData(event: { data: unknown }): string | null {
   if (typeof event.data === "string") {
     return event.data;
   }
@@ -56,12 +69,17 @@ function readMessageData(event: MessageEvent): string | null {
   return null;
 }
 
-export function startBinanceWebSocket(): void {
-  if (typeof globalThis.WebSocket === "undefined") {
-    console.warn("[binance-ws] WebSocket is not available in this runtime");
-    return;
-  }
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
 
+function resolveWebSocketConstructor(): WebSocketConstructor {
+  return (globalThis.WebSocket ?? NodeWebSocket) as unknown as WebSocketConstructor;
+}
+
+export function startBinanceWebSocket(): void {
   if (state.isConnecting || state.wsInstance?.readyState === 1) {
     return;
   }
@@ -69,7 +87,8 @@ export function startBinanceWebSocket(): void {
   state.intentionalClose = false;
   state.isConnecting = true;
 
-  const ws = new globalThis.WebSocket(buildStreamUrl());
+  const WebSocketImpl = resolveWebSocketConstructor();
+  const ws = new WebSocketImpl(buildStreamUrl());
   state.wsInstance = ws;
 
   ws.onopen = () => {
@@ -150,6 +169,20 @@ export function getAllCryptoLivePrices(): Record<CryptoSymbol, number | null> {
 
 export function isBinanceWsConnected(): boolean {
   return state.wsInstance?.readyState === 1;
+}
+
+export async function waitForBinanceWebSocket(timeoutMs = 1_500): Promise<boolean> {
+  startBinanceWebSocket();
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    if (isBinanceWsConnected()) {
+      return true;
+    }
+    await sleep(100);
+  }
+
+  return isBinanceWsConnected();
 }
 
 export function resetBinanceWebSocketForTests(): void {

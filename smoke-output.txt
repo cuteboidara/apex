@@ -1,0 +1,26 @@
+
+> apex@0.1.0 apex:diagnostics
+> node --import tsx scripts/apex-diagnostics.ts --smoke
+
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:420:11)
+    at Object.spawn (node:child_process:762:9)
+    at ensureServiceIsRunning (C:\Users\daram\apex\node_modules\esbuild\lib\main.js:2268:29)
+    at startSyncServiceWorker (C:\Users\daram\apex\node_modules\esbuild\lib\main.js:2474:19)
+    at Object.<anonymous> (C:\Users\daram\apex\node_modules\esbuild\lib\main.js:2515:3)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Object..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Function._load (node:internal/modules/cjs/loader:1091:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+  name: 'TransformError',
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawn'
+}
+
+Node.js v20.20.1

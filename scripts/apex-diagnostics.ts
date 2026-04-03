@@ -9,14 +9,14 @@ async function main() {
   const runtime = getApexRuntime();
 
   if (args.has("--smoke")) {
-    process.env.APEX_DISABLE_LLM ??= "true";
+    process.env.APEX_DISABLE_LLM = "true";
     const report = await runLiveRuntimeSmokeVerification();
     console.log(JSON.stringify(report, null, 2));
     return;
   }
 
   if (args.has("--alpha")) {
-    process.env.APEX_DISABLE_LLM ??= "true";
+    process.env.APEX_DISABLE_LLM = "true";
     const report = await runAlphaAnalyticsRefresh({
       includeSmoke: args.has("--with-smoke"),
     });

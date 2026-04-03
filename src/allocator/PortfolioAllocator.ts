@@ -1,4 +1,4 @@
-import { evaluateSymbolScope, getPairTradingProfile } from "@/src/config/marketScope";
+import { evaluateSymbolScope, getPairTradingProfile, isPairTradingSessionAllowed } from "@/src/config/marketScope";
 import type { ApexConfig } from "@/src/lib/config";
 import { createId } from "@/src/lib/ids";
 import type { ApexRepository } from "@/src/lib/repository";
@@ -268,7 +268,7 @@ export class PortfolioAllocator {
       if (rr < pairProfile.minRiskReward) {
         vetoReasons.push("PAIR_RR_BELOW_MIN");
       }
-      if (!pairProfile.allowedSessions.includes(snapshot.context.session.session as typeof pairProfile.allowedSessions[number])) {
+      if (!isPairTradingSessionAllowed(snapshot.context.session.session, pairProfile.allowedSessions)) {
         vetoReasons.push("PAIR_SESSION_NOT_ALLOWED");
       }
     }

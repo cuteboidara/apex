@@ -484,6 +484,7 @@ export async function runIndicesCycle(cycleId: string): Promise<IndexSignalCard[
       const dataFreshnessMs = candles[candles.length - 1]?.time != null
         ? Math.max(0, generatedAt - (candles[candles.length - 1]!.time * 1000))
         : null;
+      const usesCachedSource = candleResult.source?.startsWith("cached_") ?? false;
       const base = buildAssetViewModelBase({
         idPrefix: "index_view",
         symbol: displayName,
@@ -533,16 +534,16 @@ export async function runIndicesCycle(cycleId: string): Promise<IndexSignalCard[
           ? "publishable"
           : displayCategory === "rejected"
             ? "blocked"
-            : providerStatus === "healthy"
-              ? "watchlist_only"
-              : "shadow_only",
+            : usesCachedSource
+              ? "shadow_only"
+              : "watchlist_only",
         publicationReasons: displayCategory === "executable"
           ? []
-          : providerStatus === "healthy"
-            ? ["LOW_CONFIDENCE"]
-            : providerStatus === "broken"
-              ? ["BROKEN_MARKET_DATA"]
-              : ["FALLBACK_PROVIDER"],
+          : providerStatus === "broken"
+            ? ["BROKEN_MARKET_DATA"]
+            : usesCachedSource
+              ? ["FALLBACK_PROVIDER"]
+              : ["LOW_CONFIDENCE"],
         moduleHealth: providerStatus === "healthy" ? "working" : providerStatus === "broken" ? "broken" : "degraded",
         uiSections: {
           assetClass: "index",

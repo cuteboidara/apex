@@ -47,9 +47,15 @@ export async function triggerIndicesCycle(): Promise<{ cycleId: string; cardCoun
   runtimeState.cycleRunning = true;
   const cycleId = createId("indexcycle");
   try {
-    await warmIndexProviders().catch(error => {
+    const warmup = await warmIndexProviders().catch(error => {
       console.warn("[indices-runtime] Provider warmup failed:", error);
+      return null;
     });
+    if (warmup) {
+      console.log(
+        `[indices-runtime] Warmup ${warmup.symbol}: source=${warmup.dataSource ?? "none"} livePrice=${warmup.livePrice ?? "null"} candleCount=${warmup.candleCount}`,
+      );
+    }
     runtimeState.latestCards = await runIndicesCycle(cycleId);
     runtimeState.lastCycleAt = Date.now();
     await persistSignalViewModels(runtimeState.latestCards, { logPrefix: "APEX INDICES" });

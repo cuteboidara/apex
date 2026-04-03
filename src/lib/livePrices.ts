@@ -43,6 +43,10 @@ type ExchangeRateApiResponse = {
 
 let priceCache: { data: TraderLivePriceMap; fetchedAt: number } | null = null;
 let hasWarnedAboutMissingApiKey = false;
+const globalForLivePriceDiagnostics = globalThis as typeof globalThis & {
+  __apexLivePriceProviderLogs?: Set<string>;
+};
+const livePriceProviderLogs = globalForLivePriceDiagnostics.__apexLivePriceProviderLogs ??= new Set<string>();
 
 function normalizeLivePrice(value: number | null | undefined): number | null {
   if (value == null || !Number.isFinite(value) || value <= 0) {
@@ -371,6 +375,24 @@ function extractCached(symbols: readonly string[]): TraderLivePriceMap {
   };
 }
 
+function logLivePriceProviderOnce(input: {
+  provider: string;
+  resolved: TraderLivePriceMap;
+  requestedSymbols: readonly string[];
+  note?: string;
+}): void {
+  if (livePriceProviderLogs.has(input.provider)) {
+    return;
+  }
+
+  const resolvedEntries = Object.entries(input.resolved).filter(([, price]) => price != null);
+  const sample = resolvedEntries[0];
+  console.log(
+    `[livePrices] ${input.provider}: resolved=${resolvedEntries.length}/${input.requestedSymbols.length}${sample ? ` sample=${sample[0]}:${sample[1]}` : ""}${input.note ? ` note=${input.note}` : ""}`,
+  );
+  livePriceProviderLogs.add(input.provider);
+}
+
 export async function fetchLivePrices(symbols: readonly string[]): Promise<TraderLivePriceMap> {
   const now = Date.now();
   if (priceCache && now - priceCache.fetchedAt < CACHE_TTL_MS) {
@@ -382,6 +404,11 @@ export async function fetchLivePrices(symbols: readonly string[]): Promise<Trade
   try {
     const oandaRows = await fetchOandaRows(symbols);
     Object.assign(next, oandaRows);
+    logLivePriceProviderOnce({
+      provider: "oanda",
+      resolved: oandaRows,
+      requestedSymbols: symbols,
+    });
   } catch (error) {
     console.warn("[livePrices] Oanda live pricing failed:", error instanceof Error ? error.message : String(error));
   }
@@ -389,11 +416,19 @@ export async function fetchLivePrices(symbols: readonly string[]): Promise<Trade
   const unresolvedAfterOanda = symbols.filter(symbol => next[symbol] == null);
   if (unresolvedAfterOanda.length > 0) {
     const candleResults = await Promise.allSettled(unresolvedAfterOanda.map(symbol => fetchOandaCandleFallback(symbol)));
+    const oandaCandleRows: TraderLivePriceMap = {};
     for (const [index, result] of candleResults.entries()) {
       if (result.status === "fulfilled" && result.value != null) {
-        next[unresolvedAfterOanda[index]] = result.value;
+        const symbol = unresolvedAfterOanda[index];
+        next[symbol] = result.value;
+        oandaCandleRows[symbol] = result.value;
       }
     }
+    logLivePriceProviderOnce({
+      provider: "oanda-candle-fallback",
+      resolved: oandaCandleRows,
+      requestedSymbols: unresolvedAfterOanda,
+    });
   }
 
   const unresolvedAfterCandle = symbols.filter(symbol => next[symbol] == null);
@@ -401,6 +436,11 @@ export async function fetchLivePrices(symbols: readonly string[]): Promise<Trade
     try {
       const twelveRows = await fetchTwelveDataRows(unresolvedAfterCandle);
       Object.assign(next, twelveRows);
+      logLivePriceProviderOnce({
+        provider: "twelvedata",
+        resolved: twelveRows,
+        requestedSymbols: unresolvedAfterCandle,
+      });
     } catch (error) {
       console.warn("[livePrices] Twelve Data fetch failed:", error instanceof Error ? error.message : String(error));
     }
@@ -409,11 +449,19 @@ export async function fetchLivePrices(symbols: readonly string[]): Promise<Trade
   const unresolvedAfterTwelve = symbols.filter(symbol => next[symbol] == null);
   if (unresolvedAfterTwelve.length > 0) {
     const yahooResults = await Promise.allSettled(unresolvedAfterTwelve.map(symbol => fetchYahooRow(symbol)));
+    const yahooRows: TraderLivePriceMap = {};
     for (const [index, result] of yahooResults.entries()) {
       if (result.status === "fulfilled" && result.value != null) {
-        next[unresolvedAfterTwelve[index]] = result.value;
+        const symbol = unresolvedAfterTwelve[index];
+        next[symbol] = result.value;
+        yahooRows[symbol] = result.value;
       }
     }
+    logLivePriceProviderOnce({
+      provider: "yahoo",
+      resolved: yahooRows,
+      requestedSymbols: unresolvedAfterTwelve,
+    });
   }
 
   const unresolvedAfterYahoo = symbols.filter(symbol => next[symbol] == null);
@@ -421,6 +469,11 @@ export async function fetchLivePrices(symbols: readonly string[]): Promise<Trade
     try {
       const erApiRows = await fetchExchangeRateApiRows(unresolvedAfterYahoo);
       Object.assign(next, erApiRows);
+      logLivePriceProviderOnce({
+        provider: "open.er-api.com",
+        resolved: erApiRows,
+        requestedSymbols: unresolvedAfterYahoo,
+      });
     } catch (error) {
       console.warn("[livePrices] open.er-api.com fetch failed:", error instanceof Error ? error.message : String(error));
     }

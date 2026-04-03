@@ -309,6 +309,19 @@ export function getCurrentTradingSession(ts: number): TradingSession {
   return "new_york";
 }
 
+export function isPairTradingSessionAllowed(
+  session: SessionLabel,
+  allowedSessions: readonly TradingSession[],
+): boolean {
+  if (session === "overlap") {
+    return allowedSessions.includes("london") || allowedSessions.includes("new_york");
+  }
+
+  return session === "asia" || session === "london" || session === "new_york"
+    ? allowedSessions.includes(session)
+    : false;
+}
+
 export function getPairTradingProfile(
   symbol: string,
   config: MarketScopeConfig = defaultMarketScopeConfig,

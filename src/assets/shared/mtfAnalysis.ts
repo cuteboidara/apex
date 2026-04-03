@@ -712,15 +712,43 @@ function zoneOverlaps(left: ZoneRange | null, right: PriceZoneCandidate | null):
   return right.low <= left.high && right.high >= left.low;
 }
 
-function pickBestEntryZone(input: {
+function zoneWidth(zone: PriceZoneCandidate): number {
+  return Math.max(zone.high - zone.low, Math.abs(zone.high) * 0.0005, 0.0000001);
+}
+
+function zoneIsInEntryCorridor(
+  direction: "LONG" | "SHORT",
+  livePrice: number,
+  zone: PriceZoneCandidate,
+): boolean {
+  const buffer = Math.max(zoneWidth(zone) * 0.5, Math.abs(livePrice) * 0.0004);
+  return direction === "LONG"
+    ? zone.low <= livePrice + buffer
+    : zone.high >= livePrice - buffer;
+}
+
+function filterEntryCorridorZones(input: {
+  direction: "LONG" | "SHORT";
+  livePrice: number;
+  zones: PriceZoneCandidate[];
+}): PriceZoneCandidate[] {
+  const targetDirection = input.direction === "LONG" ? "bullish" : "bearish";
+  const directional = input.zones.filter(zone => zone.direction === targetDirection);
+  const inCorridor = directional.filter(zone => zoneIsInEntryCorridor(input.direction, input.livePrice, zone));
+  return inCorridor.length > 0 ? inCorridor : directional;
+}
+
+export function pickBestEntryZone(input: {
   direction: "LONG" | "SHORT";
   livePrice: number;
   htfZones: PriceZoneCandidate[];
   mtfZones: PriceZoneCandidate[];
 }): { htfZone: PriceZoneCandidate | null; mtfZone: PriceZoneCandidate | null } {
-  const targetDirection = input.direction === "LONG" ? "bullish" : "bearish";
-  const qualifyingHtf = input.htfZones
-    .filter(zone => zone.direction === targetDirection)
+  const qualifyingHtf = filterEntryCorridorZones({
+    direction: input.direction,
+    livePrice: input.livePrice,
+    zones: input.htfZones,
+  })
     .sort((left, right) => {
       const leftDistance = input.direction === "LONG"
         ? Math.abs(input.livePrice - left.high)
@@ -732,8 +760,11 @@ function pickBestEntryZone(input: {
     });
   const chosenHtf = qualifyingHtf[0] ?? null;
 
-  const qualifyingMtf = input.mtfZones
-    .filter(zone => zone.direction === targetDirection)
+  const qualifyingMtf = filterEntryCorridorZones({
+    direction: input.direction,
+    livePrice: input.livePrice,
+    zones: input.mtfZones,
+  })
     .sort((left, right) => {
       const leftOverlapBonus = zoneOverlaps(
         chosenHtf ? { low: chosenHtf.low, high: chosenHtf.high, label: chosenHtf.label } : null,
@@ -1144,15 +1175,27 @@ export interface MTFAnalysisResult {
   };
 }
 
+function logMtfScoringInput(symbol: string, mtf: MTFCandles, livePrice: number): void {
+  console.log(
+    `[MTF SCORE INPUT] ${symbol}: livePrice=${Number.isFinite(livePrice) ? formatPrice(livePrice, symbol) : "invalid"} mo=${mtf.monthly.length} wk=${mtf.weekly.length} d=${mtf.daily.length} h4=${mtf.h4.length} h1=${mtf.h1.length} m15=${mtf.m15.length} m5=${mtf.m5.length}`,
+  );
+}
+
 export function runTopDownAnalysis(
   symbol: string,
   mtf: MTFCandles,
   livePrice: number,
 ): MTFAnalysisResult | null {
+  logMtfScoringInput(symbol, mtf, livePrice);
+
   if (!Number.isFinite(livePrice) || livePrice <= 0) {
+    console.log(`[MTF SCORE INPUT] ${symbol}: invalid live price, skipping analysis`);
     return null;
   }
   if (mtf.daily.length < 20 || mtf.h4.length < 20 || mtf.h1.length < 20 || mtf.m15.length < 24 || mtf.m5.length < 24) {
+    console.log(
+      `[MTF SCORE INPUT] ${symbol}: insufficient candles for analysis (d=${mtf.daily.length} h4=${mtf.h4.length} h1=${mtf.h1.length} m15=${mtf.m15.length} m5=${mtf.m5.length})`,
+    );
     return null;
   }
 

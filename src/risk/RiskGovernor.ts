@@ -1,4 +1,4 @@
-import { evaluateSymbolScope, getPairTradingProfile } from "@/src/config/marketScope";
+import { evaluateSymbolScope, getPairTradingProfile, isPairTradingSessionAllowed } from "@/src/config/marketScope";
 import type { ApexConfig } from "@/src/lib/config";
 import type { ApexRepository } from "@/src/lib/repository";
 import type {
@@ -129,7 +129,7 @@ export class RiskGovernor {
     if (economicEvent.majorNewsFlag) {
       vetoReasons.push("NEWS_WINDOW", "NEWS_LOCK");
     }
-    if (pairProfile && !pairProfile.allowedSessions.includes(session as typeof pairProfile.allowedSessions[number])) {
+    if (pairProfile && !isPairTradingSessionAllowed(session, pairProfile.allowedSessions)) {
       vetoReasons.push("PAIR_SESSION_NOT_ALLOWED");
     }
     const hasNoDirectionalConsensus = vetoReasons.includes("NO_DIRECTIONAL_CONSENSUS");

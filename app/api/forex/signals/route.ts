@@ -6,7 +6,6 @@ import { SignalViewModelBuilder } from "@/src/domain/services/viewModelBuilder";
 import { prisma } from "@/src/infrastructure/db/prisma";
 import { expandMarketSymbolAliases } from "@/src/lib/marketSymbols";
 import type { TraderPairRuntimeState } from "@/src/lib/traderContracts";
-import { getApexRuntime } from "@/src/lib/runtime";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -119,23 +118,68 @@ function stateToRow(state: TraderPairRuntimeState): ForexSignalRow {
   };
 }
 
+function isTraderPairRuntimeState(value: unknown): value is TraderPairRuntimeState {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const candidate = value as Partial<TraderPairRuntimeState>;
+  return typeof candidate.symbol === "string"
+    && typeof candidate.generatedAt === "number"
+    && typeof candidate.cycleId === "string"
+    && candidate.liveMarket != null
+    && candidate.marketReasoning != null
+    && candidate.keyAreas != null
+    && candidate.diagnostics != null;
+}
+
+async function loadLatestRuntimeStates(symbols: readonly string[]): Promise<TraderPairRuntimeState[]> {
+  const rows = await prisma.systemEvent.findMany({
+    where: {
+      type: "pair_runtime_state_updated",
+    },
+    orderBy: {
+      ts: "desc",
+    },
+    take: Math.max(200, symbols.length * 20),
+    select: {
+      payload: true,
+    },
+  });
+
+  const latest = new Map<string, TraderPairRuntimeState>();
+  for (const row of rows) {
+    const payload = row.payload;
+    if (!isTraderPairRuntimeState(payload)) {
+      continue;
+    }
+    if (!symbols.includes(payload.symbol)) {
+      continue;
+    }
+
+    const current = latest.get(payload.symbol);
+    if (!current || payload.generatedAt >= current.generatedAt) {
+      latest.set(payload.symbol, payload);
+    }
+  }
+
+  return [...latest.values()].sort((left, right) => left.symbol.localeCompare(right.symbol));
+}
+
 export async function GET() {
   const latest = new Map<string, ForexSignalRow>();
   const symbols = [...PAIRS];
   console.log("[FX SIGNALS API] Querying symbols:", symbols);
 
   try {
-    const runtime = getApexRuntime();
-    if (typeof runtime.repository.getLatestTraderPairRuntimeStates === "function") {
-      const runtimeStates = await runtime.repository.getLatestTraderPairRuntimeStates([...FX_PAIRS]);
-      for (const state of runtimeStates) {
-        if (!FX_PAIRS.includes(state.symbol as (typeof FX_PAIRS)[number])) {
-          continue;
-        }
-        latest.set(state.symbol, stateToRow(state));
+    const runtimeStates = await loadLatestRuntimeStates([...PAIRS]);
+    for (const state of runtimeStates) {
+      if (!PAIRS.includes(state.symbol as (typeof PAIRS)[number])) {
+        continue;
       }
-      console.log("[FX SIGNALS API] Runtime states:", runtimeStates.map(state => state.symbol));
+      latest.set(state.symbol, stateToRow(state));
     }
+    console.log("[FX SIGNALS API] Runtime states:", runtimeStates.map(state => state.symbol));
   } catch (error) {
     console.error("[FX SIGNALS API] Failed to read runtime states:", error);
   }

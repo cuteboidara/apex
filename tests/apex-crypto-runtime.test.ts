@@ -38,3 +38,40 @@ test("crypto profiles expose 24/7 session coverage for the main BTC and ETH pair
   assert.deepEqual(CRYPTO_PAIR_PROFILES.BTCUSDT.allowedSessions, ["asia", "london", "new_york", "off_hours"]);
   assert.deepEqual(CRYPTO_PAIR_PROFILES.ETHUSDT.allowedSessions, ["asia", "london", "new_york", "off_hours"]);
 });
+
+test("crypto payload access starts the Binance websocket when the runtime supports it", () => {
+  resetCryptoRuntimeForTests();
+
+  const originalWebSocket = globalThis.WebSocket;
+  let createdSockets = 0;
+
+  class FakeWebSocket {
+    static readonly OPEN = 1;
+    readyState = 1;
+    onopen: (() => void) | null = null;
+    onmessage: ((event: MessageEvent) => void) | null = null;
+    onerror: (() => void) | null = null;
+    onclose: (() => void) | null = null;
+
+    constructor(_url: string) {
+      createdSockets += 1;
+    }
+
+    close() {
+      this.readyState = 3;
+      this.onclose?.();
+    }
+  }
+
+  globalThis.WebSocket = FakeWebSocket as unknown as typeof WebSocket;
+
+  try {
+    getCryptoSignalsPayload();
+    const status = getCryptoRuntimeStatus();
+    assert.equal(createdSockets, 1);
+    assert.equal(status.wsConnected, true);
+  } finally {
+    resetCryptoRuntimeForTests();
+    globalThis.WebSocket = originalWebSocket;
+  }
+});

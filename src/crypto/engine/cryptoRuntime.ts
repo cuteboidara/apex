@@ -8,7 +8,13 @@ import {
   type CryptoSymbol,
 } from "@/src/crypto/config/cryptoScope";
 import { isAssetModuleEnabled } from "@/src/config/assetActivation";
-import { getCryptoLivePrice, isBinanceWsConnected, stopBinanceWebSocket } from "@/src/crypto/data/BinanceWebSocket";
+import {
+  getCryptoLivePrice,
+  isBinanceWsConnected,
+  startBinanceWebSocket,
+  stopBinanceWebSocket,
+  waitForBinanceWebSocket,
+} from "@/src/crypto/data/BinanceWebSocket";
 import { fetchCryptoCandles, fetchCryptoTickerPrice } from "@/src/crypto/data/CryptoDataPlant";
 import { runCryptoCycle } from "@/src/crypto/engine/CryptoEngine";
 import type { CryptoLiveMarketBoardRow, CryptoSignalCard, CryptoSignalsPayload } from "@/src/crypto/types";
@@ -38,16 +44,30 @@ export function shutdownCryptoRuntime(): void {
   stopBinanceWebSocket();
 }
 
+function ensureCryptoLiveFeedsStarted(): void {
+  if (!isCryptoRuntimeEnabled()) {
+    return;
+  }
+
+  startBinanceWebSocket();
+}
+
 async function warmCryptoProvider(): Promise<void> {
   const warmupSymbol = preferredProviderWarmupSymbol("crypto") as CryptoSymbol | null;
   if (!warmupSymbol) {
     return;
   }
 
+  ensureCryptoLiveFeedsStarted();
+  const wsReady = await waitForBinanceWebSocket();
   const [price, candles] = await Promise.all([
     fetchCryptoTickerPrice(warmupSymbol),
     fetchCryptoCandles(warmupSymbol),
   ]);
+
+  console.log(
+    `[crypto-runtime] Warmup ${warmupSymbol}: wsConnected=${isBinanceWsConnected()} wsReady=${wsReady} restPrice=${price ?? "null"} candleCount=${candles.length}`,
+  );
 
   if (price == null && candles.length === 0) {
     console.warn(`[crypto-runtime] Provider warmup failed for ${warmupSymbol}`);
@@ -69,6 +89,8 @@ export async function triggerCryptoCycle(): Promise<{ cycleId: string; cardCount
     };
   }
 
+  ensureCryptoLiveFeedsStarted();
+  await waitForBinanceWebSocket();
   runtimeState.cycleRunning = true;
   const cycleId = createId("cryptocycle");
 
@@ -106,6 +128,7 @@ export function getCryptoRuntimeStatus(): {
   cardCount: number;
   cycleRunning: boolean;
 } {
+  ensureCryptoLiveFeedsStarted();
   return {
     wsConnected: isBinanceWsConnected(),
     lastCycleAt: runtimeState.lastCycleAt,
@@ -159,6 +182,7 @@ function buildLiveMarketBoard(cards: CryptoSignalCard[]): CryptoLiveMarketBoardR
 }
 
 export function getCryptoSignalsPayload(): CryptoSignalsPayload {
+  ensureCryptoLiveFeedsStarted();
   const cards = getLatestCryptoCards();
 
   return {

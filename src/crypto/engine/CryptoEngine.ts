@@ -848,13 +848,19 @@ export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[
     try {
       const mtfCandles = await fetchMTFCandles(symbol);
       let livePrice = wsPrices[symbol];
+      let livePriceSource: "binance_ws" | "binance_rest" | "unavailable" = livePrice != null
+        ? "binance_ws"
+        : "unavailable";
       if (livePrice == null) {
         livePrice = await fetchCryptoTickerPrice(symbol);
+        if (livePrice != null) {
+          livePriceSource = "binance_rest";
+        }
       }
 
       if (livePrice == null || mtfCandles.daily.length < 10 || mtfCandles.h4.length < 10 || mtfCandles.h1.length < 10) {
         console.log(
-          `[APEX CRYPTO] ${symbol}: insufficient MTF inputs (daily=${mtfCandles.daily.length}, h4=${mtfCandles.h4.length}, h1=${mtfCandles.h1.length}, livePrice=${livePrice ?? "null"}), skipping signal`,
+          `[APEX CRYPTO] ${symbol}: insufficient MTF inputs (daily=${mtfCandles.daily.length}, h4=${mtfCandles.h4.length}, h1=${mtfCandles.h1.length}, m15=${mtfCandles.m15.length}, m5=${mtfCandles.m5.length}, livePrice=${livePrice ?? "null"}, livePriceSource=${livePriceSource}), skipping signal`,
         );
         cards.push(await buildUnavailableCard({
           symbol,
@@ -867,7 +873,7 @@ export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[
       }
 
       console.log(
-        `[APEX CRYPTO] ${symbol}: daily=${mtfCandles.daily.length} h4=${mtfCandles.h4.length} h1=${mtfCandles.h1.length} m15=${mtfCandles.m15.length} m5=${mtfCandles.m5.length}, running MTF scoring...`,
+        `[APEX CRYPTO] ${symbol}: daily=${mtfCandles.daily.length} h4=${mtfCandles.h4.length} h1=${mtfCandles.h1.length} m15=${mtfCandles.m15.length} m5=${mtfCandles.m5.length} livePrice=${livePrice} source=${livePriceSource}, running MTF scoring...`,
       );
       cards.push(await buildCryptoCard({
         symbol,

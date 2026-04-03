@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import test from "node:test";
 
 import { AuditJournal } from "@/src/audit/AuditJournal";
-import { APEX_SYMBOLS, defaultMarketScopeConfig } from "@/src/config/marketScope";
+import { APEX_SYMBOLS, defaultMarketScopeConfig, isPairTradingSessionAllowed } from "@/src/config/marketScope";
 import { ApexEngine } from "@/src/lib/engine";
 import { loadApexConfig } from "@/src/lib/config";
 import { ApexRepository } from "@/src/lib/repository";
@@ -41,6 +41,13 @@ test("APEX config skips optional and unsupported symbol overrides instead of act
   assert.deepEqual(config.scopeSkips.pods, [
     { podId: "cross-asset-rv", reason: "POD_NOT_IN_SCOPE" },
   ]);
+});
+
+test("overlap session is treated as tradable for pairs that allow London or New York", () => {
+  assert.equal(isPairTradingSessionAllowed("overlap", ["london"]), true);
+  assert.equal(isPairTradingSessionAllowed("overlap", ["new_york"]), true);
+  assert.equal(isPairTradingSessionAllowed("overlap", ["asia"]), false);
+  assert.equal(isPairTradingSessionAllowed("new_york", ["new_york"]), true);
 });
 
 test("engine cycle only requests the active FX symbols from the narrowed scope", async () => {
