@@ -14,6 +14,14 @@ export interface MTFCandles {
   m5: Candle[];
 }
 
+export const MTF_ANALYSIS_MIN_CANDLES = {
+  daily: 20,
+  h4: 20,
+  h1: 20,
+  m15: 24,
+  m5: 24,
+} as const;
+
 export type Bias = "bullish" | "bearish" | "ranging";
 
 export interface StructureBreak {
@@ -93,6 +101,84 @@ type SweepCandidate = {
   confirmationIndex: number;
   confirmationLabel: "rejection" | "engulfing" | "mss";
   sweepDescription: string;
+};
+
+export type SweepAttemptDiagnostic = {
+  candleIndex: number;
+  candleTime: number;
+  candleHigh: number;
+  candleLow: number;
+  candleClose: number;
+  referenceLevels: number[];
+  qualifyingReferenceLevels: number[];
+  selectedSweepLevel: number | null;
+  thresholdFloor: number | null;
+  thresholdCeiling: number | null;
+  swept: boolean;
+  confirmation: SweepCandidate["confirmationLabel"] | null;
+  rejectionReason: string | null;
+};
+
+export type SweepPathDiagnostic = {
+  timeframe: "5m" | "15m";
+  direction: "LONG" | "SHORT";
+  candleCount: number;
+  lastClose: number | null;
+  lastCandleTime: number | null;
+  atr14: number | null;
+  tolerance: number | null;
+  zone: ZoneRange | null;
+  zoneStartIndex: number;
+  recentSwingHighs: Array<{ price: number; index: number }>;
+  recentSwingLows: Array<{ price: number; index: number }>;
+  attempts: SweepAttemptDiagnostic[];
+  result:
+    | "candidate_found"
+    | "insufficient_candles"
+    | "missing_zone"
+    | "zone_not_touched"
+    | "no_zone_touch_attempts"
+    | "no_sweep_reference"
+    | "sweep_not_confirmed"
+    | "confirmation_failed";
+  resultReason: string;
+};
+
+export type TopDownSweepDiagnostic = {
+  symbol: string;
+  livePrice: number;
+  overallBias: Bias;
+  biasStrength: number;
+  direction: "LONG" | "SHORT" | "NEUTRAL";
+  selectedHtfZone: ZoneRange | null;
+  selectedMtfZone: ZoneRange | null;
+  activeZone: ZoneRange | null;
+  inputShape: {
+    monthly: number;
+    weekly: number;
+    daily: number;
+    h4: number;
+    h1: number;
+    m15: number;
+    m5: number;
+    dailyLastTime: number | null;
+    h4LastTime: number | null;
+    h1LastTime: number | null;
+    m15LastTime: number | null;
+    m5LastTime: number | null;
+  };
+  sweepDiagnostics: {
+    m5: SweepPathDiagnostic;
+    m15: SweepPathDiagnostic;
+  };
+  selectedSweepTimeframe: "5m" | "15m" | null;
+  sweepFound: boolean;
+  rrToTp1: number;
+  rrToTp2: number;
+  minTp1R: number;
+  promotionStatus: "active" | "waiting_for_sweep" | "waiting_for_rr" | "ranging_bias";
+  promotionBlockers: string[];
+  resultSummary: string;
 };
 
 type ConfluenceScoreBreakdown = {
@@ -877,52 +963,172 @@ function confirmBearishShift(candles: Candle[], sweepIndex: number, sweepLevel: 
   return null;
 }
 
-function detectSweepCandidate(input: {
+function evaluateSweepCandidate(input: {
   symbol: string;
   direction: "LONG" | "SHORT";
   candles: Candle[];
   timeframe: "5m" | "15m";
   zone: ZoneRange | null;
-}): SweepCandidate | null {
+}): { candidate: SweepCandidate | null; diagnostic: SweepPathDiagnostic } {
   const { candles, direction } = input;
-  if (candles.length < 12 || !input.zone) {
-    return null;
+  const atr14 = candles.length > 0 ? atr(candles, 14) : null;
+  const tolerance = candles.length > 0
+    ? Math.max(pipBuffer(input.symbol, candles.at(-1)?.close ?? 1) * 0.35, (atr14 ?? 0) * 0.04)
+    : null;
+  const diagnosticBase: Omit<SweepPathDiagnostic, "result" | "resultReason"> = {
+    timeframe: input.timeframe,
+    direction,
+    candleCount: candles.length,
+    lastClose: candles.at(-1)?.close ?? null,
+    lastCandleTime: candles.at(-1)?.time ?? null,
+    atr14,
+    tolerance,
+    zone: input.zone,
+    zoneStartIndex: -1,
+    recentSwingHighs: extractSwingHighs(candles, 2).slice(-3),
+    recentSwingLows: extractSwingLows(candles, 2).slice(-3),
+    attempts: [],
+  };
+
+  if (candles.length < 12) {
+    return {
+      candidate: null,
+      diagnostic: {
+        ...diagnosticBase,
+        result: "insufficient_candles",
+        resultReason: `Need at least 12 ${input.timeframe} candles; received ${candles.length}.`,
+      },
+    };
+  }
+  if (!input.zone) {
+    return {
+      candidate: null,
+      diagnostic: {
+        ...diagnosticBase,
+        result: "missing_zone",
+        resultReason: "No aligned HTF/MTF reaction zone was selected.",
+      },
+    };
   }
   const zone = input.zone;
 
-  const tolerance = Math.max(pipBuffer(input.symbol, candles.at(-1)?.close ?? 1) * 0.35, atr(candles, 14) * 0.04);
   const zoneStartIndex = candles.findIndex(candle => zoneTouched(candle, zone));
   if (zoneStartIndex < 0) {
-    return null;
+    return {
+      candidate: null,
+      diagnostic: {
+        ...diagnosticBase,
+        zoneStartIndex,
+        result: "zone_not_touched",
+        resultReason: `Price never touched the selected ${input.timeframe} reaction zone.`,
+      },
+    };
   }
+
+  const attempts: SweepAttemptDiagnostic[] = [];
+  let lastFailure: SweepAttemptDiagnostic | null = null;
+  let sawZoneTouch = false;
+  let sawReferenceLevels = false;
+  let sawSweepWithoutConfirmation = false;
 
   for (let index = Math.max(5, zoneStartIndex); index < candles.length - 1; index += 1) {
     const candle = candles[index];
     if (!zoneTouched(candle, zone)) {
       continue;
     }
+    sawZoneTouch = true;
 
     const referenceLevels = findReferenceLevels(candles, direction, index);
     if (referenceLevels.length === 0) {
+      lastFailure = {
+        candleIndex: index,
+        candleTime: candle.time,
+        candleHigh: candle.high,
+        candleLow: candle.low,
+        candleClose: candle.close,
+        referenceLevels: [],
+        qualifyingReferenceLevels: [],
+        selectedSweepLevel: null,
+        thresholdFloor: null,
+        thresholdCeiling: null,
+        swept: false,
+        confirmation: null,
+        rejectionReason: "no_reference_levels",
+      };
+      attempts.push(lastFailure);
       continue;
     }
+    sawReferenceLevels = true;
 
     if (direction === "LONG") {
-      const sweepLevel = Math.max(...referenceLevels.filter(level => level >= zone.low - tolerance && level <= candle.low + atr(candles, 14)));
+      const qualifyingLevels = referenceLevels.filter(level =>
+        level >= zone.low - (tolerance ?? 0)
+        && level <= candle.low + (atr14 ?? 0),
+      );
+      const sweepLevel = Math.max(...qualifyingLevels);
       if (!Number.isFinite(sweepLevel)) {
+        lastFailure = {
+          candleIndex: index,
+          candleTime: candle.time,
+          candleHigh: candle.high,
+          candleLow: candle.low,
+          candleClose: candle.close,
+          referenceLevels,
+          qualifyingReferenceLevels: qualifyingLevels,
+          selectedSweepLevel: null,
+          thresholdFloor: zone.low - (tolerance ?? 0),
+          thresholdCeiling: candle.low + (atr14 ?? 0),
+          swept: false,
+          confirmation: null,
+          rejectionReason: "no_zone_aligned_reference_level",
+        };
+        attempts.push(lastFailure);
         continue;
       }
-      const swept = candle.low < (sweepLevel - tolerance) && candle.close > sweepLevel;
+      const swept = candle.low < (sweepLevel - (tolerance ?? 0)) && candle.close > sweepLevel;
       if (!swept) {
+        lastFailure = {
+          candleIndex: index,
+          candleTime: candle.time,
+          candleHigh: candle.high,
+          candleLow: candle.low,
+          candleClose: candle.close,
+          referenceLevels,
+          qualifyingReferenceLevels: qualifyingLevels,
+          selectedSweepLevel: sweepLevel,
+          thresholdFloor: zone.low - (tolerance ?? 0),
+          thresholdCeiling: candle.low + (atr14 ?? 0),
+          swept,
+          confirmation: null,
+          rejectionReason: "sweep_condition_false",
+        };
+        attempts.push(lastFailure);
         continue;
       }
       const confirmation = confirmBullishShift(candles, index, sweepLevel);
       if (!confirmation) {
+        sawSweepWithoutConfirmation = true;
+        lastFailure = {
+          candleIndex: index,
+          candleTime: candle.time,
+          candleHigh: candle.high,
+          candleLow: candle.low,
+          candleClose: candle.close,
+          referenceLevels,
+          qualifyingReferenceLevels: qualifyingLevels,
+          selectedSweepLevel: sweepLevel,
+          thresholdFloor: zone.low - (tolerance ?? 0),
+          thresholdCeiling: candle.low + (atr14 ?? 0),
+          swept,
+          confirmation: null,
+          rejectionReason: "confirmation_missing",
+        };
+        attempts.push(lastFailure);
         continue;
       }
       const entryCandle = candles[confirmation.index];
       const stopBuffer = Math.max(pipBuffer(input.symbol, entryCandle.close), atr(candles, 14) * 0.12);
-      return {
+      const candidate = {
         entryTimeframe: input.timeframe,
         entry: entryCandle.close,
         stopLoss: candle.low - stopBuffer,
@@ -933,23 +1139,101 @@ function detectSweepCandidate(input: {
         confirmationLabel: confirmation.label,
         sweepDescription: `Sell-side liquidity at ${formatPrice(sweepLevel, input.symbol)} was swept before a ${confirmation.label} confirmation closed.`,
       };
+      attempts.push({
+        candleIndex: index,
+        candleTime: candle.time,
+        candleHigh: candle.high,
+        candleLow: candle.low,
+        candleClose: candle.close,
+        referenceLevels,
+        qualifyingReferenceLevels: qualifyingLevels,
+        selectedSweepLevel: sweepLevel,
+        thresholdFloor: zone.low - (tolerance ?? 0),
+        thresholdCeiling: candle.low + (atr14 ?? 0),
+        swept,
+        confirmation: confirmation.label,
+        rejectionReason: null,
+      });
+      return {
+        candidate,
+        diagnostic: {
+          ...diagnosticBase,
+          zoneStartIndex,
+          attempts: attempts.slice(-6),
+          result: "candidate_found",
+          resultReason: `Found a confirmed ${input.timeframe} sell-side sweep.`,
+        },
+      };
     }
 
-    const sweepLevel = Math.min(...referenceLevels.filter(level => level <= zone.high + tolerance && level >= candle.high - atr(candles, 14)));
+    const qualifyingLevels = referenceLevels.filter(level =>
+      level <= zone.high + (tolerance ?? 0)
+      && level >= candle.high - (atr14 ?? 0),
+    );
+    const sweepLevel = Math.min(...qualifyingLevels);
     if (!Number.isFinite(sweepLevel)) {
+      lastFailure = {
+        candleIndex: index,
+        candleTime: candle.time,
+        candleHigh: candle.high,
+        candleLow: candle.low,
+        candleClose: candle.close,
+        referenceLevels,
+        qualifyingReferenceLevels: qualifyingLevels,
+        selectedSweepLevel: null,
+        thresholdFloor: candle.high - (atr14 ?? 0),
+        thresholdCeiling: zone.high + (tolerance ?? 0),
+        swept: false,
+        confirmation: null,
+        rejectionReason: "no_zone_aligned_reference_level",
+      };
+      attempts.push(lastFailure);
       continue;
     }
-    const swept = candle.high > (sweepLevel + tolerance) && candle.close < sweepLevel;
+    const swept = candle.high > (sweepLevel + (tolerance ?? 0)) && candle.close < sweepLevel;
     if (!swept) {
+      lastFailure = {
+        candleIndex: index,
+        candleTime: candle.time,
+        candleHigh: candle.high,
+        candleLow: candle.low,
+        candleClose: candle.close,
+        referenceLevels,
+        qualifyingReferenceLevels: qualifyingLevels,
+        selectedSweepLevel: sweepLevel,
+        thresholdFloor: candle.high - (atr14 ?? 0),
+        thresholdCeiling: zone.high + (tolerance ?? 0),
+        swept,
+        confirmation: null,
+        rejectionReason: "sweep_condition_false",
+      };
+      attempts.push(lastFailure);
       continue;
     }
     const confirmation = confirmBearishShift(candles, index, sweepLevel);
     if (!confirmation) {
+      sawSweepWithoutConfirmation = true;
+      lastFailure = {
+        candleIndex: index,
+        candleTime: candle.time,
+        candleHigh: candle.high,
+        candleLow: candle.low,
+        candleClose: candle.close,
+        referenceLevels,
+        qualifyingReferenceLevels: qualifyingLevels,
+        selectedSweepLevel: sweepLevel,
+        thresholdFloor: candle.high - (atr14 ?? 0),
+        thresholdCeiling: zone.high + (tolerance ?? 0),
+        swept,
+        confirmation: null,
+        rejectionReason: "confirmation_missing",
+      };
+      attempts.push(lastFailure);
       continue;
     }
     const entryCandle = candles[confirmation.index];
     const stopBuffer = Math.max(pipBuffer(input.symbol, entryCandle.close), atr(candles, 14) * 0.12);
-    return {
+    const candidate = {
       entryTimeframe: input.timeframe,
       entry: entryCandle.close,
       stopLoss: candle.high + stopBuffer,
@@ -960,14 +1244,75 @@ function detectSweepCandidate(input: {
       confirmationLabel: confirmation.label,
       sweepDescription: `Buy-side liquidity at ${formatPrice(sweepLevel, input.symbol)} was swept before a ${confirmation.label} confirmation closed.`,
     };
+    attempts.push({
+      candleIndex: index,
+      candleTime: candle.time,
+      candleHigh: candle.high,
+      candleLow: candle.low,
+      candleClose: candle.close,
+      referenceLevels,
+      qualifyingReferenceLevels: qualifyingLevels,
+      selectedSweepLevel: sweepLevel,
+      thresholdFloor: candle.high - (atr14 ?? 0),
+      thresholdCeiling: zone.high + (tolerance ?? 0),
+      swept,
+      confirmation: confirmation.label,
+      rejectionReason: null,
+    });
+    return {
+      candidate,
+      diagnostic: {
+        ...diagnosticBase,
+        zoneStartIndex,
+        attempts: attempts.slice(-6),
+        result: "candidate_found",
+        resultReason: `Found a confirmed ${input.timeframe} buy-side sweep.`,
+      },
+    };
   }
 
-  return null;
+  const result = !sawZoneTouch
+    ? "no_zone_touch_attempts"
+    : !sawReferenceLevels
+      ? "no_sweep_reference"
+      : sawSweepWithoutConfirmation
+        ? "confirmation_failed"
+        : "sweep_not_confirmed";
+  const resultReason = result === "no_zone_touch_attempts"
+    ? `Price touched the selected ${input.timeframe} zone too late in the sample to evaluate a sweep.`
+    : result === "no_sweep_reference"
+      ? `No recent ${direction === "LONG" ? "sell-side" : "buy-side"} liquidity level aligned with the selected ${input.timeframe} zone.`
+      : result === "confirmation_failed"
+        ? `A sweep condition fired, but the confirmation candle never printed within the allowed window.`
+        : `Zone touches were evaluated, but the sweep threshold was never breached and reclaimed.`;
+
+  return {
+    candidate: null,
+    diagnostic: {
+      ...diagnosticBase,
+      zoneStartIndex,
+      attempts: attempts.slice(-6),
+      result,
+      resultReason,
+    },
+  };
 }
 
-function pickTargetZones(input: {
+function detectSweepCandidate(input: {
+  symbol: string;
+  direction: "LONG" | "SHORT";
+  candles: Candle[];
+  timeframe: "5m" | "15m";
+  zone: ZoneRange | null;
+}): SweepCandidate | null {
+  return evaluateSweepCandidate(input).candidate;
+}
+
+export function pickTargetZones(input: {
   direction: "LONG" | "SHORT";
   entry: number;
+  stopLoss?: number | null;
+  minimumRiskReward?: number;
   mtfZones: PriceZoneCandidate[];
   htfZones: PriceZoneCandidate[];
 }): { tp1: PriceZoneCandidate | null; tp2: PriceZoneCandidate | null } {
@@ -975,17 +1320,32 @@ function pickTargetZones(input: {
   const forwardComparator = (zone: PriceZoneCandidate): boolean => (
     input.direction === "LONG" ? zone.high > input.entry : zone.low < input.entry
   );
+  const riskRewardComparator = (zone: PriceZoneCandidate): boolean => {
+    if (input.stopLoss == null || input.minimumRiskReward == null || input.minimumRiskReward <= 0) {
+      return true;
+    }
+    const targetPrice = input.direction === "LONG" ? zone.low : zone.high;
+    return calculateRiskReward(input.entry, input.stopLoss, targetPrice) >= input.minimumRiskReward;
+  };
 
   const mtfTargets = input.mtfZones
     .filter(zone => zone.direction === targetDirection && forwardComparator(zone))
     .sort((left, right) => input.direction === "LONG" ? left.low - right.low : right.high - left.high);
-  const tp1 = mtfTargets[0] ?? null;
+  const tp1 = mtfTargets.find(riskRewardComparator) ?? mtfTargets[0] ?? null;
 
   const htfTargets = input.htfZones
     .filter(zone => zone.direction === targetDirection && forwardComparator(zone))
     .sort((left, right) => input.direction === "LONG" ? left.low - right.low : right.high - left.high);
 
   const tp2 = htfTargets.find(zone => {
+    if (!riskRewardComparator(zone)) {
+      return false;
+    }
+    if (!tp1) {
+      return true;
+    }
+    return input.direction === "LONG" ? zone.low > tp1.high : zone.high < tp1.low;
+  }) ?? htfTargets.find(zone => {
     if (!tp1) {
       return true;
     }
@@ -1114,6 +1474,7 @@ function reasonForNeutral(input: {
   zone: ZoneRange | null;
   sweep: SweepCandidate | null;
   rr: number;
+  minTp1R?: number;
 }): string {
   if (input.overallBias === "ranging") {
     return `${input.symbol}: Higher-timeframe structure is mixed, so no directional bias is active.`;
@@ -1124,8 +1485,8 @@ function reasonForNeutral(input: {
   if (!input.sweep) {
     return `${input.symbol}: ${titleCase(input.overallBias)} bias is active, but no lower-timeframe liquidity sweep plus confirmation has closed inside the reaction zone yet.`;
   }
-  if (input.rr > 0 && input.rr < 3) {
-    return `${input.symbol}: The sweep setup formed, but TP1 only offers ${input.rr.toFixed(2)}R which fails the 1:3 floor.`;
+  if (input.rr > 0 && input.rr < (input.minTp1R ?? 3)) {
+    return `${input.symbol}: The sweep setup formed, but TP1 only offers ${input.rr.toFixed(2)}R which fails the ${((input.minTp1R ?? 3).toFixed(1))}:1 floor.`;
   }
   return `${input.symbol}: Top-down bias is ${input.overallBias} with ${input.biasStrength}% alignment, but entry conditions remain incomplete.`;
 }
@@ -1173,12 +1534,374 @@ export interface MTFAnalysisResult {
     stopAdjustment: string;
     runnerPlan: string;
   };
+  promotionStatus?: "active" | "waiting_for_sweep" | "waiting_for_rr" | "ranging_bias";
+  promotionBlockers?: string[];
 }
 
 function logMtfScoringInput(symbol: string, mtf: MTFCandles, livePrice: number): void {
   console.log(
     `[MTF SCORE INPUT] ${symbol}: livePrice=${Number.isFinite(livePrice) ? formatPrice(livePrice, symbol) : "invalid"} mo=${mtf.monthly.length} wk=${mtf.weekly.length} d=${mtf.daily.length} h4=${mtf.h4.length} h1=${mtf.h1.length} m15=${mtf.m15.length} m5=${mtf.m5.length}`,
   );
+}
+
+function buildUnavailableSweepDiagnostic(input: {
+  timeframe: "5m" | "15m";
+  direction: "LONG" | "SHORT";
+  candles: Candle[];
+  reason: SweepPathDiagnostic["result"];
+  detail: string;
+}): SweepPathDiagnostic {
+  return {
+    timeframe: input.timeframe,
+    direction: input.direction,
+    candleCount: input.candles.length,
+    lastClose: input.candles.at(-1)?.close ?? null,
+    lastCandleTime: input.candles.at(-1)?.time ?? null,
+    atr14: input.candles.length > 0 ? atr(input.candles, 14) : null,
+    tolerance: null,
+    zone: null,
+    zoneStartIndex: -1,
+    recentSwingHighs: extractSwingHighs(input.candles, 2).slice(-3),
+    recentSwingLows: extractSwingLows(input.candles, 2).slice(-3),
+    attempts: [],
+    result: input.reason,
+    resultReason: input.detail,
+  };
+}
+
+function buildInputShape(mtf: MTFCandles): TopDownSweepDiagnostic["inputShape"] {
+  return {
+    monthly: mtf.monthly.length,
+    weekly: mtf.weekly.length,
+    daily: mtf.daily.length,
+    h4: mtf.h4.length,
+    h1: mtf.h1.length,
+    m15: mtf.m15.length,
+    m5: mtf.m5.length,
+    dailyLastTime: mtf.daily.at(-1)?.time ?? null,
+    h4LastTime: mtf.h4.at(-1)?.time ?? null,
+    h1LastTime: mtf.h1.at(-1)?.time ?? null,
+    m15LastTime: mtf.m15.at(-1)?.time ?? null,
+    m5LastTime: mtf.m5.at(-1)?.time ?? null,
+  };
+}
+
+function resolveMinimumTp1R(input: {
+  symbol: string;
+  livePrice: number;
+  mtf: MTFCandles;
+  sweep: SweepCandidate | null;
+}): number {
+  const h1Atr = atr(input.mtf.h1, 14);
+  const entryPrice = input.sweep?.entry ?? input.livePrice;
+  const relativeAtr = entryPrice > 0 ? h1Atr / entryPrice : 0;
+  if (relativeAtr >= 0.03) {
+    return 3;
+  }
+  if (relativeAtr >= 0.015) {
+    return 2.5;
+  }
+  if (relativeAtr >= 0.0075) {
+    return 2.2;
+  }
+  return 1.8;
+}
+
+export function diagnoseTopDownSweep(
+  symbol: string,
+  mtf: MTFCandles,
+  livePrice: number,
+): TopDownSweepDiagnostic {
+  const inputShape = buildInputShape(mtf);
+  const defaultSweepDirection: "LONG" | "SHORT" = "LONG";
+
+  if (!Number.isFinite(livePrice) || livePrice <= 0) {
+    return {
+      symbol,
+      livePrice,
+      overallBias: "ranging",
+      biasStrength: 0,
+      direction: "NEUTRAL",
+      selectedHtfZone: null,
+      selectedMtfZone: null,
+      activeZone: null,
+      inputShape,
+      sweepDiagnostics: {
+        m5: buildUnavailableSweepDiagnostic({
+          timeframe: "5m",
+          direction: defaultSweepDirection,
+          candles: mtf.m5,
+          reason: "missing_zone",
+          detail: "Live price is invalid, so sweep diagnostics could not run.",
+        }),
+        m15: buildUnavailableSweepDiagnostic({
+          timeframe: "15m",
+          direction: defaultSweepDirection,
+          candles: mtf.m15,
+          reason: "missing_zone",
+          detail: "Live price is invalid, so sweep diagnostics could not run.",
+        }),
+      },
+      selectedSweepTimeframe: null,
+      sweepFound: false,
+      rrToTp1: 0,
+      rrToTp2: 0,
+      minTp1R: 0,
+      promotionStatus: "waiting_for_sweep",
+      promotionBlockers: ["invalid_live_price"],
+      resultSummary: `${symbol}: live price is invalid, so the sweep gate could not be evaluated.`,
+    };
+  }
+
+  if (
+    mtf.daily.length < MTF_ANALYSIS_MIN_CANDLES.daily
+    || mtf.h4.length < MTF_ANALYSIS_MIN_CANDLES.h4
+    || mtf.h1.length < MTF_ANALYSIS_MIN_CANDLES.h1
+    || mtf.m15.length < MTF_ANALYSIS_MIN_CANDLES.m15
+    || mtf.m5.length < MTF_ANALYSIS_MIN_CANDLES.m5
+  ) {
+    return {
+      symbol,
+      livePrice,
+      overallBias: "ranging",
+      biasStrength: 0,
+      direction: "NEUTRAL",
+      selectedHtfZone: null,
+      selectedMtfZone: null,
+      activeZone: null,
+      inputShape,
+      sweepDiagnostics: {
+        m5: buildUnavailableSweepDiagnostic({
+          timeframe: "5m",
+          direction: defaultSweepDirection,
+          candles: mtf.m5,
+          reason: "insufficient_candles",
+          detail: `Need at least 24 five-minute candles; received ${mtf.m5.length}.`,
+        }),
+        m15: buildUnavailableSweepDiagnostic({
+          timeframe: "15m",
+          direction: defaultSweepDirection,
+          candles: mtf.m15,
+          reason: "insufficient_candles",
+          detail: `Need at least 24 fifteen-minute candles; received ${mtf.m15.length}.`,
+        }),
+      },
+      selectedSweepTimeframe: null,
+      sweepFound: false,
+      rrToTp1: 0,
+      rrToTp2: 0,
+      minTp1R: 0,
+      promotionStatus: "waiting_for_sweep",
+      promotionBlockers: ["insufficient_candles"],
+      resultSummary: `${symbol}: insufficient candles for top-down sweep analysis.`,
+    };
+  }
+
+  const monthlyBias = mtf.monthly.length >= 4 ? detectBias(mtf.monthly, 6) : "ranging";
+  const weeklyBias = mtf.weekly.length >= 8 ? detectBias(mtf.weekly, 12) : "ranging";
+  const dailyStructure = analyzeStructure(mtf.daily);
+  const h4Structure = analyzeStructure(mtf.h4);
+  const m30 = aggregateCandles(mtf.m15, 30 * 60 * 1000);
+  const dailyBias = dailyStructure.bias;
+  const h4Bias = h4Structure.bias;
+  const { overallBias, biasStrength } = overallBiasFromStructures({
+    monthlyBias,
+    weeklyBias,
+    dailyBias,
+    h4Bias,
+  });
+
+  const direction: "LONG" | "SHORT" | "NEUTRAL" = overallBias === "bullish"
+    ? "LONG"
+    : overallBias === "bearish"
+      ? "SHORT"
+      : "NEUTRAL";
+
+  const dailyOrderBlocks = detectOrderBlocks(mtf.daily);
+  const dailyFvgs = detectFVGs(mtf.daily);
+  const dailyBreakers = detectBreakerBlocks(mtf.daily, dailyOrderBlocks);
+  const dailySdZones = detectSDZones(mtf.daily);
+  const h4OrderBlocks = detectOrderBlocks(mtf.h4);
+  const h4Fvgs = detectFVGs(mtf.h4);
+  const h4Breakers = detectBreakerBlocks(mtf.h4, h4OrderBlocks);
+  const h4SdZones = detectSDZones(mtf.h4);
+  const h1OrderBlocks = detectOrderBlocks(mtf.h1);
+  const h1Fvgs = detectFVGs(mtf.h1);
+  const h1Breakers = detectBreakerBlocks(mtf.h1, h1OrderBlocks);
+  const h1SdZones = detectSDZones(mtf.h1);
+  const m30OrderBlocks = detectOrderBlocks(m30);
+  const m30Fvgs = detectFVGs(m30);
+  const m30Breakers = detectBreakerBlocks(m30, m30OrderBlocks);
+  const m30SdZones = detectSDZones(m30);
+
+  const htfZones = [
+    ...buildZoneCandidates({
+      timeframe: "1d",
+      candles: mtf.daily,
+      blocks: dailyOrderBlocks,
+      fvgs: dailyFvgs,
+      breakers: dailyBreakers,
+      sdZones: dailySdZones,
+    }),
+    ...buildZoneCandidates({
+      timeframe: "4h",
+      candles: mtf.h4,
+      blocks: h4OrderBlocks,
+      fvgs: h4Fvgs,
+      breakers: h4Breakers,
+      sdZones: h4SdZones,
+    }),
+  ];
+  const mtfZones = [
+    ...buildZoneCandidates({
+      timeframe: "1h",
+      candles: mtf.h1,
+      blocks: h1OrderBlocks,
+      fvgs: h1Fvgs,
+      breakers: h1Breakers,
+      sdZones: h1SdZones,
+    }),
+    ...buildZoneCandidates({
+      timeframe: "30m",
+      candles: m30,
+      blocks: m30OrderBlocks,
+      fvgs: m30Fvgs,
+      breakers: m30Breakers,
+      sdZones: m30SdZones,
+    }),
+  ];
+
+  const selectedZones = direction === "NEUTRAL"
+    ? { htfZone: null, mtfZone: null }
+    : pickBestEntryZone({
+      direction,
+      livePrice,
+      htfZones,
+      mtfZones,
+    });
+  const selectedHtfZone = buildZoneRange(selectedZones.htfZone);
+  const selectedMtfZone = buildZoneRange(selectedZones.mtfZone);
+  const activeZone = selectedMtfZone ?? selectedHtfZone;
+
+  const m5Evaluation = direction === "NEUTRAL"
+    ? {
+      candidate: null,
+      diagnostic: buildUnavailableSweepDiagnostic({
+        timeframe: "5m",
+        direction: defaultSweepDirection,
+        candles: mtf.m5,
+        reason: "missing_zone",
+        detail: "Bias is ranging, so no directional sweep path is evaluated.",
+      }),
+    }
+    : evaluateSweepCandidate({
+      symbol,
+      direction,
+      candles: mtf.m5,
+      timeframe: "5m",
+      zone: activeZone,
+    });
+  const m15Evaluation = direction === "NEUTRAL"
+    ? {
+      candidate: null,
+      diagnostic: buildUnavailableSweepDiagnostic({
+        timeframe: "15m",
+        direction: defaultSweepDirection,
+        candles: mtf.m15,
+        reason: "missing_zone",
+        detail: "Bias is ranging, so no directional sweep path is evaluated.",
+      }),
+    }
+    : evaluateSweepCandidate({
+      symbol,
+      direction,
+      candles: mtf.m15,
+      timeframe: "15m",
+      zone: activeZone,
+    });
+  const sweep = m5Evaluation.candidate ?? m15Evaluation.candidate;
+  const minTp1R = resolveMinimumTp1R({
+    symbol,
+    livePrice,
+    mtf,
+    sweep,
+  });
+
+  const targets = direction === "NEUTRAL"
+    ? { tp1: null, tp2: null }
+    : pickTargetZones({
+      direction,
+      entry: sweep?.entry ?? midpoint(selectedZones.mtfZone ?? selectedZones.htfZone, livePrice),
+      stopLoss: sweep?.stopLoss ?? null,
+      minimumRiskReward: sweep ? minTp1R : undefined,
+      mtfZones,
+      htfZones,
+    });
+  const rrToTp1 = direction === "NEUTRAL" || !sweep
+    ? 0
+    : calculateRiskReward(
+      sweep.entry,
+      sweep.stopLoss,
+      direction === "LONG"
+        ? targets.tp1?.low ?? targets.tp2?.low ?? livePrice + Math.max(atr(mtf.h1, 14) * 3.5, livePrice * 0.015)
+        : targets.tp1?.high ?? targets.tp2?.high ?? livePrice - Math.max(atr(mtf.h1, 14) * 3.5, livePrice * 0.015),
+    );
+  const rrToTp2 = direction === "NEUTRAL" || !sweep
+    ? 0
+    : calculateRiskReward(
+      sweep.entry,
+      sweep.stopLoss,
+      direction === "LONG"
+        ? targets.tp2?.low ?? ((targets.tp1?.high ?? livePrice) + Math.max(atr(mtf.h4, 14) * 2.5, livePrice * 0.02))
+        : targets.tp2?.high ?? ((targets.tp1?.low ?? livePrice) - Math.max(atr(mtf.h4, 14) * 2.5, livePrice * 0.02)),
+    );
+  const promotionBlockers: string[] = [];
+  let promotionStatus: TopDownSweepDiagnostic["promotionStatus"] = "active";
+  if (direction === "NEUTRAL") {
+    promotionStatus = "ranging_bias";
+    promotionBlockers.push("overall_bias_ranging");
+  } else if (!sweep) {
+    promotionStatus = "waiting_for_sweep";
+    promotionBlockers.push(
+      `m5:${m5Evaluation.diagnostic.result}`,
+      `m15:${m15Evaluation.diagnostic.result}`,
+    );
+  } else if (rrToTp1 < minTp1R) {
+    promotionStatus = "waiting_for_rr";
+    promotionBlockers.push(`tp1_rr_below_min:${rrToTp1.toFixed(2)}<${minTp1R.toFixed(2)}`);
+  }
+
+  const resultSummary = direction === "NEUTRAL"
+    ? `${symbol}: higher-timeframe bias is ranging, so no sweep promotion path is active.`
+    : !sweep
+      ? `${symbol}: no confirmed lower-timeframe sweep passed the shared gate (${m5Evaluation.diagnostic.result}, ${m15Evaluation.diagnostic.result}).`
+      : rrToTp1 < minTp1R
+        ? `${symbol}: sweep confirmed, but TP1 only offers ${rrToTp1.toFixed(2)}R against a ${minTp1R.toFixed(2)}R minimum.`
+        : `${symbol}: sweep confirmed and the promotion gate is open.`;
+
+  return {
+    symbol,
+    livePrice,
+    overallBias,
+    biasStrength,
+    direction,
+    selectedHtfZone,
+    selectedMtfZone,
+    activeZone,
+    inputShape,
+    sweepDiagnostics: {
+      m5: m5Evaluation.diagnostic,
+      m15: m15Evaluation.diagnostic,
+    },
+    selectedSweepTimeframe: sweep?.entryTimeframe ?? null,
+    sweepFound: Boolean(sweep),
+    rrToTp1,
+    rrToTp2,
+    minTp1R,
+    promotionStatus,
+    promotionBlockers,
+    resultSummary,
+  };
 }
 
 export function runTopDownAnalysis(
@@ -1192,7 +1915,13 @@ export function runTopDownAnalysis(
     console.log(`[MTF SCORE INPUT] ${symbol}: invalid live price, skipping analysis`);
     return null;
   }
-  if (mtf.daily.length < 20 || mtf.h4.length < 20 || mtf.h1.length < 20 || mtf.m15.length < 24 || mtf.m5.length < 24) {
+  if (
+    mtf.daily.length < MTF_ANALYSIS_MIN_CANDLES.daily
+    || mtf.h4.length < MTF_ANALYSIS_MIN_CANDLES.h4
+    || mtf.h1.length < MTF_ANALYSIS_MIN_CANDLES.h1
+    || mtf.m15.length < MTF_ANALYSIS_MIN_CANDLES.m15
+    || mtf.m5.length < MTF_ANALYSIS_MIN_CANDLES.m5
+  ) {
     console.log(
       `[MTF SCORE INPUT] ${symbol}: insufficient candles for analysis (d=${mtf.daily.length} h4=${mtf.h4.length} h1=${mtf.h1.length} m15=${mtf.m15.length} m5=${mtf.m5.length})`,
     );
@@ -1272,6 +2001,7 @@ export function runTopDownAnalysis(
       zone: null,
       sweep: null,
       rr: 0,
+      minTp1R: 0,
     }),
     timeframe: "15m",
     setupType: "awaiting_liquidity_sweep",
@@ -1303,6 +2033,8 @@ export function runTopDownAnalysis(
       stopAdjustment: "Move stop to breakeven after TP1.",
       runnerPlan: "Let the remainder run to TP2.",
     },
+    promotionStatus: overallBias === "ranging" ? "ranging_bias" : "waiting_for_sweep",
+    promotionBlockers: overallBias === "ranging" ? ["overall_bias_ranging"] : ["awaiting_confirmed_sweep"],
   };
 
   if (overallBias === "ranging") {
@@ -1357,26 +2089,36 @@ export function runTopDownAnalysis(
   const mtfZoneRange = buildZoneRange(selectedZones.mtfZone);
   const activeZone = mtfZoneRange ?? htfZoneRange;
 
-  const m5Sweep = detectSweepCandidate({
+  const m5SweepEvaluation = evaluateSweepCandidate({
     symbol,
     direction,
     candles: mtf.m5,
     timeframe: "5m",
     zone: activeZone,
   });
-  const m15Sweep = detectSweepCandidate({
+  const m15SweepEvaluation = evaluateSweepCandidate({
     symbol,
     direction,
     candles: mtf.m15,
     timeframe: "15m",
     zone: activeZone,
   });
+  const m5Sweep = m5SweepEvaluation.candidate;
+  const m15Sweep = m15SweepEvaluation.candidate;
   const sweep = m5Sweep ?? m15Sweep;
 
   const zoneMidpoint = midpoint(selectedZones.mtfZone ?? selectedZones.htfZone, livePrice);
+  const minTp1R = resolveMinimumTp1R({
+    symbol,
+    livePrice,
+    mtf,
+    sweep,
+  });
   const targets = pickTargetZones({
     direction,
     entry: sweep?.entry ?? zoneMidpoint,
+    stopLoss: sweep?.stopLoss ?? null,
+    minimumRiskReward: sweep ? minTp1R : undefined,
     mtfZones,
     htfZones,
   });
@@ -1389,7 +2131,14 @@ export function runTopDownAnalysis(
     : targets.tp2?.high ?? ((targets.tp1?.low ?? livePrice) - Math.max(atr(mtf.h4, 14) * 2.5, livePrice * 0.02));
 
   const rr = sweep ? calculateRiskReward(sweep.entry, sweep.stopLoss, tp1Reference) : 0;
-  if (!sweep || rr < 3) {
+  if (!sweep || rr < minTp1R) {
+    const failedSweepDiagnostic = m5SweepEvaluation.candidate ? m5SweepEvaluation.diagnostic : m15SweepEvaluation.diagnostic;
+    console.log(
+      `[MTF SWEEP] ${symbol}: live=${formatPrice(livePrice, symbol)} zone=${activeZone ? `${formatPrice(activeZone.low, symbol)}-${formatPrice(activeZone.high, symbol)}` : "none"} `
+      + `m5=${m5SweepEvaluation.diagnostic.result} m15=${m15SweepEvaluation.diagnostic.result} `
+      + `sweep=${sweep ? `${sweep.entryTimeframe}:${formatPrice(sweep.sweepLevel, symbol)}` : "none"} rr=${rr.toFixed(2)} minR=${minTp1R.toFixed(2)} `
+      + `detail=${failedSweepDiagnostic.resultReason}`,
+    );
     return {
       ...neutralBase,
       reasoning: reasonForNeutral({
@@ -1399,10 +2148,18 @@ export function runTopDownAnalysis(
         zone: activeZone,
         sweep,
         rr,
+        minTp1R,
       }),
       htfZone: htfZoneRange,
       mtfZone: mtfZoneRange,
       liquiditySweepDescription: sweep?.sweepDescription ?? neutralBase.liquiditySweepDescription,
+      promotionStatus: sweep && rr > 0 && rr < minTp1R ? "waiting_for_rr" : neutralBase.promotionStatus,
+      promotionBlockers: sweep && rr > 0 && rr < minTp1R
+        ? [`tp1_rr_below_min:${rr.toFixed(2)}<${minTp1R.toFixed(2)}`]
+        : [
+          `m5:${m5SweepEvaluation.diagnostic.result}`,
+          `m15:${m15SweepEvaluation.diagnostic.result}`,
+        ],
     };
   }
 
@@ -1504,5 +2261,7 @@ export function runTopDownAnalysis(
       stopAdjustment: "Move stop to breakeven after TP1.",
       runnerPlan: "Hold the remainder for TP2.",
     },
+    promotionStatus: "active",
+    promotionBlockers: [],
   };
 }

@@ -1,3 +1,4 @@
+import type { MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import type { Candle } from "@/src/smc/types";
 
 const BINANCE_REST_BASE = "https://api.binance.com/api/v3";
@@ -47,6 +48,40 @@ const state = globalForMemeBinance.__apexMemeBinanceState ??= {
 function buildStreamUrl(symbols: string[]): string {
   const streams = symbols.map(symbol => `${symbol.toLowerCase()}@ticker`).join("/");
   return `${BINANCE_WS_BASE}?streams=${streams}`;
+}
+
+function aggregateCandles(candles: Candle[], bucketMs: number): Candle[] {
+  if (candles.length === 0) {
+    return [];
+  }
+
+  const grouped = new Map<number, Candle[]>();
+  for (const candle of candles) {
+    const bucket = Math.floor(candle.time * 1000 / bucketMs) * bucketMs;
+    if (!grouped.has(bucket)) {
+      grouped.set(bucket, []);
+    }
+    grouped.get(bucket)?.push(candle);
+  }
+
+  return [...grouped.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([bucket, group]) => ({
+      time: Math.floor(bucket / 1000),
+      open: group[0]?.open ?? group[0]?.close ?? 0,
+      high: Math.max(...group.map(candle => candle.high)),
+      low: Math.min(...group.map(candle => candle.low)),
+      close: group.at(-1)?.close ?? group[0]?.close ?? 0,
+      volume: group.reduce((sum, candle) => sum + (candle.volume ?? 0), 0),
+    }))
+    .filter(candle => candle.open > 0 && candle.high > 0 && candle.low > 0 && candle.close > 0);
+}
+
+function normalizeTime(candles: Candle[]): Candle[] {
+  return candles.map(candle => ({
+    ...candle,
+    time: candle.time * 1000,
+  }));
 }
 
 function readMessageData(event: MessageEvent): string | null {
@@ -216,6 +251,41 @@ export async function fetchMemeBinanceTickerPrice(symbol: string): Promise<numbe
   } catch {
     return null;
   }
+}
+
+export async function fetchMemeBinanceLivePrice(symbol: string): Promise<number | null> {
+  const wsPrice = getMemeBinanceLivePrice(symbol);
+  if (wsPrice != null) {
+    return wsPrice;
+  }
+
+  return fetchMemeBinanceTickerPrice(symbol);
+}
+
+export async function fetchMemeBinanceMtfcandles(symbol: string): Promise<MTFCandles> {
+  const [dailyRaw, h4Raw, h1Raw, m15Raw, m5Raw] = await Promise.all([
+    fetchMemeBinanceCandlesByInterval(symbol, "1d", 180),
+    fetchMemeBinanceCandlesByInterval(symbol, "4h", 180),
+    fetchMemeBinanceCandlesByInterval(symbol, "1h", 240),
+    fetchMemeBinanceCandlesByInterval(symbol, "15m", 240),
+    fetchMemeBinanceCandlesByInterval(symbol, "5m", 240),
+  ]);
+
+  const daily = normalizeTime(dailyRaw);
+  const h4 = normalizeTime(h4Raw);
+  const h1 = normalizeTime(h1Raw);
+  const m15 = normalizeTime(m15Raw);
+  const m5 = normalizeTime(m5Raw);
+
+  return {
+    monthly: aggregateCandles(daily, 30 * 24 * 60 * 60 * 1000),
+    weekly: aggregateCandles(daily, 7 * 24 * 60 * 60 * 1000),
+    daily,
+    h4,
+    h1,
+    m15,
+    m5,
+  };
 }
 
 export function getMemeBinanceLivePrice(symbol: string): number | null {

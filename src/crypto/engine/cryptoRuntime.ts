@@ -36,6 +36,10 @@ const runtimeState = globalForCryptoRuntime.__apexCryptoRuntime ??= {
   cycleRunning: false,
 };
 
+function isServerlessCryptoRuntime(): boolean {
+  return process.env.VERCEL === "1" || process.env.VERCEL_ENV != null;
+}
+
 export function isCryptoRuntimeEnabled(): boolean {
   return process.env.APEX_ENABLE_CRYPTO !== "false" && isAssetModuleEnabled("crypto");
 }
@@ -59,7 +63,7 @@ async function warmCryptoProvider(): Promise<void> {
   }
 
   ensureCryptoLiveFeedsStarted();
-  const wsReady = await waitForBinanceWebSocket();
+  const wsReady = isServerlessCryptoRuntime() ? false : await waitForBinanceWebSocket();
   const [price, candles] = await Promise.all([
     fetchCryptoTickerPrice(warmupSymbol),
     fetchCryptoCandles(warmupSymbol),
@@ -90,7 +94,11 @@ export async function triggerCryptoCycle(): Promise<{ cycleId: string; cardCount
   }
 
   ensureCryptoLiveFeedsStarted();
-  await waitForBinanceWebSocket();
+  if (isServerlessCryptoRuntime()) {
+    console.log("[crypto-runtime] Serverless execution detected, skipping websocket wait and relying on Binance REST fallbacks.");
+  } else {
+    await waitForBinanceWebSocket();
+  }
   runtimeState.cycleRunning = true;
   const cycleId = createId("cryptocycle");
 

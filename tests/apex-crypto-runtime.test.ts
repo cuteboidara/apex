@@ -1,9 +1,37 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { fetchMemeBinanceLivePrice, fetchMemeBinanceMtfcandles, resetMemeBinanceMarketDataForTests } from "@/src/assets/memecoins/data/BinanceMemeMarketData";
+import { fetchMTFCandles } from "@/src/assets/shared/mtfDataFetcher";
 import { CRYPTO_ACTIVE_SYMBOLS, CRYPTO_PAIR_PROFILES, getCryptoVolatilityWindow } from "@/src/crypto/config/cryptoScope";
 import { fromBinanceSymbol, toBinanceSymbol } from "@/src/crypto/data/binanceSymbols";
 import { getCryptoRuntimeStatus, getCryptoSignalsPayload, resetCryptoRuntimeForTests } from "@/src/crypto/engine/cryptoRuntime";
+
+function intervalMs(interval: string): number {
+  if (interval === "1d") return 24 * 60 * 60 * 1000;
+  if (interval === "4h") return 4 * 60 * 60 * 1000;
+  if (interval === "1h") return 60 * 60 * 1000;
+  if (interval === "15m") return 15 * 60 * 1000;
+  if (interval === "5m") return 5 * 60 * 1000;
+  throw new Error(`Unsupported interval ${interval}`);
+}
+
+function buildKlines(interval: string, count: number): unknown[][] {
+  const step = intervalMs(interval);
+  const baseTime = Date.UTC(2026, 3, 1, 0, 0, 0);
+
+  return Array.from({ length: count }, (_, index) => {
+    const open = 100 + (index * 0.25);
+    return [
+      baseTime + (index * step),
+      open.toFixed(2),
+      (open + 1).toFixed(2),
+      (open - 1).toFixed(2),
+      (open + 0.4).toFixed(2),
+      (1_000 + index).toFixed(2),
+    ];
+  });
+}
 
 test("crypto scope stays limited to the four supported Binance USD pairs", () => {
   assert.deepEqual(CRYPTO_ACTIVE_SYMBOLS, ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]);
@@ -73,5 +101,86 @@ test("crypto payload access starts the Binance websocket when the runtime suppor
   } finally {
     resetCryptoRuntimeForTests();
     globalThis.WebSocket = originalWebSocket;
+  }
+});
+
+test("crypto MTF fetching uses Binance REST klines for serverless-safe inputs", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedUrls: string[] = [];
+
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = String(input);
+    requestedUrls.push(url);
+    const parsed = new URL(url);
+    const interval = parsed.searchParams.get("interval");
+
+    if (parsed.hostname !== "api.binance.com" || interval == null) {
+      throw new Error(`Unexpected fetch ${url}`);
+    }
+
+    const count = interval === "1d" ? 180 : 240;
+    return new Response(JSON.stringify(buildKlines(interval, count)), { status: 200 });
+  }) as typeof fetch;
+
+  try {
+    const mtf = await fetchMTFCandles("BTCUSDT");
+
+    assert.equal(requestedUrls.length, 4);
+    assert.equal(requestedUrls.every(url => url.includes("api.binance.com/api/v3/klines")), true);
+    assert.equal(mtf.daily.length, 180);
+    assert.equal(mtf.h1.length, 240);
+    assert.equal(mtf.m15.length, 240);
+    assert.equal(mtf.m5.length, 240);
+    assert.ok(mtf.h4.length >= 20);
+    assert.ok(mtf.weekly.length >= 8);
+    assert.ok(mtf.monthly.length >= 4);
+    assert.ok(mtf.h1[0]!.time > 1_000_000_000_000);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("memecoin Binance helpers fall back to REST when no websocket price buffer exists", async () => {
+  resetMemeBinanceMarketDataForTests();
+  const originalFetch = globalThis.fetch;
+  const requestedUrls: string[] = [];
+
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = String(input);
+    requestedUrls.push(url);
+    const parsed = new URL(url);
+
+    if (parsed.pathname.endsWith("/ticker/price")) {
+      return new Response(JSON.stringify({ price: "0.1234" }), { status: 200 });
+    }
+
+    const interval = parsed.searchParams.get("interval");
+    if (parsed.pathname.endsWith("/klines") && interval != null) {
+      const count = interval === "1d" || interval === "4h" ? 180 : 240;
+      return new Response(JSON.stringify(buildKlines(interval, count)), { status: 200 });
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const [livePrice, mtf] = await Promise.all([
+      fetchMemeBinanceLivePrice("DOGEUSDT"),
+      fetchMemeBinanceMtfcandles("DOGEUSDT"),
+    ]);
+
+    assert.equal(livePrice, 0.1234);
+    assert.ok(requestedUrls.some(url => url.includes("/ticker/price?symbol=DOGEUSDT")));
+    assert.equal(requestedUrls.filter(url => url.includes("/klines?symbol=DOGEUSDT")).length, 5);
+    assert.equal(mtf.daily.length, 180);
+    assert.equal(mtf.h4.length, 180);
+    assert.equal(mtf.h1.length, 240);
+    assert.equal(mtf.m15.length, 240);
+    assert.equal(mtf.m5.length, 240);
+    assert.ok(mtf.weekly.length >= 8);
+    assert.ok(mtf.monthly.length >= 4);
+  } finally {
+    resetMemeBinanceMarketDataForTests();
+    globalThis.fetch = originalFetch;
   }
 });

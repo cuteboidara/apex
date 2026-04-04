@@ -30,7 +30,6 @@ import {
   type TradeLevels,
 } from "@/src/assets/shared/signalView";
 
-const EXECUTABLE_GRADES = new Set(["B", "A", "S"]);
 const CANDLE_STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 
 type CommodityDataSource = CommoditySignalCard["dataSource"];
@@ -439,6 +438,11 @@ export async function runCommoditiesCycle(cycleId: string): Promise<CommoditySig
       const profile = COMMODITY_PROFILES[symbol];
       const grade = mtfResult?.grade ?? "F";
       const gradeScore = mtfResult?.confluenceScore ?? mtfResult?.confidence ?? 0;
+      const meetsProfileGate = mtfResult != null
+        && direction !== "neutral"
+        && mtfResult.promotionStatus === "active"
+        && (mtfResult.confidence / 100) >= profile.minConfidence
+        && (mtfResult.riskReward ?? 0) >= profile.minRR;
       const levels = mtfResult && direction !== "neutral"
         ? {
           entry: mtfResult.entry,
@@ -457,11 +461,15 @@ export async function runCommoditiesCycle(cycleId: string): Promise<CommoditySig
       const providerStatus = providerStatusFromSource(dataSource);
       const noTradeReason = mtfResult == null
         ? "insufficient candles"
+        : mtfResult.promotionStatus === "waiting_for_rr"
+          ? "RR below threshold"
+        : mtfResult.promotionStatus === "ranging_bias"
+            ? "mixed higher-timeframe bias"
         : direction === "neutral"
-          ? "awaiting liquidity sweep"
-          : !EXECUTABLE_GRADES.has(grade)
-            ? "low confluence"
-            : null;
+            ? "awaiting liquidity sweep"
+            : !meetsProfileGate
+              ? "low confluence"
+              : null;
       const displayCategory = providerStatus === "broken"
         ? "rejected"
         : noTradeReason == null && providerStatus === "healthy"

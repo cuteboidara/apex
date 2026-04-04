@@ -13,14 +13,12 @@ import {
 } from "@/src/assets/memecoins/data/CoinGeckoOHLCV";
 import {
   fetchMemeBinanceCandles,
-  fetchMemeBinanceCandlesByInterval,
-  fetchMemeBinanceTickerPrice,
-  getMemeBinanceLivePrice,
+  fetchMemeBinanceLivePrice,
+  fetchMemeBinanceMtfcandles,
 } from "@/src/assets/memecoins/data/BinanceMemeMarketData";
 import { gradeMemeSignal } from "@/src/assets/memecoins/strategies/memeGrading";
 import { detectVolumeSpike, deriveMemeSignal, type VolumeSpikeAnalysis } from "@/src/assets/memecoins/strategies/volumeSpike";
 import type { MemeSignalCard } from "@/src/assets/memecoins/types";
-import type { MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import { runTopDownAnalysis } from "@/src/assets/shared/mtfAnalysis";
 import {
   buildAssetViewModelBase,
@@ -31,8 +29,6 @@ import {
   titleCase,
   type TradeLevels,
 } from "@/src/assets/shared/signalView";
-
-const EXECUTABLE_GRADES = new Set(["B", "A", "S"]);
 
 type MarketDataById = Map<string, Awaited<ReturnType<typeof fetchCoinGeckoMarketData>>[number]>;
 
@@ -46,70 +42,6 @@ function buildNoVolumeAnalysis(note = "No volume data"): VolumeSpikeAnalysis {
     spikeStrength: "none",
     spikeScore: 0,
     note,
-  };
-}
-
-function aggregateCandles(candles: Candle[], bucketMs: number): Candle[] {
-  if (candles.length === 0) {
-    return [];
-  }
-
-  const grouped = new Map<number, Candle[]>();
-  for (const candle of candles) {
-    const bucket = Math.floor(candle.time * 1000 / bucketMs) * bucketMs;
-    if (!grouped.has(bucket)) {
-      grouped.set(bucket, []);
-    }
-    grouped.get(bucket)?.push(candle);
-  }
-
-  return [...grouped.entries()]
-    .sort((left, right) => left[0] - right[0])
-    .map(([bucket, group]) => ({
-      time: Math.floor(bucket / 1000),
-      open: group[0]?.open ?? group[0]?.close ?? 0,
-      high: Math.max(...group.map(candle => candle.high)),
-      low: Math.min(...group.map(candle => candle.low)),
-      close: group.at(-1)?.close ?? group[0]?.close ?? 0,
-      volume: group.reduce((sum, candle) => sum + (candle.volume ?? 0), 0),
-    }))
-    .filter(candle => candle.open > 0 && candle.high > 0 && candle.low > 0 && candle.close > 0);
-}
-
-async function fetchMemeMtfcandles(profile: MemeCoinProfile): Promise<MTFCandles | null> {
-  if (!profile.binanceListed) {
-    return null;
-  }
-
-  const [dailyRaw, h4Raw, h1Raw, m15Raw, m5Raw] = await Promise.all([
-    fetchMemeBinanceCandlesByInterval(profile.symbol, "1d", 180),
-    fetchMemeBinanceCandlesByInterval(profile.symbol, "4h", 180),
-    fetchMemeBinanceCandlesByInterval(profile.symbol, "1h", 240),
-    fetchMemeBinanceCandlesByInterval(profile.symbol, "15m", 240),
-    fetchMemeBinanceCandlesByInterval(profile.symbol, "5m", 240),
-  ]);
-  const normalizeTime = (candles: Candle[]) => candles.map(candle => ({
-    ...candle,
-    time: candle.time * 1000,
-  }));
-  const daily = normalizeTime(dailyRaw);
-  const h4 = normalizeTime(h4Raw);
-  const h1 = normalizeTime(h1Raw);
-  const m15 = normalizeTime(m15Raw);
-  const m5 = normalizeTime(m5Raw);
-
-  if (daily.length < 20 || h4.length < 20 || h1.length < 20 || m15.length < 24 || m5.length < 24) {
-    return null;
-  }
-
-  return {
-    monthly: aggregateCandles(daily, 30 * 24 * 60 * 60 * 1000),
-    weekly: aggregateCandles(daily, 7 * 24 * 60 * 60 * 1000),
-    daily,
-    h4,
-    h1,
-    m15,
-    m5,
   };
 }
 
@@ -159,18 +91,10 @@ async function fetchMemeCandles(profile: MemeCoinProfile): Promise<{ candles: Ca
 
 async function fetchMemeLivePrice(profile: MemeCoinProfile): Promise<{ price: number | null; dataSource: MemeSignalCard["dataSource"] }> {
   if (profile.binanceListed) {
-    const wsPrice = getMemeBinanceLivePrice(profile.symbol);
-    if (wsPrice != null) {
+    const binancePrice = await fetchMemeBinanceLivePrice(profile.symbol);
+    if (binancePrice != null) {
       return {
-        price: wsPrice,
-        dataSource: "binance",
-      };
-    }
-
-    const restPrice = await fetchMemeBinanceTickerPrice(profile.symbol);
-    if (restPrice != null) {
-      return {
-        price: restPrice,
+        price: binancePrice,
         dataSource: "binance",
       };
     }
@@ -488,7 +412,7 @@ export async function runMemeCycle(cycleId: string): Promise<MemeSignalCard[]> {
         : buildNoVolumeAnalysis();
       const initialSmc = analyzeSMC(profile.symbol, candles, livePrice, "neutral");
       const recentSweep = initialSmc.recentSweeps[0] ?? null;
-      const mtfCandles = await fetchMemeMtfcandles(profile);
+      const mtfCandles = profile.binanceListed ? await fetchMemeBinanceMtfcandles(profile.symbol) : null;
       const mtfResult = mtfCandles ? runTopDownAnalysis(profile.symbol, mtfCandles, livePrice) : null;
       const { primaryDriver } = deriveMemeSignal(
         volumeAnalysis,
@@ -507,6 +431,11 @@ export async function runMemeCycle(cycleId: string): Promise<MemeSignalCard[]> {
       const smcResult = analyzeSMC(profile.symbol, candles, livePrice, direction);
       const grade = mtfResult?.grade ?? "F";
       const gradeScore = mtfResult?.confluenceScore ?? mtfResult?.confidence ?? 0;
+      const meetsProfileGate = mtfResult != null
+        && direction !== "neutral"
+        && mtfResult.promotionStatus === "active"
+        && (mtfResult.confidence / 100) >= profile.minConfidence
+        && (mtfResult.riskReward ?? 0) >= profile.minRR;
       const levels = mtfResult && direction !== "neutral"
         ? {
           entry: mtfResult.entry,
@@ -524,11 +453,15 @@ export async function runMemeCycle(cycleId: string): Promise<MemeSignalCard[]> {
         };
       const noTradeReason = mtfResult == null
         ? "insufficient mtf data"
+        : mtfResult.promotionStatus === "waiting_for_rr"
+          ? "RR below threshold"
+        : mtfResult.promotionStatus === "ranging_bias"
+            ? "mixed higher-timeframe bias"
         : direction === "neutral"
-          ? "awaiting liquidity sweep"
-          : !EXECUTABLE_GRADES.has(grade)
-            ? "low confluence"
-            : null;
+            ? "awaiting liquidity sweep"
+            : !meetsProfileGate
+              ? "low confluence"
+              : null;
       const displayCategory = noTradeReason == null ? "executable" : "monitored";
       const status = displayCategory === "executable" ? "active" : "watchlist";
       const marketStateLabels = [

@@ -18,6 +18,7 @@ import {
 import { fetchCryptoTickerPrice } from "@/src/crypto/data/CryptoDataPlant";
 import { getAllCryptoLivePrices } from "@/src/crypto/data/BinanceWebSocket";
 import type { CryptoSignalCard } from "@/src/crypto/types";
+import { MTF_ANALYSIS_MIN_CANDLES } from "@/src/assets/shared/mtfAnalysis";
 import type { MTFAnalysisResult, MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import { runTopDownAnalysis } from "@/src/assets/shared/mtfAnalysis";
 import { fetchMTFCandles } from "@/src/assets/shared/mtfDataFetcher";
@@ -31,8 +32,6 @@ type SignalDecision = {
 };
 
 type TradeLevels = Pick<SignalViewModel, "entry" | "sl" | "tp1" | "tp2" | "tp3">;
-
-const EXECUTABLE_GRADES = new Set(["B", "A", "S"]);
 
 function titleCase(value: string): string {
   return value
@@ -262,7 +261,7 @@ function deriveTradeLevels(
 
 function describeNoTradeReason(noTradeReason: string | null): string | null {
   if (noTradeReason === "data unavailable") {
-    return "Live Binance price or Yahoo MTF candle data is not available yet, so the crypto setup stays blocked until inputs recover.";
+    return "Live Binance price or Binance multi-timeframe candle data is not available yet, so the crypto setup stays blocked until inputs recover.";
   }
   if (noTradeReason === "no structure") {
     return "The higher and lower timeframe map does not offer a clean aligned directional imbalance yet, so the pair remains on watch.";
@@ -421,7 +420,7 @@ function describeMtfNoTradeReason(reason: string): string {
     return "Top-down timeframe bias is still mixed, so the crypto setup stays on watch until MTF alignment improves.";
   }
   if (reason === "insufficient candles") {
-    return "Yahoo MTF candles are incomplete, so the crypto setup stays blocked until enough higher and lower timeframe data loads.";
+    return "Binance MTF candles are incomplete, so the crypto setup stays blocked until enough higher and lower timeframe data loads.";
   }
   return describeNoTradeReason(reason) ?? reason;
 }
@@ -568,16 +567,25 @@ async function buildCryptoCard(input: {
     };
   const grade = mtfResult?.grade ?? "F";
   const gradeScore = mtfResult?.confluenceScore ?? mtfResult?.confidence ?? 0;
+  const meetsProfileGate = mtfResult != null
+    && direction !== "neutral"
+    && mtfResult.promotionStatus === "active"
+    && (mtfResult.confidence / 100) >= input.profile.minConfidence
+    && (mtfResult.riskReward ?? 0) >= input.profile.minRR;
 
   const noTradeReason = input.livePrice == null
     ? "data unavailable"
     : mtfResult == null
       ? "insufficient candles"
-      : direction === "neutral"
-      ? "awaiting liquidity sweep"
-      : !EXECUTABLE_GRADES.has(grade)
-        ? "low confidence"
-        : null;
+      : mtfResult.promotionStatus === "waiting_for_rr"
+        ? "RR below threshold"
+        : mtfResult.promotionStatus === "ranging_bias"
+          ? "mixed higher-timeframe bias"
+        : direction === "neutral"
+          ? "awaiting liquidity sweep"
+          : !meetsProfileGate
+            ? "low confidence"
+            : null;
 
   const displayCategory = input.livePrice == null
     ? "rejected"
@@ -702,14 +710,14 @@ async function buildCryptoCard(input: {
     assetClass: "crypto",
     providerStatus: "healthy",
     priceSource: "binance",
-    candleSource: "yahoo",
-    fallbackDepth: 1,
+    candleSource: "binance",
+    fallbackDepth: 0,
     dataFreshnessMs: 0,
     missingBarCount: 0,
-    lastSuccessfulProvider: "Yahoo",
+    lastSuccessfulProvider: "Binance",
     quoteIntegrity: true,
     universeMembershipConfidence: 1,
-    dataTrustScore: 90,
+    dataTrustScore: 94,
     qualityScores: {
       structure: gradeScore || analysis.smcScore.total,
       market: Math.round(confidence * 100),
@@ -767,10 +775,10 @@ async function buildUnavailableCard(input: {
     zoneType: "neutral",
     marketPhase: "Unavailable",
     confidence: 0,
-    shortReasoning: `${displayName} is blocked because Binance price or Yahoo MTF candle data is unavailable.`,
-    detailedReasoning: `${displayName} could not be analyzed for this cycle because the crypto engine did not receive enough live price or multi-timeframe candle inputs.`,
+    shortReasoning: `${displayName} is blocked because Binance price or Binance MTF candle data is unavailable.`,
+    detailedReasoning: `${displayName} could not be analyzed for this cycle because the crypto engine did not receive enough live price or Binance multi-timeframe candle inputs.`,
     whyThisSetup: "No setup is published when live price or MTF candles are missing.",
-    whyNow: "The cycle is waiting for Binance live price and Yahoo MTF candles.",
+    whyNow: "The cycle is waiting for Binance live price and Binance MTF candles.",
     whyThisLevel: "No trade levels are emitted without valid live and higher timeframe market data.",
     invalidation: "Wait for the next healthy cycle.",
     whyThisGrade: "Unavailable data forces an F-grade blocked card.",
@@ -809,11 +817,11 @@ async function buildUnavailableCard(input: {
     assetClass: "crypto",
     providerStatus: "broken",
     priceSource: null,
-    candleSource: "yahoo",
-    fallbackDepth: 2,
+    candleSource: "binance",
+    fallbackDepth: 1,
     dataFreshnessMs: null,
     missingBarCount: 20,
-    lastSuccessfulProvider: "Yahoo",
+    lastSuccessfulProvider: "Binance",
     quoteIntegrity: false,
     universeMembershipConfidence: 1,
     dataTrustScore: 8,
@@ -858,7 +866,15 @@ export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[
         }
       }
 
-      if (livePrice == null || mtfCandles.daily.length < 10 || mtfCandles.h4.length < 10 || mtfCandles.h1.length < 10) {
+      const hasRequiredMtfInputs = (
+        mtfCandles.daily.length >= MTF_ANALYSIS_MIN_CANDLES.daily
+        && mtfCandles.h4.length >= MTF_ANALYSIS_MIN_CANDLES.h4
+        && mtfCandles.h1.length >= MTF_ANALYSIS_MIN_CANDLES.h1
+        && mtfCandles.m15.length >= MTF_ANALYSIS_MIN_CANDLES.m15
+        && mtfCandles.m5.length >= MTF_ANALYSIS_MIN_CANDLES.m5
+      );
+
+      if (livePrice == null || !hasRequiredMtfInputs) {
         console.log(
           `[APEX CRYPTO] ${symbol}: insufficient MTF inputs (daily=${mtfCandles.daily.length}, h4=${mtfCandles.h4.length}, h1=${mtfCandles.h1.length}, m15=${mtfCandles.m15.length}, m5=${mtfCandles.m5.length}, livePrice=${livePrice ?? "null"}, livePriceSource=${livePriceSource}), skipping signal`,
         );

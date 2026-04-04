@@ -1,5 +1,6 @@
 import type { MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import type { Candle } from "@/src/assets/shared/types";
+import { CRYPTO_ACTIVE_SYMBOLS } from "@/src/crypto/config/cryptoScope";
 import { canonicalizeMarketSymbol } from "@/src/lib/marketSymbols";
 import { resolveYahooSymbol } from "@/src/lib/yahooFinance";
 
@@ -9,6 +10,8 @@ const YAHOO_HOSTS = [
 ] as const;
 
 const REQUEST_TIMEOUT_MS = 8_000;
+const BINANCE_REST_BASE = "https://api.binance.com/api/v3";
+const CRYPTO_MTF_SYMBOLS = new Set<string>(CRYPTO_ACTIVE_SYMBOLS);
 
 const FALLBACK_SYMBOL_MAP: Record<string, string> = {
   XAUUSD: "GC=F",
@@ -33,6 +36,10 @@ function normalizeApexSymbol(symbol: string): string {
 function toYahooSymbol(symbol: string): string | null {
   const normalized = normalizeApexSymbol(symbol);
   return FALLBACK_SYMBOL_MAP[normalized] ?? resolveYahooSymbol(normalized);
+}
+
+function isCryptoMtfSymbol(symbol: string): boolean {
+  return CRYPTO_MTF_SYMBOLS.has(normalizeApexSymbol(symbol));
 }
 
 function aggregateCandles(candles: Candle[], bucketMs: number): Candle[] {
@@ -161,7 +168,106 @@ async function fetchYahooTF(
   return [];
 }
 
+type BinanceInterval = "1d" | "1h" | "15m" | "5m";
+
+function buildBinanceIntervalMs(interval: BinanceInterval): number {
+  if (interval === "1d") return 24 * 60 * 60 * 1000;
+  if (interval === "1h") return 60 * 60 * 1000;
+  if (interval === "15m") return 15 * 60 * 1000;
+  return 5 * 60 * 1000;
+}
+
+async function fetchBinanceTF(
+  symbol: string,
+  interval: BinanceInterval,
+  limit: number,
+): Promise<Candle[]> {
+  const normalizedSymbol = normalizeApexSymbol(symbol);
+
+  try {
+    const response = await fetch(
+      `${BINANCE_REST_BASE}/klines?symbol=${encodeURIComponent(normalizedSymbol)}&interval=${interval}&limit=${limit}`,
+      {
+        headers: {
+          "Accept": "application/json",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = await response.json() as unknown[][];
+    const candles: Candle[] = [];
+
+    for (const row of payload) {
+      const time = Number(row[0]);
+      const open = Number(row[1]);
+      const high = Number(row[2]);
+      const low = Number(row[3]);
+      const close = Number(row[4]);
+      const volume = Number(row[5]);
+
+      if (
+        !Number.isFinite(time) || time <= 0
+        || !Number.isFinite(open) || open <= 0
+        || !Number.isFinite(high) || high <= 0
+        || !Number.isFinite(low) || low <= 0
+        || !Number.isFinite(close) || close <= 0
+      ) {
+        continue;
+      }
+
+      candles.push({
+        time,
+        open,
+        high,
+        low,
+        close,
+        volume: Number.isFinite(volume) ? volume : 0,
+      });
+    }
+
+    return candles;
+  } catch {
+    return [];
+  }
+}
+
+async function fetchBinanceMtfcandles(symbol: string): Promise<MTFCandles> {
+  const [daily, h1, m15, m5] = await Promise.all([
+    fetchBinanceTF(symbol, "1d", 180),
+    fetchBinanceTF(symbol, "1h", 240),
+    fetchBinanceTF(symbol, "15m", 240),
+    fetchBinanceTF(symbol, "5m", 240),
+  ]);
+
+  const monthly = aggregateCandles(daily, 30 * 24 * 60 * 60 * 1000);
+  const weekly = aggregateCandles(daily, 7 * 24 * 60 * 60 * 1000);
+  const h4 = aggregateCandles(h1, buildBinanceIntervalMs("1h") * 4);
+
+  console.log(
+    `[MTF] ${symbol}: source=binance mo=${monthly.length} wk=${weekly.length} d=${daily.length} h4=${h4.length} h1=${h1.length} m15=${m15.length} m5=${m5.length}`,
+  );
+
+  return {
+    monthly,
+    weekly,
+    daily,
+    h4,
+    h1,
+    m15,
+    m5,
+  };
+}
+
 export async function fetchMTFCandles(symbol: string): Promise<MTFCandles> {
+  if (isCryptoMtfSymbol(symbol)) {
+    return fetchBinanceMtfcandles(symbol);
+  }
+
   const [monthly, weekly, daily, h1, m15, m5] = await Promise.all([
     fetchYahooTF(symbol, "1mo", "5y"),
     fetchYahooTF(symbol, "1wk", "2y"),
@@ -174,7 +280,7 @@ export async function fetchMTFCandles(symbol: string): Promise<MTFCandles> {
   const h4 = aggregateCandles(h1, 4 * 60 * 60 * 1000);
 
   console.log(
-    `[MTF] ${symbol}: mo=${monthly.length} wk=${weekly.length} d=${daily.length} h4=${h4.length} h1=${h1.length} m15=${m15.length} m5=${m5.length}`,
+    `[MTF] ${symbol}: source=yahoo mo=${monthly.length} wk=${weekly.length} d=${daily.length} h4=${h4.length} h1=${h1.length} m15=${m15.length} m5=${m5.length}`,
   );
 
   return {
