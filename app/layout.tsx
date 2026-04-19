@@ -33,8 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+      <body className="bg-[#0d1117] text-[#f0f6fc]">
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
