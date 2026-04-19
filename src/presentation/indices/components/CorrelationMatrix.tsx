@@ -9,17 +9,14 @@ interface CorrelationPair {
 }
 
 const ASSET_ORDER = [
-  'NAS100',
-  'SPX500',
-  'DAX',
-  'EURUSD',
-  'GBPUSD',
-  'USDJPY',
-  'AUDUSD',
-  'USDCAD',
-  'USDCHF',
-  'EURJPY',
-  'GBPJPY',
+  // Indices
+  'NAS100', 'SPX500', 'DAX', 'FTSE100', 'NIKKEI', 'HANGSENG', 'CAC40', 'ASX200',
+  // FX
+  'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'EURJPY', 'GBPJPY',
+  // Commodities
+  'XAUUSD', 'XAGUSD', 'USOIL', 'UKOIL', 'NATGAS', 'COPPER',
+  // Rates
+  'US10Y', 'US2Y', 'DE10Y', 'JP10Y', 'UK10Y',
 ];
 
 function corrColor(corr: number): string {

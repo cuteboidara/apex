@@ -15,7 +15,7 @@ import {
   type AMTClassSection,
   type AMTSection,
 } from './sections';
-import type { CorrelationPair, DBSignal, MacroContextData } from './types';
+import type { AssetState, CorrelationPair, DBSignal, MacroContextData } from './types';
 
 type RuntimeStatus = {
   cycleRunning: boolean;
@@ -72,18 +72,21 @@ function matchesClassSection(section: AMTClassSection, signal: DBSignal): boolea
 function AssetClassGrid({
   section,
   signals,
+  assetStates,
 }: {
   section: AMTClassSection;
   signals: DBSignal[];
+  assetStates: AssetState[];
 }) {
   const entries = AMT_CLASS_ASSETS[section].map(asset => {
     const latest = signals.find(signal => signal.assetId === asset.symbol);
-    return { asset, latest };
+    const state = assetStates.find(s => s.assetId === asset.symbol);
+    return { asset, latest, state };
   });
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {entries.map(({ asset, latest }) => (
+      {entries.map(({ asset, latest, state }) => (
         <Link
           key={asset.symbol}
           href={getClassRoute(section, asset.symbol)}
@@ -99,10 +102,12 @@ function AssetClassGrid({
                 'rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider',
                 latest && latest.totalScore >= 70
                   ? 'border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 text-[var(--accent-green)]'
-                  : 'border-[var(--border)] bg-[var(--bg-tertiary)] text-[var(--text-secondary)]',
+                  : state
+                    ? 'border-[var(--border)] bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
+                    : 'border-[var(--border)] bg-[var(--bg-tertiary)] text-[var(--text-muted)]',
               ].join(' ')}
             >
-              {latest ? `${latest.totalScore}` : 'No signal'}
+              {latest ? `${latest.totalScore}` : state ? 'Scanned' : 'Pending'}
             </span>
           </div>
 
@@ -114,8 +119,20 @@ function AssetClassGrid({
               <p>Entry {latest.entryZoneMid?.toFixed(3) ?? '—'}</p>
               <p>RR {(latest.riskRewardRatio ?? 0).toFixed(2)}:1</p>
             </div>
+          ) : state ? (
+            <div className="mt-4 space-y-1 font-mono text-[11px]">
+              <p className="text-[var(--text-secondary)]">No setup detected</p>
+              <p className="text-[var(--text-muted)]">
+                Price: {state.lastPrice >= 100
+                  ? state.lastPrice.toFixed(2)
+                  : state.lastPrice.toFixed(4)}
+              </p>
+              <p className="text-[var(--text-muted)]">
+                Scanned: {new Date(state.lastScanned).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} UTC
+              </p>
+            </div>
           ) : (
-            <p className="mt-4 text-xs text-[var(--text-muted)]">No cycle output yet for this asset.</p>
+            <p className="mt-4 text-xs text-[var(--text-muted)]">Run a cycle to scan this asset.</p>
           )}
         </Link>
       ))}
@@ -181,6 +198,7 @@ export function IndicesV2Dashboard({
   asset?: string;
 }) {
   const [signals, setSignals] = useState<DBSignal[]>([]);
+  const [assetStates, setAssetStates] = useState<AssetState[]>([]);
   const [macro, setMacro] = useState<MacroContextData | null>(null);
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([]);
   const [stats, setStats] = useState<PaperStats | null>(null);
@@ -203,7 +221,7 @@ export function IndicesV2Dashboard({
         throw new Error('Failed to refresh AMT dashboard data');
       }
 
-      const signalsPayload = (await signalsRes.json()) as { signals?: DBSignal[] };
+      const signalsPayload = (await signalsRes.json()) as { signals?: DBSignal[]; assetStates?: AssetState[] };
       const macroPayload = (await macroRes.json()) as { macro?: MacroContextData };
       const corrPayload = (await corrRes.json()) as { pairs?: CorrelationPair[] };
       const statsPayload = (await statsRes.json()) as { stats?: PaperStats };
@@ -211,6 +229,7 @@ export function IndicesV2Dashboard({
 
       const nextSignals = (signalsPayload.signals ?? []).sort((a, b) => a.rank - b.rank);
       setSignals(nextSignals);
+      setAssetStates(signalsPayload.assetStates ?? []);
       setMacro(macroPayload.macro ?? null);
       setCorrelations(corrPayload.pairs ?? []);
       setStats(statsPayload.stats ?? null);
@@ -403,7 +422,7 @@ export function IndicesV2Dashboard({
               </p>
             </div>
 
-            <AssetClassGrid section={section} signals={sectionSignals} />
+            <AssetClassGrid section={section} signals={sectionSignals} assetStates={assetStates} />
           </section>
         ) : null}
 

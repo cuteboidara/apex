@@ -116,6 +116,57 @@ export async function getLatestAMTCycle(): Promise<{
   return { cycleId: latest.cycleId, signals };
 }
 
+// ─── Asset State (scan tracking) ──────────────────────────────────────────
+
+/**
+ * Upsert a scan-state record for every asset processed in a cycle —
+ * whether or not a qualifying signal was found.
+ */
+export async function persistAssetStates(
+  cycleId: string,
+  states: Array<{ assetId: string; lastPrice: number; hasSignal: boolean }>,
+): Promise<void> {
+  if (states.length === 0) return;
+
+  await Promise.all(
+    states.map(state =>
+      prisma.indicesAssetState
+        .upsert({
+          where: { assetId: state.assetId },
+          update: {
+            lastScanned: new Date(),
+            lastPrice: state.lastPrice,
+            hasSignal: state.hasSignal,
+            cycleId,
+          },
+          create: {
+            assetId: state.assetId,
+            lastScanned: new Date(),
+            lastPrice: state.lastPrice,
+            hasSignal: state.hasSignal,
+            cycleId,
+          },
+        })
+        .catch((err: unknown) => {
+          console.error(`[amt-persist] Asset state upsert failed for ${state.assetId}:`, err);
+        }),
+    ),
+  );
+
+  console.log(`[amt-persist] Asset states updated for ${states.length} assets (cycle ${cycleId})`);
+}
+
+export async function getAssetStates(): Promise<object[]> {
+  try {
+    return await prisma.indicesAssetState.findMany({
+      orderBy: { lastScanned: 'desc' },
+    });
+  } catch {
+    // Table may not exist yet if migration hasn't been run
+    return [];
+  }
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 function resolveAssetClass(assetId: string): string {

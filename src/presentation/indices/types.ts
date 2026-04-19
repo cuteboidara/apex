@@ -36,6 +36,15 @@ export interface DBSignal {
   createdAt: string;
 }
 
+export interface AssetState {
+  assetId: string;
+  lastScanned: string;   // ISO timestamp
+  lastPrice: number;
+  hasSignal: boolean;
+  cycleId: string | null;
+  updatedAt: string;
+}
+
 export interface CorrelationPair {
   asset1: string;
   asset2: string;

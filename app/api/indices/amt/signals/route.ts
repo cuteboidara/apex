@@ -2,7 +2,7 @@
 // GET — latest AMT signals from DB
 
 import { NextResponse } from 'next/server';
-import { getLatestAMTCycle, getRecentAMTSignals } from '@/src/indices/api/amtSignals';
+import { getLatestAMTCycle, getRecentAMTSignals, getAssetStates } from '@/src/indices/api/amtSignals';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +12,10 @@ export async function GET(request: Request) {
     const assetId = url.searchParams.get('asset') ?? undefined;
     const limit = Number(url.searchParams.get('limit') ?? '20');
 
-    const [latest, recent] = await Promise.all([
+    const [latest, recent, assetStates] = await Promise.all([
       getLatestAMTCycle(),
       getRecentAMTSignals(limit, assetId),
+      getAssetStates(),
     ]);
 
     return NextResponse.json({
@@ -22,6 +23,7 @@ export async function GET(request: Request) {
       cycleId: latest.cycleId,
       signals: latest.signals,
       recent,
+      assetStates,
     });
   } catch (error) {
     console.error('[api/indices/amt/signals] Error:', error);

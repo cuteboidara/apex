@@ -1066,6 +1066,18 @@ model IndicesTrade {
   @@schema("apex")
 }
 
+model IndicesAssetState {
+  assetId     String   @id
+  lastScanned DateTime
+  lastPrice   Float
+  hasSignal   Boolean  @default(false)
+  cycleId     String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("indices_asset_state")
+  @@schema("apex")
+}
+
 model LearningFeedback {
   id                     String   @id @default(cuid())
   feedbackId             String   @unique
