@@ -8,7 +8,19 @@ interface CorrelationPair {
   correlation: number;
 }
 
-const ASSETS = ['NAS100', 'SPX500', 'DAX', 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'];
+const ASSET_ORDER = [
+  'NAS100',
+  'SPX500',
+  'DAX',
+  'EURUSD',
+  'GBPUSD',
+  'USDJPY',
+  'AUDUSD',
+  'USDCAD',
+  'USDCHF',
+  'EURJPY',
+  'GBPJPY',
+];
 
 function corrColor(corr: number): string {
   if (corr >= 0.7) return 'bg-[var(--accent-green)]/30 text-[#d2f7dd]';
@@ -19,6 +31,25 @@ function corrColor(corr: number): string {
 }
 
 export function CorrelationMatrix({ pairs }: { pairs: CorrelationPair[] }) {
+  const assetSet = new Set<string>();
+  for (const pair of pairs) {
+    assetSet.add(pair.asset1);
+    assetSet.add(pair.asset2);
+  }
+
+  const sortedKnown = ASSET_ORDER.filter(asset => assetSet.has(asset));
+  const unknown = Array.from(assetSet).filter(asset => !ASSET_ORDER.includes(asset)).sort();
+  const assets = [...sortedKnown, ...unknown];
+
+  if (assets.length === 0) {
+    return (
+      <div className="space-y-2">
+        <h3 className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">Correlation Matrix (30d)</h3>
+        <div className="font-mono text-xs text-[var(--text-secondary)]">No correlation data yet.</div>
+      </div>
+    );
+  }
+
   function getCorr(a: string, b: string): number {
     if (a === b) return 1;
     return pairs.find(p =>
@@ -34,7 +65,7 @@ export function CorrelationMatrix({ pairs }: { pairs: CorrelationPair[] }) {
           <thead>
             <tr>
               <th className="w-16 p-1" />
-              {ASSETS.map(a => (
+              {assets.map(a => (
                 <th key={a} className="w-14 p-1 text-center font-mono text-[10px] font-normal uppercase tracking-wider text-[var(--text-secondary)]">
                   {a.replace('USD', '')}
                 </th>
@@ -42,10 +73,10 @@ export function CorrelationMatrix({ pairs }: { pairs: CorrelationPair[] }) {
             </tr>
           </thead>
           <tbody>
-            {ASSETS.map(rowAsset => (
+            {assets.map(rowAsset => (
               <tr key={rowAsset}>
                 <td className="p-1 pr-2 text-right font-mono text-[10px] font-medium uppercase tracking-wider text-[var(--text-secondary)]">{rowAsset.replace('USD', '')}</td>
-                {ASSETS.map(colAsset => {
+                {assets.map(colAsset => {
                   const corr = getCorr(rowAsset, colAsset);
                   return (
                     <td key={colAsset} className={`rounded p-1 text-center font-mono text-[11px] ${corrColor(corr)}`}>

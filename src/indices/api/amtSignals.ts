@@ -3,6 +3,7 @@
 
 import { prisma as _prisma } from '@/src/infrastructure/db/prisma';
 import type { AMTSignal, AMTCycleResult } from '@/src/indices/types/amtTypes';
+import { ASSET_CONFIG } from '@/src/indices/data/fetchers/assetConfig';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma = _prisma as any; // IndicesSignal available after `prisma generate`
@@ -118,7 +119,6 @@ export async function getLatestAMTCycle(): Promise<{
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 function resolveAssetClass(assetId: string): string {
-  if (['NAS100', 'SPX500', 'DAX'].includes(assetId)) return 'index';
-  if (['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'].includes(assetId)) return 'forex';
-  return 'other';
+  const config = (ASSET_CONFIG as Record<string, { assetClass: string }>)[assetId];
+  return config?.assetClass ?? 'other';
 }

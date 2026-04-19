@@ -1,13 +1,13 @@
 // src/indices/data/fetchers/forexFetcher.ts
-// Fetch OHLCV candles for EURUSD, GBPUSD, USDJPY, AUDUSD
+// Fetch OHLCV candles for all configured forex symbols
 
 import type { AssetData, Candle } from '@/src/indices/types';
-import { ASSET_CONFIG, CANDLE_LIMITS, type AssetSymbol } from './assetConfig';
+import { ASSET_CONFIG, ASSET_SYMBOLS, CANDLE_LIMITS, isForex, type AssetSymbol } from './assetConfig';
 import { fetchYahooCandles, fetchYahooCurrentPrice } from './yahooFinance';
 import { getCache, setCache, CacheKeys, CacheTTL } from '../cache/cacheManager';
 import type { MultiTimeframeCandles } from './indicesFetcher';
 
-const FOREX_SYMBOLS: AssetSymbol[] = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'];
+const FOREX_SYMBOLS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isForex(symbol));
 
 export async function fetchForexCandles(symbol: AssetSymbol): Promise<MultiTimeframeCandles> {
   const config = ASSET_CONFIG[symbol];

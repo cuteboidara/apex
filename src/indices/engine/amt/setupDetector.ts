@@ -59,13 +59,18 @@ function computeRR(
  * In production this would compare with a pre-computed correlation matrix.
  */
 function computeCorrelationBonus(assetId: string, direction: 'long' | 'short'): number {
+  void direction;
+
   // NAS + SPX + DAX tend to move together
   const indexGroup = ['NAS100', 'SPX500', 'DAX'];
   if (indexGroup.includes(assetId)) return 5; // assume some correlation bonus
 
-  // EUR/GBP/AUD move together vs USD
-  const usdGroup = ['EURUSD', 'GBPUSD', 'AUDUSD'];
-  if (usdGroup.includes(assetId)) return 3;
+  // FX pairs with USD leg usually co-move through broad USD regime.
+  const usdPairs = ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDJPY', 'USDCAD', 'USDCHF'];
+  if (usdPairs.includes(assetId)) return 3;
+
+  // JPY crosses are moderately correlated in risk-on/off swings.
+  if (assetId === 'EURJPY' || assetId === 'GBPJPY') return 2;
 
   return 0;
 }

@@ -129,9 +129,9 @@ async function checkYahooFinance() {
   }
 
   if (successCount === ASSET_SYMBOLS.length) {
-    pass('All 7 assets reachable', `${successCount}/${ASSET_SYMBOLS.length} OK`);
+    pass('All configured assets reachable', `${successCount}/${ASSET_SYMBOLS.length} OK`);
   } else {
-    fail('All 7 assets reachable', `only ${successCount}/${ASSET_SYMBOLS.length} returned data`);
+    fail('All configured assets reachable', `only ${successCount}/${ASSET_SYMBOLS.length} returned data`);
   }
 }
 

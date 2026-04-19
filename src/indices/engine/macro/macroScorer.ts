@@ -8,6 +8,13 @@ import type { AssetSymbol } from '@/src/indices/data/fetchers/assetConfig';
 const NEWS_BLOCK_WINDOW_MS = 30 * 60 * 1000;   // 30 min
 const NEWS_CAUTION_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
 
+function usdExposure(assetId: AssetSymbol): 'base' | 'quote' | 'none' {
+  if (!assetId.includes('USD')) return 'none';
+  if (assetId.startsWith('USD')) return 'base';
+  if (assetId.endsWith('USD')) return 'quote';
+  return 'none';
+}
+
 export function scoreMacroContext(
   assetId: AssetSymbol,
   direction: 'long' | 'short',
@@ -26,16 +33,15 @@ export function scoreMacroContext(
     else if (macro.dxy.strength === 'neutral') dxyAlignment = 0;
     else dxyAlignment = -4; // conflicting
   } else {
-    // Forex: USD strength/weakness depends on pair
-    const usdBase = ['USDJPY'].includes(assetId); // USD is the base currency
-    const usdQuote = ['EURUSD', 'GBPUSD', 'AUDUSD'].includes(assetId); // USD is the quote
+    // Forex: only apply DXY rules to USD-involved pairs.
+    const usdSide = usdExposure(assetId);
 
-    if (usdBase) {
+    if (usdSide === 'base') {
       if (direction === 'long' && macro.dxy.strength === 'strong') dxyAlignment = 8;
       else if (direction === 'short' && macro.dxy.strength === 'weak') dxyAlignment = 8;
       else if (macro.dxy.strength === 'neutral') dxyAlignment = 0;
       else dxyAlignment = -4;
-    } else if (usdQuote) {
+    } else if (usdSide === 'quote') {
       if (direction === 'long' && macro.dxy.strength === 'weak') dxyAlignment = 8;
       else if (direction === 'short' && macro.dxy.strength === 'strong') dxyAlignment = 8;
       else if (macro.dxy.strength === 'neutral') dxyAlignment = 0;
@@ -56,12 +62,12 @@ export function scoreMacroContext(
     else if (direction === 'short' && macro.yield10y.trend === 'up') yieldPoints = 5;
     else if (macro.yield10y.trend === 'stable') yieldPoints = 0;
   } else {
-    // Forex: rising yields = USD strength (positive for USD-base pairs)
-    const usdBase = ['USDJPY'].includes(assetId);
-    if (usdBase) {
+    // Forex: only apply UST-yield rules to USD-involved pairs.
+    const usdSide = usdExposure(assetId);
+    if (usdSide === 'base') {
       if (direction === 'long' && macro.yield10y.trend === 'up') yieldPoints = 5;
       else if (direction === 'short' && macro.yield10y.trend === 'down') yieldPoints = 5;
-    } else {
+    } else if (usdSide === 'quote') {
       if (direction === 'long' && macro.yield10y.trend === 'down') yieldPoints = 5;
       else if (direction === 'short' && macro.yield10y.trend === 'up') yieldPoints = 5;
     }

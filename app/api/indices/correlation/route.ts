@@ -1,5 +1,5 @@
 // app/api/indices/correlation/route.ts
-// GET — correlation matrix between all 7 assets
+// GET — correlation matrix between active cached assets
 
 import { NextResponse } from 'next/server';
 import { getCache, CacheKeys } from '@/src/indices/data/cache/cacheManager';

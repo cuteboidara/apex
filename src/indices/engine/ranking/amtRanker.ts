@@ -1,5 +1,5 @@
 // src/indices/engine/ranking/amtRanker.ts
-// Rank top-3 AMT signals across all assets
+// Rank AMT signals across the full active asset universe
 
 import type { Candle, MacroContext, OrderBlock, FairValueGap } from '@/src/indices/types';
 import type { AMTSignal, AMTCycleResult } from '@/src/indices/types/amtTypes';
@@ -24,7 +24,6 @@ export interface AMTRankingInput {
 
 const EXECUTABLE_MIN_SCORE = 60;  // signals ≥60 are ready to trade
 const WATCHLIST_MIN_SCORE = 40;   // signals 40–59 are on watchlist
-const RANK_TOP_N = 3;             // top 3 across all assets
 
 // ─── Deduplication ────────────────────────────────────────────────────────
 
@@ -62,7 +61,7 @@ function filterBlocked(signals: AMTSignal[]): AMTSignal[] {
  * 3. Deduplicate per asset (best direction wins)
  * 4. Filter blocked signals
  * 5. Sort by totalScore descending
- * 6. Assign ranks 1, 2, 3
+ * 6. Assign ranks across full universe
  * 7. Split into executable (≥60) and watchlist (40–59)
  */
 export function rankAMTSignals(input: AMTRankingInput): {
@@ -95,8 +94,8 @@ export function rankAMTSignals(input: AMTRankingInput): {
   // Sort by score
   const sorted = filtered.sort((a, b) => b.totalScore - a.totalScore);
 
-  // Take top N and assign ranks
-  const ranked = sorted.slice(0, RANK_TOP_N).map((s, i) => ({
+  // Keep all assets and assign ranks by score.
+  const ranked = sorted.map((s, i) => ({
     ...s,
     rank: i + 1,
   }));

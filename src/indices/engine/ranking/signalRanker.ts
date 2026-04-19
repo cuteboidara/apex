@@ -22,7 +22,6 @@ import { runQuantAnalysis } from '../quant/quantScorer';
 import { buildTradeManagementPlan } from '../tradeManagement/tradeBuilder';
 
 const MIN_TOTAL_SCORE = 50;
-const TOP_N = 3;
 const DEFAULT_ACCOUNT_SIZE = 5000;
 const DEFAULT_RISK_PCT = 0.01; // 1%
 
@@ -142,13 +141,12 @@ export async function rankSignals(
     };
   });
 
-  // ─── Phase 4: Filter + sort + top 3 ──────────────────────────────────
+  // ─── Phase 4: Filter + sort ───────────────────────────────────────────
   const filtered = scored.filter(s => s.total >= minScore);
   filtered.sort((a, b) => b.total - a.total);
-  const top = filtered.slice(0, TOP_N);
 
   // ─── Phase 5: Build final RankedSignal objects ─────────────────────────
-  return top.map((s, idx): RankedSignal => {
+  return filtered.map((s, idx): RankedSignal => {
     const config = ASSET_CONFIG[s.assetId];
     const correlations = correlationPairs
       .filter(p => p.asset1 === s.assetId || p.asset2 === s.assetId)

@@ -4,7 +4,7 @@
 import { createId } from '@/src/lib/ids';
 import type { RankedSignal, MacroContext } from '@/src/indices/types';
 import type { AssetSymbol } from '@/src/indices/data/fetchers/assetConfig';
-import { ASSET_SYMBOLS } from '@/src/indices/data/fetchers/assetConfig';
+import { ASSET_SYMBOLS, isForex } from '@/src/indices/data/fetchers/assetConfig';
 import { fetchIndexCandles } from './data/fetchers/indicesFetcher';
 import { fetchForexCandles } from './data/fetchers/forexFetcher';
 import { fetchMacroContext } from './data/fetchers/macroFetcher';
@@ -57,8 +57,7 @@ export async function triggerIndicesCycle(options?: {
     const candleEntries = await Promise.all(
       assets.map(async (symbol) => {
         try {
-          const isForex = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'].includes(symbol);
-          const data = isForex
+          const data = isForex(symbol)
             ? await fetchForexCandles(symbol)
             : await fetchIndexCandles(symbol);
           return [symbol, data] as [AssetSymbol, MultiTimeframeCandles];

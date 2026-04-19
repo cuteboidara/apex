@@ -1,7 +1,19 @@
 // src/indices/data/fetchers/assetConfig.ts
 // Asset metadata: Yahoo Finance symbols, pip sizes, point values
 
-export const ASSET_SYMBOLS = ['NAS100', 'SPX500', 'DAX', 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'] as const;
+export const ASSET_SYMBOLS = [
+  'NAS100',
+  'SPX500',
+  'DAX',
+  'EURUSD',
+  'GBPUSD',
+  'USDJPY',
+  'AUDUSD',
+  'USDCAD',
+  'USDCHF',
+  'EURJPY',
+  'GBPJPY',
+] as const;
 export type AssetSymbol = typeof ASSET_SYMBOLS[number];
 
 export const MACRO_SYMBOLS = ['DXY', 'VIX', 'TNX'] as const;
@@ -112,6 +124,58 @@ export const ASSET_CONFIG: Record<AssetSymbol, AssetConfig> = {
     typicalSpread: 0.2,
     sessionOpen: 22,            // Sydney open
     sessionClose: 6,
+  },
+  USDCAD: {
+    symbol: 'USDCAD',
+    yahooSymbol: 'CAD=X',
+    displayName: 'USD/CAD',
+    assetClass: 'forex',
+    pipSize: 0.0001,
+    pointValue: 10,
+    minRR: 1.5,
+    minConfidence: 55,
+    typicalSpread: 0.2,
+    sessionOpen: 12,
+    sessionClose: 21,
+  },
+  USDCHF: {
+    symbol: 'USDCHF',
+    yahooSymbol: 'CHF=X',
+    displayName: 'USD/CHF',
+    assetClass: 'forex',
+    pipSize: 0.0001,
+    pointValue: 10,
+    minRR: 1.5,
+    minConfidence: 55,
+    typicalSpread: 0.2,
+    sessionOpen: 7,
+    sessionClose: 16,
+  },
+  EURJPY: {
+    symbol: 'EURJPY',
+    yahooSymbol: 'EURJPY=X',
+    displayName: 'EUR/JPY',
+    assetClass: 'forex',
+    pipSize: 0.01,
+    pointValue: 9.1,
+    minRR: 1.5,
+    minConfidence: 55,
+    typicalSpread: 0.2,
+    sessionOpen: 0,
+    sessionClose: 16,
+  },
+  GBPJPY: {
+    symbol: 'GBPJPY',
+    yahooSymbol: 'GBPJPY=X',
+    displayName: 'GBP/JPY',
+    assetClass: 'forex',
+    pipSize: 0.01,
+    pointValue: 9.1,
+    minRR: 1.5,
+    minConfidence: 55,
+    typicalSpread: 0.3,
+    sessionOpen: 0,
+    sessionClose: 16,
   },
 };
 

@@ -15,7 +15,7 @@ import { fetchMacroContext } from './data/fetchers/macroFetcher';
 import { fetchIndexCandles } from './data/fetchers/indicesFetcher';
 import { fetchForexCandles } from './data/fetchers/forexFetcher';
 import { runSMCAnalysis } from './engine/smc/smcScorer';
-import type { AssetSymbol } from './data/fetchers/assetConfig';
+import { ASSET_SYMBOLS, isForex, isIndex, type AssetSymbol } from './data/fetchers/assetConfig';
 
 // ─── Telegram send ─────────────────────────────────────────────────────────
 // Reuse the existing Telegram client directly.
@@ -33,8 +33,8 @@ async function sendTelegramMessage(text: string): Promise<void> {
 
 // ─── Asset Universe ────────────────────────────────────────────────────────
 
-const INDEX_ASSETS: AssetSymbol[] = ['NAS100', 'SPX500', 'DAX'];
-const FOREX_ASSETS: AssetSymbol[] = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD'];
+const INDEX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isIndex(symbol));
+const FOREX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isForex(symbol));
 const ALL_ASSETS: AssetSymbol[] = [...INDEX_ASSETS, ...FOREX_ASSETS];
 
 // ─── Singleton State ───────────────────────────────────────────────────────
@@ -72,10 +72,10 @@ function updateState(patch: Partial<AMTRuntimeState>): void {
 
 async function fetchAssetInput(assetId: AssetSymbol): Promise<AssetInput | null> {
   try {
-    const isIndex = INDEX_ASSETS.includes(assetId);
+    const indexAsset = INDEX_ASSETS.includes(assetId);
 
     // Fetch candles (use 4H candles for AMT — sufficient for FVA + pattern detection)
-    const mtfData = isIndex
+    const mtfData = indexAsset
       ? await fetchIndexCandles(assetId)
       : await fetchForexCandles(assetId);
 

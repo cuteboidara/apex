@@ -34,22 +34,19 @@ function computeDXYAlignment(
   direction: 'long' | 'short',
   assetId: string,
 ): number {
-  // USD-strength benefit map (positive = DXY rise benefits long)
-  const usdBenefitsLong: Record<string, boolean> = {
-    USDJPY: true,    // USD up → USDJPY up
-    NAS100: false,   // USD up → indices down (risk-off)
-    SPX500: false,
-    DAX: false,
-    EURUSD: false,   // USD up → EURUSD down
-    GBPUSD: false,
-    AUDUSD: false,
-  };
+  const isIndex = ['NAS100', 'SPX500', 'DAX'].includes(assetId);
+  const hasUsd = assetId.includes('USD');
+  const usdIsBase = assetId.startsWith('USD');
 
   const dxyIsUp = trend === 'up' || trend === 'strong_up';
   const dxyIsDown = trend === 'down' || trend === 'strong_down';
   const isStrong = trend === 'strong_up' || trend === 'strong_down';
 
-  const usdHelpsLong = usdBenefitsLong[assetId] ?? false;
+  // If the pair has no USD leg (ex: EURJPY/GBPJPY), DXY signal is neutral.
+  if (!isIndex && !hasUsd) return 0;
+
+  // DXY up helps long for USD-base pairs, hurts long for indices/USD-quote pairs.
+  const usdHelpsLong = isIndex ? false : usdIsBase;
   const magnitude = isStrong ? 10 : 5;
 
   if (dxyIsUp) {
@@ -117,14 +114,15 @@ function computeYieldEquityBias(
   assetId: string,
 ): number {
   const isIndex = ['NAS100', 'SPX500', 'DAX'].includes(assetId);
+  const hasUsd = assetId.includes('USD');
+  const usdIsBase = assetId.startsWith('USD');
 
   if (trend === 'rising') {
     // Bearish for indices, bullish for USD pairs with USD as base
     if (isIndex && direction === 'short') return 5;
     if (isIndex && direction === 'long') return -5;
     // USD-quote pairs: rising yields → USD strong (slightly bearish these pairs)
-    if (!isIndex) {
-      const usdIsBase = assetId.startsWith('USD');
+    if (!isIndex && hasUsd) {
       if (usdIsBase && direction === 'long') return 3;
       if (!usdIsBase && direction === 'short') return 3;
     }
@@ -133,8 +131,7 @@ function computeYieldEquityBias(
   if (trend === 'falling') {
     if (isIndex && direction === 'long') return 5;
     if (isIndex && direction === 'short') return -5;
-    if (!isIndex) {
-      const usdIsBase = assetId.startsWith('USD');
+    if (!isIndex && hasUsd) {
       if (!usdIsBase && direction === 'long') return 3;
       if (usdIsBase && direction === 'short') return 3;
     }
