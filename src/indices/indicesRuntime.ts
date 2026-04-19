@@ -33,6 +33,27 @@ const state = globalForIndicesRuntime.__apexIndicesRuntime ??= {
   lastMacroContext: null,
 };
 
+const ASSET_FETCH_TIMEOUT_MS = 12_000;
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race<T>([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timed out after ${timeoutMs}ms`)), timeoutMs);
+      }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 // ─── Main Cycle ───────────────────────────────────────────────────────────────
 
 export async function triggerIndicesCycle(options?: {
@@ -57,9 +78,18 @@ export async function triggerIndicesCycle(options?: {
     const candleEntries = await Promise.all(
       assets.map(async (symbol) => {
         try {
-          const data = isForex(symbol)
-            ? await fetchForexCandles(symbol)
-            : await fetchIndexCandles(symbol);
+          const data = await withTimeout(
+            isForex(symbol)
+              ? fetchForexCandles(symbol)
+              : fetchIndexCandles(symbol),
+            ASSET_FETCH_TIMEOUT_MS,
+          );
+
+          if (!data) {
+            console.warn(`[indices-runtime] Timeout or fetch failure for ${symbol}`);
+            return null;
+          }
+
           return [symbol, data] as [AssetSymbol, MultiTimeframeCandles];
         } catch (error) {
           console.error(`[indices-runtime] Candle fetch failed for ${symbol}:`, error);

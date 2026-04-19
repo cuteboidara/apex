@@ -36,6 +36,7 @@ async function sendTelegramMessage(text: string): Promise<void> {
 const INDEX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isIndex(symbol));
 const FOREX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isForex(symbol));
 const ALL_ASSETS: AssetSymbol[] = [...INDEX_ASSETS, ...FOREX_ASSETS];
+const ASSET_FETCH_TIMEOUT_MS = 12_000;
 
 // ─── Singleton State ───────────────────────────────────────────────────────
 
@@ -66,6 +67,25 @@ function getState(): AMTRuntimeState {
 function updateState(patch: Partial<AMTRuntimeState>): void {
   const state = getState();
   Object.assign(state, patch);
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  try {
+    return await Promise.race<T>([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timed out after ${timeoutMs}ms`)), timeoutMs);
+      }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
 }
 
 // ─── Data Fetching ─────────────────────────────────────────────────────────
@@ -150,7 +170,13 @@ export async function runAMTCycle(): Promise<{
 
     // 2. Fetch all assets in parallel
     const assetInputs = await Promise.all(
-      ALL_ASSETS.map((id: AssetSymbol) => fetchAssetInput(id)),
+      ALL_ASSETS.map(async (id: AssetSymbol) => {
+        const input = await withTimeout(fetchAssetInput(id), ASSET_FETCH_TIMEOUT_MS);
+        if (!input) {
+          console.warn(`[amt-runtime] Timeout or fetch failure for ${id}`);
+        }
+        return input;
+      }),
     );
 
     const validAssets = assetInputs.filter((a): a is AssetInput => a !== null);
