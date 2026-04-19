@@ -1,7 +1,5 @@
-import { QualityPage } from "@/src/dashboard/QualityPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <QualityPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

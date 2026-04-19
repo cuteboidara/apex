@@ -1,15 +1,19 @@
 import type { CryptoSymbol } from "@/src/crypto/config/cryptoScope";
 
-const VALID_BINANCE_SYMBOLS = new Set<CryptoSymbol>(["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]);
+function normalize(symbol: string): string {
+  return symbol.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
 
 export function toBinanceSymbol(symbol: CryptoSymbol): string {
-  return symbol;
+  return normalize(symbol);
 }
 
 export function fromBinanceSymbol(binanceSymbol: string): CryptoSymbol | null {
-  return VALID_BINANCE_SYMBOLS.has(binanceSymbol as CryptoSymbol)
-    ? binanceSymbol as CryptoSymbol
-    : null;
+  const normalized = normalize(binanceSymbol);
+  if (!normalized.endsWith("USDT")) {
+    return null;
+  }
+  return normalized;
 }
 
 export const BINANCE_KLINE_INTERVAL = "15m";

@@ -425,7 +425,7 @@ export function scoreCommodityMTF(
   confidence = Math.min(93, Math.max(35, confidence));
 
   const atrValue = Math.max(atr(mtf.h1, 14), livePrice * 0.005);
-  let entry = livePrice;
+  const entry = livePrice;
   let stopLoss = livePrice;
   let takeProfit = livePrice;
 

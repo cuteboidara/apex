@@ -15,6 +15,8 @@ export function isPublicApiPath(pathname: string): boolean {
     || pathname === "/api/cycle"
     || pathname === "/api/crypto-cycle"
     || pathname === "/api/crypto-signals"
+    || pathname === "/api/crypto/live-prices"
+    || pathname === "/api/crypto/signals"
     || pathname === "/api/forex/live-prices"
     || pathname === "/api/forex/signals"
     || pathname === "/api/stocks-signals"

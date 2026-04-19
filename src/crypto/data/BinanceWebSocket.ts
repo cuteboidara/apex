@@ -1,8 +1,7 @@
 import NodeWebSocket from "ws";
 
-import type { CryptoSymbol } from "@/src/crypto/config/cryptoScope";
-import { CRYPTO_ACTIVE_SYMBOLS } from "@/src/crypto/config/cryptoScope";
-import { fromBinanceSymbol } from "@/src/crypto/data/binanceSymbols";
+import { CRYPTO_ACTIVE_SYMBOLS, type CryptoSymbol } from "@/src/crypto/config/cryptoScope";
+import { fromBinanceSymbol, toBinanceSymbol } from "@/src/crypto/data/binanceSymbols";
 
 type LivePriceEntry = {
   price: number;
@@ -33,6 +32,8 @@ type CryptoWebSocketState = {
   wsInstance: WebSocketLike | null;
   isConnecting: boolean;
   intentionalClose: boolean;
+  subscribedSymbolsKey: string;
+  subscribedSymbols: CryptoSymbol[];
 };
 
 const globalForBinanceWs = globalThis as typeof globalThis & {
@@ -44,12 +45,19 @@ const state = globalForBinanceWs.__apexBinanceWsState ??= {
   wsInstance: null,
   isConnecting: false,
   intentionalClose: false,
+  subscribedSymbolsKey: "",
+  subscribedSymbols: [...CRYPTO_ACTIVE_SYMBOLS],
 };
 
 const BINANCE_WS_BASE = "wss://stream.binance.com:9443/stream";
 
-function buildStreamUrl(): string {
-  const streams = CRYPTO_ACTIVE_SYMBOLS.map(symbol => `${symbol.toLowerCase()}@ticker`).join("/");
+function normalizeSymbols(symbols?: string[]): CryptoSymbol[] {
+  const next = [...new Set((symbols ?? [...CRYPTO_ACTIVE_SYMBOLS]).map(symbol => toBinanceSymbol(symbol)).filter(Boolean))];
+  return next.length > 0 ? next : [...CRYPTO_ACTIVE_SYMBOLS];
+}
+
+function buildStreamUrl(symbols: CryptoSymbol[]): string {
+  const streams = symbols.map(symbol => `${symbol.toLowerCase()}@ticker`).join("/");
   return `${BINANCE_WS_BASE}?streams=${streams}`;
 }
 
@@ -79,21 +87,43 @@ function resolveWebSocketConstructor(): WebSocketConstructor {
   return (globalThis.WebSocket ?? NodeWebSocket) as unknown as WebSocketConstructor;
 }
 
-export function startBinanceWebSocket(): void {
-  if (state.isConnecting || state.wsInstance?.readyState === 1) {
+function closeCurrentSocket(): void {
+  if (state.wsInstance) {
+    state.intentionalClose = true;
+    state.wsInstance.close();
+    state.wsInstance = null;
+  }
+
+  state.isConnecting = false;
+}
+
+export function startBinanceWebSocket(symbols?: string[]): void {
+  const normalizedSymbols = normalizeSymbols(symbols);
+  const nextKey = normalizedSymbols.join(",");
+
+  if (state.subscribedSymbolsKey !== nextKey && state.wsInstance) {
+    closeCurrentSocket();
+  }
+
+  if (
+    state.subscribedSymbolsKey === nextKey
+    && (state.isConnecting || state.wsInstance?.readyState === 1)
+  ) {
     return;
   }
 
   state.intentionalClose = false;
   state.isConnecting = true;
+  state.subscribedSymbols = normalizedSymbols;
+  state.subscribedSymbolsKey = nextKey;
 
   const WebSocketImpl = resolveWebSocketConstructor();
-  const ws = new WebSocketImpl(buildStreamUrl());
+  const ws = new WebSocketImpl(buildStreamUrl(normalizedSymbols));
   state.wsInstance = ws;
 
   ws.onopen = () => {
     state.isConnecting = false;
-    console.log("[binance-ws] Connected");
+    console.log(`[binance-ws] Connected for ${normalizedSymbols.length} symbols`);
   };
 
   ws.onmessage = event => {
@@ -137,17 +167,11 @@ export function startBinanceWebSocket(): void {
 }
 
 export function stopBinanceWebSocket(): void {
-  if (state.wsInstance) {
-    state.intentionalClose = true;
-    state.wsInstance.close();
-    state.wsInstance = null;
-  }
-
-  state.isConnecting = false;
+  closeCurrentSocket();
 }
 
 export function getCryptoLivePrice(symbol: CryptoSymbol): number | null {
-  const entry = state.livePrices.get(symbol);
+  const entry = state.livePrices.get(toBinanceSymbol(symbol));
   if (!entry) {
     return null;
   }
@@ -159,9 +183,10 @@ export function getCryptoLivePrice(symbol: CryptoSymbol): number | null {
   return entry.price;
 }
 
-export function getAllCryptoLivePrices(): Record<CryptoSymbol, number | null> {
-  const prices = {} as Record<CryptoSymbol, number | null>;
-  for (const symbol of CRYPTO_ACTIVE_SYMBOLS) {
+export function getAllCryptoLivePrices(symbols?: string[]): Record<string, number | null> {
+  const selectedSymbols = normalizeSymbols(symbols ?? state.subscribedSymbols);
+  const prices: Record<string, number | null> = {};
+  for (const symbol of selectedSymbols) {
     prices[symbol] = getCryptoLivePrice(symbol);
   }
   return prices;
@@ -171,8 +196,8 @@ export function isBinanceWsConnected(): boolean {
   return state.wsInstance?.readyState === 1;
 }
 
-export async function waitForBinanceWebSocket(timeoutMs = 1_500): Promise<boolean> {
-  startBinanceWebSocket();
+export async function waitForBinanceWebSocket(timeoutMs = 1_500, symbols?: string[]): Promise<boolean> {
+  startBinanceWebSocket(symbols);
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < timeoutMs) {
@@ -185,7 +210,13 @@ export async function waitForBinanceWebSocket(timeoutMs = 1_500): Promise<boolea
   return isBinanceWsConnected();
 }
 
+export function getBinanceSubscribedSymbols(): CryptoSymbol[] {
+  return [...state.subscribedSymbols];
+}
+
 export function resetBinanceWebSocketForTests(): void {
   stopBinanceWebSocket();
   state.livePrices.clear();
+  state.subscribedSymbols = [...CRYPTO_ACTIVE_SYMBOLS];
+  state.subscribedSymbolsKey = "";
 }

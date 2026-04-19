@@ -31,6 +31,7 @@ test("market symbol alias expansion includes forex metal fallback aliases", () =
 });
 
 test("persisted signal helpers store and read silver aliases canonically", () => {
+  type PersistableSignalInput = Parameters<typeof prepareSignalViewModelForPersistence>[0];
   const prepared = prepareSignalViewModelForPersistence({
     symbol: "SI=F",
     signal_id: null,
@@ -39,7 +40,7 @@ test("persisted signal helpers store and read silver aliases canonically", () =>
       refs: {},
       health: {},
     },
-  } as any);
+  } as unknown as PersistableSignalInput);
 
   assert.equal(prepared.symbol, "XAGUSD");
   assert.equal(readPersistedMarketSymbol(prepared.ui_sections), "XAGUSD");

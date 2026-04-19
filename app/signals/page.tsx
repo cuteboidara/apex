@@ -1,7 +1,5 @@
-import { SignalsPage } from "@/src/presentation/dashboard/SignalsPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <SignalsPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

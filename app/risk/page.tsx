@@ -1,7 +1,5 @@
-import { RiskPage } from "@/src/dashboard/RiskPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <RiskPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

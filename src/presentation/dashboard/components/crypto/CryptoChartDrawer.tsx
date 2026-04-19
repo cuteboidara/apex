@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type CryptoAsset = {
-  symbol: string;
-  label: string;
-  short: string;
-  tv: string;
-};
+import type { CryptoNewsItem, CryptoSelectedAsset } from "@/src/crypto/types";
 
 type CryptoPriceRow = {
   symbol: string;
@@ -21,7 +16,7 @@ type CryptoPriceRow = {
   volume24h: number | null;
   marketCap?: number | null;
   direction: "up" | "down" | "flat";
-  provider: "binance" | "coingecko";
+  provider: string;
   freshAt: number;
   stale?: boolean;
   reason?: string | null;
@@ -40,6 +35,7 @@ type CryptoSignalRow = {
   takeProfit3: number | null;
   reasoning: string | null;
   generatedAt: number | null;
+  news: CryptoNewsItem[];
 };
 
 function formatPrice(value: number | null): string {
@@ -49,7 +45,7 @@ function formatPrice(value: number | null): string {
   return value.toFixed(4);
 }
 
-function buildTradingViewUrl(symbol: string | null, assets: CryptoAsset[]): string {
+function buildTradingViewUrl(symbol: string | null, assets: CryptoSelectedAsset[]): string {
   const asset = symbol ? assets.find(item => item.symbol === symbol) ?? null : null;
   const params = new URLSearchParams({
     symbol: asset?.tv ?? "BINANCE:BTCUSDT",
@@ -77,7 +73,7 @@ export function CryptoChartDrawer({
 }: {
   open: boolean;
   symbol: string | null;
-  assets: CryptoAsset[];
+  assets: CryptoSelectedAsset[];
   price: CryptoPriceRow | null;
   signal: CryptoSignalRow | null;
   onClose: () => void;
@@ -189,6 +185,42 @@ export function CryptoChartDrawer({
                     {signal.reasoning ?? "No reasoning available yet."}
                   </p>
                 </div>
+
+                {signal.news.length > 0 ? (
+                  <div>
+                    <p className="font-[var(--apex-font-mono)] text-[10px] uppercase tracking-[0.14em] text-[var(--apex-text-tertiary)]">
+                      Coin News
+                    </p>
+                    <div className="mt-3 space-y-3">
+                      {signal.news.slice(0, 5).map(item => (
+                        <a
+                          key={`${item.url}-${item.publishedAt}`}
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-[var(--apex-radius-md)] border border-[var(--apex-border-subtle)] bg-[rgba(255,255,255,0.02)] px-3 py-3"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-[var(--apex-font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--apex-text-tertiary)]">
+                              {item.source}
+                            </span>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] ${
+                              item.sentiment === "bullish"
+                                ? "bg-[rgba(80,160,100,0.10)] text-[var(--apex-status-active-text)]"
+                                : item.sentiment === "bearish"
+                                  ? "bg-[rgba(239,68,68,0.10)] text-[#F87171]"
+                                  : "bg-[rgba(255,255,255,0.06)] text-[var(--apex-text-secondary)]"
+                            }`}>
+                              {item.sentiment}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-[13px] leading-6 text-[var(--apex-text-primary)]">{item.headline}</p>
+                          <p className="mt-2 text-[11px] text-[var(--apex-text-tertiary)]">{new Date(item.publishedAt).toLocaleString()}</p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <p className="text-[12px] text-[var(--apex-text-tertiary)]">
                   Generated at {signal.generatedAt ? new Date(signal.generatedAt).toLocaleString() : "—"}

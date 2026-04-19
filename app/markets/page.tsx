@@ -1,7 +1,5 @@
-import { MarketsPage } from "@/src/presentation/dashboard/MarketsPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <MarketsPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

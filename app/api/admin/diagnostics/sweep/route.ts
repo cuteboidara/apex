@@ -128,7 +128,7 @@ async function buildDiagnostic(input: {
   priceSource: "binance" | "livePrices";
   candleSource: "yahoo" | "binance";
   getLivePrice: () => Promise<number | null>;
-  getCandles: () => Promise<MTFCandles>;
+  getCandles: () => Promise<MTFCandles & Partial<{ sourceProvider: string; providerPath: string[]; providerErrors: string[] }>>;
 }) {
   const [livePrice, mtf] = await Promise.all([
     input.getLivePrice(),
@@ -136,12 +136,15 @@ async function buildDiagnostic(input: {
   ]);
   const sweepDiagnostic = diagnoseTopDownSweep(input.symbol, mtf, livePrice ?? Number.NaN);
   const topDownResult = livePrice == null ? null : runTopDownAnalysis(input.symbol, mtf, livePrice);
+  const resolvedCandleSource = "sourceProvider" in mtf && mtf.sourceProvider ? mtf.sourceProvider : input.candleSource;
 
   return {
     symbol: input.symbol,
     assetClass: input.assetClass,
     priceSource: input.priceSource,
-    candleSource: input.candleSource,
+    candleSource: resolvedCandleSource,
+    providerPath: "providerPath" in mtf ? mtf.providerPath ?? [] : [],
+    providerErrors: "providerErrors" in mtf ? mtf.providerErrors ?? [] : [],
     livePrice,
     topDownResult: topDownResult == null
       ? null

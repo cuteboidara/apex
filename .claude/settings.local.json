@@ -41,7 +41,20 @@
       "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''base64''\\)\\)\")",
       "Bash(cd:*)",
       "Bash(npx ts-node -e \":*)",
-      "mcp__Neon__run_sql"
+      "mcp__Neon__run_sql",
+      "Bash(find /c/Users/daram/apex -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\) ! -path */node_modules/* ! -path */.next/* ! -path */.claude/worktrees/* -exec wc -l {} +)",
+      "Bash(find /c/Users/daram/apex/forex_smc_system -name \"*.py\" -exec wc -l {} +)",
+      "Bash(head -10 grep -n \"sendTelegram\\\\|export\" lib/telegramService.ts)",
+      "Bash(chmod:*)",
+      "Bash(grep -rn \"getCachedJson\\\\|export\" src/infrastructure/redis*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_KxNDcnwC6h9a@ep-mute-salad-ansi4j27-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" DIRECT_DATABASE_URL=\"postgresql://neondb_owner:npg_KxNDcnwC6h9a@ep-mute-salad-ansi4j27-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" npx prisma db push)",
+      "Bash(jobs -l)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(find /c/Users/daram/apex/app/api/indices -type f -name *.ts -o -type f -name *.tsx)",
+      "Bash(find /c/Users/daram/apex/src/presentation/indices -type f -name *.ts -o -type f -name *.tsx)",
+      "Bash(node -e \"const c = require\\(''''./src/indices/data/fetchers/assetConfig.ts''''\\); console.log\\(''''ASSET_SYMBOLS count:'''', c.ASSET_SYMBOLS?.length ?? ''''ESM - need different check''''\\)\")",
+      "Bash(gh run:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

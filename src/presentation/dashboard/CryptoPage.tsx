@@ -3,6 +3,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { ApexShell } from "@/src/dashboard/components/ApexShell";
+import type { CryptoNewsItem, CryptoSelectedAsset } from "@/src/crypto/types";
 import type { RecoveryMode } from "@/src/interfaces/contracts";
 import { BTCDominanceWidget } from "@/src/presentation/dashboard/components/crypto/BTCDominanceWidget";
 import { CryptoChartDrawer } from "@/src/presentation/dashboard/components/crypto/CryptoChartDrawer";
@@ -10,13 +11,6 @@ import { CryptoGrid } from "@/src/presentation/dashboard/components/crypto/Crypt
 import { FearGreedWidget } from "@/src/presentation/dashboard/components/crypto/FearGreedWidget";
 import { MarketOverviewBar } from "@/src/presentation/dashboard/components/crypto/MarketOverviewBar";
 import { PriceTicker } from "@/src/presentation/dashboard/components/crypto/PriceTicker";
-
-type CryptoAsset = {
-  symbol: string;
-  label: string;
-  short: string;
-  tv: string;
-};
 
 type CryptoPriceRow = {
   symbol: string;
@@ -30,7 +24,7 @@ type CryptoPriceRow = {
   volume24h: number | null;
   marketCap?: number | null;
   direction: "up" | "down" | "flat";
-  provider: "binance" | "coingecko";
+  provider: string;
   freshAt: number;
   stale?: boolean;
   reason?: string | null;
@@ -38,6 +32,8 @@ type CryptoPriceRow = {
 
 type CryptoPricesPayload = {
   generatedAt: number;
+  selectionGeneratedAt: number | null;
+  selectionProvider: string | null;
   assets: CryptoPriceRow[];
 };
 
@@ -54,10 +50,14 @@ type CryptoSignalRow = {
   takeProfit3: number | null;
   reasoning: string | null;
   generatedAt: number | null;
+  news: CryptoNewsItem[];
 };
 
 type CryptoSignalsPayload = {
   generatedAt: number;
+  selectionGeneratedAt: number | null;
+  selectionProvider: string | null;
+  selectedAssets: CryptoSelectedAsset[];
   assets: CryptoSignalRow[];
 };
 
@@ -92,33 +92,12 @@ type BinanceStreamMessage = {
   };
 };
 
-const CRYPTO_ASSETS: CryptoAsset[] = [
-  { symbol: "BTCUSDT", label: "Bitcoin", short: "BTC", tv: "BINANCE:BTCUSDT" },
-  { symbol: "ETHUSDT", label: "Ethereum", short: "ETH", tv: "BINANCE:ETHUSDT" },
-  { symbol: "SOLUSDT", label: "Solana", short: "SOL", tv: "BINANCE:SOLUSDT" },
-  { symbol: "BNBUSDT", label: "BNB", short: "BNB", tv: "BINANCE:BNBUSDT" },
-  { symbol: "XRPUSDT", label: "XRP", short: "XRP", tv: "BINANCE:XRPUSDT" },
-  { symbol: "DOGEUSDT", label: "Dogecoin", short: "DOGE", tv: "BINANCE:DOGEUSDT" },
-  { symbol: "ADAUSDT", label: "Cardano", short: "ADA", tv: "BINANCE:ADAUSDT" },
-  { symbol: "AVAXUSDT", label: "Avalanche", short: "AVAX", tv: "BINANCE:AVAXUSDT" },
-];
-
 const EMPTY_SIGNALS: CryptoSignalsPayload = {
   generatedAt: 0,
-  assets: CRYPTO_ASSETS.map(asset => ({
-    symbol: asset.symbol,
-    grade: null,
-    status: "pending",
-    direction: null,
-    confidence: null,
-    entry: null,
-    stopLoss: null,
-    takeProfit: null,
-    takeProfit2: null,
-    takeProfit3: null,
-    reasoning: null,
-    generatedAt: null,
-  })),
+  selectionGeneratedAt: null,
+  selectionProvider: null,
+  selectedAssets: [],
+  assets: [],
 };
 
 function relativeAge(now: number, timestamp: number | null): string {
@@ -154,9 +133,29 @@ function deriveDirection(change: number | null): "up" | "down" | "flat" {
   return change > 0 ? "up" : "down";
 }
 
-function buildBinanceStreamUrl(): string {
-  const streams = CRYPTO_ASSETS.map(asset => `${asset.symbol.toLowerCase()}@ticker`).join("/");
+function buildBinanceStreamUrl(assets: CryptoSelectedAsset[]): string {
+  const streams = assets.map(asset => `${asset.symbol.toLowerCase()}@ticker`).join("/");
   return `wss://stream.binance.com:9443/stream?streams=${streams}`;
+}
+
+function deriveScopeAssets(prices: CryptoPricesPayload | null, signals: CryptoSignalsPayload): CryptoSelectedAsset[] {
+  if (signals.selectedAssets.length > 0) {
+    return signals.selectedAssets;
+  }
+
+  return (prices?.assets ?? []).map(asset => ({
+    symbol: asset.symbol,
+    displayName: `${asset.short}/USD`,
+    label: asset.label,
+    short: asset.short,
+    tv: `BINANCE:${asset.symbol}`,
+    coingeckoId: null,
+    quoteVolume24h: asset.volume24h,
+    priceChangePct24h: asset.changePct24h,
+    lastPrice: asset.price,
+    selectionRank: 0,
+    selectionReasons: [],
+  }));
 }
 
 export function CryptoPage() {
@@ -252,15 +251,18 @@ export function CryptoPage() {
     }
   });
 
-  const connectWebSocket = useEffectEvent(() => {
+  const connectWebSocket = useEffectEvent((scopeAssets: CryptoSelectedAsset[]) => {
     if (typeof window === "undefined") {
+      return;
+    }
+    if (scopeAssets.length === 0) {
       return;
     }
     if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
-    const ws = new WebSocket(buildBinanceStreamUrl());
+    const ws = new WebSocket(buildBinanceStreamUrl(scopeAssets));
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -308,6 +310,7 @@ export function CryptoPage() {
             return nextAsset;
           });
           return {
+            ...current,
             generatedAt: Date.now(),
             assets: nextAssets,
           };
@@ -327,7 +330,7 @@ export function CryptoPage() {
       if (reconnectTimerRef.current == null) {
         reconnectTimerRef.current = window.setTimeout(() => {
           reconnectTimerRef.current = null;
-          connectWebSocket();
+          connectWebSocket(scopeAssets);
         }, 5_000);
       }
     };
@@ -339,7 +342,6 @@ export function CryptoPage() {
     void fetchSignals();
     void fetchOverview();
     void fetchFearGreed();
-    connectWebSocket();
   }, []);
 
   useEffect(() => {
@@ -399,10 +401,31 @@ export function CryptoPage() {
   }, [consecutivePriceFailures, feedMode]);
 
   const lastPriceGeneratedAt = prices?.generatedAt ?? null;
+  const scopeAssets = deriveScopeAssets(prices, signals);
+  const scopeSignature = scopeAssets.map(asset => asset.symbol).join("|");
   const priceMap = new Map((prices?.assets ?? []).map(asset => [asset.symbol, asset]));
   const signalMap = new Map(signals.assets.map(asset => [asset.symbol, asset]));
   const selectedPrice = selectedSymbol ? priceMap.get(selectedSymbol) ?? null : null;
   const selectedSignal = selectedSymbol ? signalMap.get(selectedSymbol) ?? null : null;
+
+  useEffect(() => {
+    if (scopeAssets.length === 0) {
+      return;
+    }
+
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    connectWebSocket(scopeAssets);
+  }, [connectWebSocket, scopeSignature]);
+
+  useEffect(() => {
+    if (selectedSymbol && !scopeAssets.some(asset => asset.symbol === selectedSymbol)) {
+      setSelectedSymbol(null);
+    }
+  }, [selectedSymbol, scopeSignature]);
 
   return (
     <ApexShell
@@ -437,7 +460,7 @@ export function CryptoPage() {
               </span>
             </div>
             <p className="mt-3 text-[13px] text-[var(--apex-text-secondary)]">
-              8 assets · Powered by Binance · Last update: {feedMode === "ws" ? "live" : relativeAge(now, lastPriceGeneratedAt)}
+              {scopeAssets.length || prices?.assets.length || 0} assets in scope · Multi-provider crypto feed · Last update: {feedMode === "ws" ? "live" : relativeAge(now, lastPriceGeneratedAt)}
             </p>
           </div>
         </div>
@@ -448,7 +471,7 @@ export function CryptoPage() {
         <BTCDominanceWidget overview={overviewError ? null : overview} previousBtcDominance={previousBtcDominance} />
         <FearGreedWidget sentiment={fearGreedError ? null : fearGreed} error={fearGreedError} />
       </div>
-      <PriceTicker assets={CRYPTO_ASSETS} prices={prices?.assets ?? []} />
+      <PriceTicker assets={scopeAssets} prices={prices?.assets ?? []} />
       <CryptoGrid
         prices={prices?.assets ?? []}
         signals={signals.assets}
@@ -459,7 +482,7 @@ export function CryptoPage() {
       <CryptoChartDrawer
         open={selectedSymbol != null}
         symbol={selectedSymbol}
-        assets={CRYPTO_ASSETS}
+        assets={scopeAssets}
         price={selectedPrice}
         signal={selectedSignal}
         onClose={() => setSelectedSymbol(null)}

@@ -1,7 +1,5 @@
-import { JournalPage } from "@/src/dashboard/JournalPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <JournalPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

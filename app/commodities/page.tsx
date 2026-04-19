@@ -1,7 +1,5 @@
-import { CommoditiesPage } from "@/src/presentation/dashboard/CommoditiesPage";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <CommoditiesPage />;
+  redirect("/indices-v2");
 }

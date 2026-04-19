@@ -2,6 +2,7 @@ import type { Candle } from "@/src/smc/types";
 import type { CryptoSymbol } from "@/src/crypto/config/cryptoScope";
 import { CRYPTO_ACTIVE_SYMBOLS } from "@/src/crypto/config/cryptoScope";
 import { BINANCE_KLINE_INTERVAL, BINANCE_KLINE_LIMIT } from "@/src/crypto/data/binanceSymbols";
+import { fetchCryptoSpotQuote } from "@/src/crypto/data/marketUniverse";
 
 const BINANCE_REST_BASE = "https://api.binance.com/api/v3";
 const CANDLE_CACHE_TTL_MS = 60_000;
@@ -84,19 +85,8 @@ export async function fetchAllCryptoCandles(): Promise<Record<CryptoSymbol, Cand
 
 export async function fetchCryptoTickerPrice(symbol: CryptoSymbol): Promise<number | null> {
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5_000);
-    const response = await fetch(`${BINANCE_REST_BASE}/ticker/price?symbol=${symbol}`, {
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json() as { price: string };
-    return Number(data.price);
+    const quote = await fetchCryptoSpotQuote(symbol);
+    return quote?.lastPrice ?? null;
   } catch {
     return null;
   }

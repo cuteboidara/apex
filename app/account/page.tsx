@@ -1,7 +1,5 @@
-import { AccountPage } from "@/src/presentation/dashboard/AccountPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <AccountPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

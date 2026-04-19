@@ -1,7 +1,5 @@
-import { StocksPage } from "@/src/presentation/dashboard/StocksPage";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <StocksPage />;
+  redirect("/indices-v2");
 }

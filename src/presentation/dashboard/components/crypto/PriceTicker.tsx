@@ -1,11 +1,6 @@
 "use client";
 
-type CryptoAsset = {
-  symbol: string;
-  label: string;
-  short: string;
-  tv: string;
-};
+import type { CryptoSelectedAsset } from "@/src/crypto/types";
 
 type CryptoPriceRow = {
   symbol: string;
@@ -19,7 +14,7 @@ type CryptoPriceRow = {
   volume24h: number | null;
   marketCap?: number | null;
   direction: "up" | "down" | "flat";
-  provider: "binance" | "coingecko";
+  provider: string;
   freshAt: number;
   stale?: boolean;
   reason?: string | null;
@@ -38,7 +33,7 @@ function tone(direction: "up" | "down" | "flat"): string {
   return "text-[var(--apex-text-secondary)]";
 }
 
-export function PriceTicker({ assets, prices }: { assets: CryptoAsset[]; prices: CryptoPriceRow[] }) {
+export function PriceTicker({ assets, prices }: { assets: CryptoSelectedAsset[]; prices: CryptoPriceRow[] }) {
   const priceMap = new Map(prices.map(price => [price.symbol, price]));
   const items = assets.map(asset => ({
     asset,

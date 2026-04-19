@@ -6,24 +6,34 @@ import { TelegramNotifier } from "@/src/lib/telegram";
 import { analyzeSMC } from "@/src/smc";
 import type { Candle, SMCAnalysis } from "@/src/smc/types";
 import {
-  CRYPTO_ACTIVE_SYMBOLS,
-  CRYPTO_DISPLAY_NAMES,
-  CRYPTO_PAIR_PROFILES,
   getCryptoVolatilityWindow,
+  getCoinGeckoIdForSymbol,
+  getCryptoDisplayName,
+  getCryptoLabel,
+  getCryptoShortSymbol,
+  getTradingViewCryptoSymbol,
   isCryptoWeekend,
   type CryptoPairProfile,
   type CryptoSymbol,
   type CryptoVolatilityWindow,
+  resolveCryptoPairProfile,
 } from "@/src/crypto/config/cryptoScope";
 import { fetchCryptoTickerPrice } from "@/src/crypto/data/CryptoDataPlant";
 import { getAllCryptoLivePrices } from "@/src/crypto/data/BinanceWebSocket";
-import type { CryptoSignalCard } from "@/src/crypto/types";
+import { fetchCryptoMarketUniverse } from "@/src/crypto/data/marketUniverse";
+import type {
+  CryptoSelectedAsset,
+  CryptoSelectionSnapshot,
+  CryptoSignalCard,
+} from "@/src/crypto/types";
 import { MTF_ANALYSIS_MIN_CANDLES } from "@/src/assets/shared/mtfAnalysis";
 import type { MTFAnalysisResult, MTFCandles } from "@/src/assets/shared/mtfAnalysis";
 import { runTopDownAnalysis } from "@/src/assets/shared/mtfAnalysis";
 import { fetchMTFCandles } from "@/src/assets/shared/mtfDataFetcher";
 import { prepareSignalViewModelForPersistence } from "@/src/assets/shared/persistedSignalViewModel";
 import { buildTopDownReasoning } from "@/src/assets/shared/signalView";
+import { computeCoinNewsSentimentModifier, getCoinNews } from "@/src/crypto/news/coinNewsAggregator";
+import { getCachedJson, setCachedJson } from "@/src/lib/redis";
 
 type SignalDecision = {
   direction: SignalViewModel["direction"];
@@ -32,6 +42,164 @@ type SignalDecision = {
 };
 
 type TradeLevels = Pick<SignalViewModel, "entry" | "sl" | "tp1" | "tp2" | "tp3">;
+
+const CRYPTO_SELECTION_CACHE_KEY = "crypto:selection:active:v2";
+const CRYPTO_SELECTION_CACHE_TTL_SECONDS = 300;
+const TARGET_CRYPTO_UNIVERSE_SIZE = 24;
+const MIN_CRYPTO_UNIVERSE_SIZE = 20;
+const SELECTION_SOURCE_DEPTH = 50;
+const STABLECOIN_BASES = new Set([
+  "USDC",
+  "BUSD",
+  "TUSD",
+  "DAI",
+  "FDUSD",
+  "USDP",
+  "USDD",
+  "USDE",
+  "PYUSD",
+  "EURS",
+]);
+
+function normalizeSymbol(symbol: string): string {
+  return symbol.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function parseNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function isStablecoinPair(symbol: string): boolean {
+  return STABLECOIN_BASES.has(getCryptoShortSymbol(symbol));
+}
+
+function isLeveragedToken(symbol: string): boolean {
+  return /(UP|DOWN|BULL|BEAR)$/.test(getCryptoShortSymbol(symbol));
+}
+
+function buildSelectedAsset(input: {
+  symbol: string;
+  lastPrice: number | null;
+  quoteVolume24h: number | null;
+  priceChangePct24h: number | null;
+  rank: number;
+  selectionReasons: string[];
+}): CryptoSelectedAsset {
+  const symbol = normalizeSymbol(input.symbol);
+  return {
+    symbol,
+    displayName: getCryptoDisplayName(symbol),
+    label: getCryptoLabel(symbol),
+    short: getCryptoShortSymbol(symbol),
+    tv: getTradingViewCryptoSymbol(symbol),
+    coingeckoId: getCoinGeckoIdForSymbol(symbol),
+    quoteVolume24h: input.quoteVolume24h,
+    priceChangePct24h: input.priceChangePct24h,
+    lastPrice: input.lastPrice,
+    selectionRank: input.rank,
+    selectionReasons: [...input.selectionReasons],
+  };
+}
+
+export async function selectTradableAssets(options?: {
+  force?: boolean;
+  limit?: number;
+}): Promise<CryptoSelectionSnapshot> {
+  if (!options?.force) {
+    const cached = await getCachedJson<CryptoSelectionSnapshot>(CRYPTO_SELECTION_CACHE_KEY);
+    if (cached?.assets?.length) {
+      return cached;
+    }
+  }
+
+  const universe = await fetchCryptoMarketUniverse(SELECTION_SOURCE_DEPTH);
+  const topUsdtPairs = universe.rows
+    .map(row => ({
+      symbol: normalizeSymbol(row.symbol),
+      lastPrice: row.lastPrice,
+      priceChangePct24h: row.priceChangePct24h,
+      quoteVolume24h: row.quoteVolume24h,
+    }))
+    .filter(row => row.symbol.endsWith("USDT"))
+    .filter(row => !isStablecoinPair(row.symbol))
+    .filter(row => !isLeveragedToken(row.symbol))
+    .sort((left, right) => (right.quoteVolume24h ?? 0) - (left.quoteVolume24h ?? 0))
+    .slice(0, SELECTION_SOURCE_DEPTH);
+
+  const selectionSourceRows = universe.provider === "coingecko_markets"
+    ? topUsdtPairs.filter(row => getCoinGeckoIdForSymbol(row.symbol) != null)
+    : topUsdtPairs;
+
+  const passing = selectionSourceRows.filter(row =>
+    (row.quoteVolume24h ?? 0) >= 50_000_000
+    && Math.abs(row.priceChangePct24h ?? 0) >= 1.5,
+  );
+
+  const targetSize = Math.min(options?.limit ?? TARGET_CRYPTO_UNIVERSE_SIZE, 30);
+  const selectedRows = [...passing.slice(0, targetSize)];
+  if (selectedRows.length < MIN_CRYPTO_UNIVERSE_SIZE) {
+    for (const candidate of selectionSourceRows) {
+      if (selectedRows.some(selected => selected.symbol === candidate.symbol)) {
+        continue;
+      }
+      selectedRows.push(candidate);
+      if (selectedRows.length >= MIN_CRYPTO_UNIVERSE_SIZE) {
+        break;
+      }
+    }
+  }
+
+  const assets = selectedRows.map((row, index) => buildSelectedAsset({
+    symbol: row.symbol,
+    lastPrice: row.lastPrice,
+    quoteVolume24h: row.quoteVolume24h,
+    priceChangePct24h: row.priceChangePct24h,
+    rank: index + 1,
+    selectionReasons: [
+      (row.quoteVolume24h ?? 0) >= 50_000_000 ? "volume>=50m" : "volume_fill",
+      Math.abs(row.priceChangePct24h ?? 0) >= 1.5 ? "volatility>=1.5pct" : "volatility_fill",
+    ],
+  }));
+
+  const snapshot: CryptoSelectionSnapshot = {
+    generatedAt: Date.now(),
+    provider: universe.provider,
+    assets,
+  };
+
+  await setCachedJson(CRYPTO_SELECTION_CACHE_KEY, snapshot, CRYPTO_SELECTION_CACHE_TTL_SECONDS);
+  console.log(
+    `[crypto-engine] Selected ${assets.length} tradable assets via ${universe.provider}: ${assets.slice(0, 10).map(asset => asset.symbol).join(", ")}${assets.length > 10 ? "..." : ""}`,
+  );
+  return snapshot;
+}
+
+async function mapWithConcurrency<TInput, TOutput>(
+  values: TInput[],
+  limit: number,
+  worker: (value: TInput, index: number) => Promise<TOutput>,
+): Promise<TOutput[]> {
+  const output = new Array<TOutput>(values.length);
+  let cursor = 0;
+
+  async function consume(): Promise<void> {
+    while (cursor < values.length) {
+      const index = cursor;
+      cursor += 1;
+      output[index] = await worker(values[index]!, index);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, values.length) }, () => consume()));
+  return output;
+}
 
 function titleCase(value: string): string {
   return value
@@ -261,7 +429,7 @@ function deriveTradeLevels(
 
 function describeNoTradeReason(noTradeReason: string | null): string | null {
   if (noTradeReason === "data unavailable") {
-    return "Live Binance price or Binance multi-timeframe candle data is not available yet, so the crypto setup stays blocked until inputs recover.";
+    return "Live price or multi-timeframe candle data is not available yet, so the crypto setup stays blocked until inputs recover.";
   }
   if (noTradeReason === "no structure") {
     return "The higher and lower timeframe map does not offer a clean aligned directional imbalance yet, so the pair remains on watch.";
@@ -346,7 +514,7 @@ async function resolveReasoning(input: {
   analysis: SMCAnalysis;
   window: CryptoVolatilityWindow;
 }): Promise<SignalReasoningOutput> {
-  const displayName = CRYPTO_DISPLAY_NAMES[input.symbol];
+  const displayName = getCryptoDisplayName(input.symbol);
   const fallbackNoTradeExplanation = describeNoTradeReason(input.noTradeReason);
   const fallback: SignalReasoningOutput = {
     shortReasoning: `${displayName} ${input.direction === "neutral" ? "is still shaping structure" : `${input.direction.toUpperCase()} structure is in play`} with SMC confluence at ${input.analysis.smcScore.total}/100.`,
@@ -420,7 +588,7 @@ function describeMtfNoTradeReason(reason: string): string {
     return "Top-down timeframe bias is still mixed, so the crypto setup stays on watch until MTF alignment improves.";
   }
   if (reason === "insufficient candles") {
-    return "Binance MTF candles are incomplete, so the crypto setup stays blocked until enough higher and lower timeframe data loads.";
+    return "MTF candles are incomplete, so the crypto setup stays blocked until enough higher and lower timeframe data loads.";
   }
   return describeNoTradeReason(reason) ?? reason;
 }
@@ -533,23 +701,43 @@ function buildMtfKeyLevels(mtfCandles: MTFCandles): SignalViewModel["keyLevels"]
   };
 }
 
+function resolveProviderTrustScore(provider: string): number {
+  if (provider === "binance") return 94;
+  if (provider === "bybit") return 90;
+  if (provider === "coingecko") return 82;
+  if (provider === "cryptocompare") return 78;
+  return 70;
+}
+
+function resolveProviderName(provider: string | null | undefined): string | null {
+  if (!provider) {
+    return null;
+  }
+  return titleCase(provider.replaceAll("_", " "));
+}
+
 async function buildCryptoCard(input: {
-  symbol: CryptoSymbol;
+  asset: CryptoSelectedAsset;
   profile: CryptoPairProfile;
   cycleId: string;
   timestamp: number;
   window: CryptoVolatilityWindow;
-  mtfCandles: MTFCandles;
+  mtfCandles: MTFCandles & Partial<{ sourceProvider: string; providerPath: string[]; providerErrors: string[] }>;
   livePrice: number | null;
+  livePriceSource: string;
+  news: CryptoSignalCard["news"];
+  newsSentimentModifier: number;
 }): Promise<CryptoSignalCard> {
-  const displayName = CRYPTO_DISPLAY_NAMES[input.symbol];
+  const displayName = input.asset.displayName;
   const primaryCandles = input.mtfCandles.h1.length > 0 ? input.mtfCandles.h1 : input.mtfCandles.daily;
   const mtfResult = input.livePrice == null
     ? null
-    : runTopDownAnalysis(input.symbol, input.mtfCandles, input.livePrice);
+    : runTopDownAnalysis(input.asset.symbol, input.mtfCandles, input.livePrice, {
+      newsSentimentModifier: input.newsSentimentModifier,
+    });
   const direction = mtfResult ? mapMtfDirection(mtfResult.direction) : "neutral";
   const confidence = (mtfResult?.confidence ?? 0) / 100;
-  const analysis = analyzeSMC(input.symbol, primaryCandles, input.livePrice, direction);
+  const analysis = analyzeSMC(input.asset.symbol, primaryCandles, input.livePrice, direction);
   const levels = mtfResult && direction !== "neutral"
     ? {
       entry: mtfResult.entry,
@@ -567,6 +755,9 @@ async function buildCryptoCard(input: {
     };
   const grade = mtfResult?.grade ?? "F";
   const gradeScore = mtfResult?.confluenceScore ?? mtfResult?.confidence ?? 0;
+  const candleSource = input.mtfCandles.sourceProvider ?? "unknown";
+  const fallbackDepth = Math.max(0, (input.mtfCandles.providerPath ?? []).indexOf(candleSource));
+  const dataTrustScore = resolveProviderTrustScore(candleSource);
   const meetsProfileGate = mtfResult != null
     && direction !== "neutral"
     && mtfResult.promotionStatus === "active"
@@ -603,6 +794,8 @@ async function buildCryptoCard(input: {
     mtfResult?.entryTimeframe ? `${mtfResult.entryTimeframe} confirmation` : null,
     mtfResult?.entryTrigger !== "none" ? "sweep confirmed" : null,
     mtfResult ? titleCase(mtfResult.premiumDiscount.zone) : null,
+    input.newsSentimentModifier >= 4 ? "News supportive" : null,
+    input.newsSentimentModifier <= -4 ? "News cautious" : null,
   ].filter((label): label is string => Boolean(label))));
   const reasoning = buildMtfReasoning({
     displayName,
@@ -618,14 +811,14 @@ async function buildCryptoCard(input: {
 
   if (mtfResult) {
     console.log(
-      `[APEX CRYPTO MTF] ${input.symbol}: ${mtfResult.grade} ${mtfResult.direction} | Bias: ${mtfResult.overallBias} (${mtfResult.biasStrength}% confluence)`,
+      `[APEX CRYPTO MTF] ${input.asset.symbol}: ${mtfResult.grade} ${mtfResult.direction} | Bias: ${mtfResult.overallBias} (${mtfResult.biasStrength}% confluence) | News=${input.newsSentimentModifier >= 0 ? "+" : ""}${input.newsSentimentModifier}`,
     );
   }
 
   return prepareSignalViewModelForPersistence({
-    id: `crypto-${input.symbol}-${input.cycleId}`,
+    id: `crypto-${input.asset.symbol}-${input.cycleId}`,
     view_id: viewId,
-    entity_ref: `${input.symbol}:${input.cycleId}`,
+    entity_ref: `${input.asset.symbol}:${input.cycleId}`,
     signal_id: null,
     symbol: displayName,
     cycleId: input.cycleId,
@@ -688,10 +881,12 @@ async function buildCryptoCard(input: {
     confidence_label: confidenceLabel(confidence),
     ui_sections: {
       assetClass: "crypto",
-      marketSymbol: input.symbol,
+      marketSymbol: input.asset.symbol,
       volatilityWindow: input.window,
       timeframe: mtfResult?.entryTimeframe ?? mtfResult?.timeframe ?? "15m",
       mtf: mtfResult,
+      news: input.news,
+      newsSentimentModifier: input.newsSentimentModifier,
       topDown: mtfResult
         ? {
           entryTimeframe: mtfResult.entryTimeframe ?? mtfResult.timeframe,
@@ -708,49 +903,56 @@ async function buildCryptoCard(input: {
     ui_version: "crypto_signal_view_v1",
     generated_at: input.timestamp,
     assetClass: "crypto",
-    providerStatus: "healthy",
-    priceSource: "binance",
-    candleSource: "binance",
-    fallbackDepth: 0,
+    providerStatus: candleSource === "binance" ? "healthy" : "degraded",
+    priceSource: input.livePriceSource,
+    candleSource,
+    fallbackDepth,
     dataFreshnessMs: 0,
     missingBarCount: 0,
-    lastSuccessfulProvider: "Binance",
+    lastSuccessfulProvider: resolveProviderName(candleSource),
     quoteIntegrity: true,
     universeMembershipConfidence: 1,
-    dataTrustScore: 94,
+    dataTrustScore,
     qualityScores: {
       structure: gradeScore || analysis.smcScore.total,
       market: Math.round(confidence * 100),
       execution: levels.entry != null && levels.sl != null ? 78 : 42,
-      data: 90,
+      data: dataTrustScore,
       assetFit: 86,
-      composite: gradeScore || Math.round((Math.round(confidence * 100) * 0.34) + (78 * 0.2) + (90 * 0.2) + (86 * 0.12)),
+      composite: gradeScore || Math.round((Math.round(confidence * 100) * 0.34) + (78 * 0.2) + (dataTrustScore * 0.2) + (86 * 0.12)),
     },
     publicationStatus: displayCategory === "executable" ? "publishable" : displayCategory === "rejected" ? "blocked" : "watchlist_only",
     publicationReasons: displayCategory === "executable" ? [] : displayCategory === "rejected" ? ["BROKEN_MARKET_DATA"] : ["LOW_CONFIDENCE"],
     moduleHealth: displayCategory === "rejected" ? "broken" : "working",
     healthFlags: displayCategory === "executable" ? [] : displayCategory === "rejected" ? ["BROKEN DATA"] : ["WATCHLIST ONLY"],
-    marketSymbol: input.symbol,
+    marketSymbol: input.asset.symbol,
     displayName,
     volatilityWindow: input.window,
+    news: input.news,
+    newsSentimentModifier: input.newsSentimentModifier,
   });
 }
 
 async function buildUnavailableCard(input: {
-  symbol: CryptoSymbol;
+  asset: CryptoSelectedAsset;
   cycleId: string;
   timestamp: number;
   window: CryptoVolatilityWindow;
   livePrice: number | null;
+  livePriceSource: string | null;
+  candleSource: string | null;
+  news: CryptoSignalCard["news"];
+  newsSentimentModifier: number;
 }): Promise<CryptoSignalCard> {
-  const displayName = CRYPTO_DISPLAY_NAMES[input.symbol];
+  const displayName = input.asset.displayName;
   const viewId = createId("crypto_view");
   const reason = "data unavailable";
+  const dataTrustScore = resolveProviderTrustScore(input.candleSource ?? "unknown");
 
   return prepareSignalViewModelForPersistence({
-    id: `crypto-${input.symbol}-${input.cycleId}`,
+    id: `crypto-${input.asset.symbol}-${input.cycleId}`,
     view_id: viewId,
-    entity_ref: `${input.symbol}:${input.cycleId}`,
+    entity_ref: `${input.asset.symbol}:${input.cycleId}`,
     signal_id: null,
     symbol: displayName,
     cycleId: input.cycleId,
@@ -775,10 +977,10 @@ async function buildUnavailableCard(input: {
     zoneType: "neutral",
     marketPhase: "Unavailable",
     confidence: 0,
-    shortReasoning: `${displayName} is blocked because Binance price or Binance MTF candle data is unavailable.`,
-    detailedReasoning: `${displayName} could not be analyzed for this cycle because the crypto engine did not receive enough live price or Binance multi-timeframe candle inputs.`,
+    shortReasoning: `${displayName} is blocked because live price or multi-timeframe candle inputs are unavailable.`,
+    detailedReasoning: `${displayName} could not be analyzed for this cycle because the crypto engine did not receive enough live price or multi-timeframe candle inputs.`,
     whyThisSetup: "No setup is published when live price or MTF candles are missing.",
-    whyNow: "The cycle is waiting for Binance live price and Binance MTF candles.",
+    whyNow: "The cycle is waiting for fresh live price and multi-timeframe candle inputs.",
     whyThisLevel: "No trade levels are emitted without valid live and higher timeframe market data.",
     invalidation: "Wait for the next healthy cycle.",
     whyThisGrade: "Unavailable data forces an F-grade blocked card.",
@@ -803,33 +1005,35 @@ async function buildUnavailableCard(input: {
     liquiditySummary: "No liquidity context available.",
     keyLevelsSummary: "No executable levels available.",
     headline: `${displayName} waiting on data`,
-    summary: `${displayName} is waiting on fresh Binance data before the next crypto cycle can score structure.`,
+    summary: `${displayName} is waiting on fresh market data before the next crypto cycle can score structure.`,
     reason_labels: ["Data Unavailable"],
     confidence_label: "offline",
     ui_sections: {
       assetClass: "crypto",
-      marketSymbol: input.symbol,
+      marketSymbol: input.asset.symbol,
       volatilityWindow: input.window,
+      news: input.news,
+      newsSentimentModifier: input.newsSentimentModifier,
     },
     commentary: null,
     ui_version: "crypto_signal_view_v1",
     generated_at: input.timestamp,
     assetClass: "crypto",
     providerStatus: "broken",
-    priceSource: null,
-    candleSource: "binance",
-    fallbackDepth: 1,
+    priceSource: input.livePriceSource,
+    candleSource: input.candleSource,
+    fallbackDepth: input.candleSource ? 1 : 4,
     dataFreshnessMs: null,
     missingBarCount: 20,
-    lastSuccessfulProvider: "Binance",
+    lastSuccessfulProvider: resolveProviderName(input.candleSource),
     quoteIntegrity: false,
     universeMembershipConfidence: 1,
-    dataTrustScore: 8,
+    dataTrustScore,
     qualityScores: {
       structure: 0,
       market: 0,
       execution: 0,
-      data: 8,
+      data: Math.min(20, dataTrustScore),
       assetFit: 86,
       composite: 10,
     },
@@ -837,33 +1041,48 @@ async function buildUnavailableCard(input: {
     publicationReasons: ["BROKEN_MARKET_DATA", "NULL_PRICE"],
     moduleHealth: "broken",
     healthFlags: ["BROKEN DATA", "BLOCKED"],
-    marketSymbol: input.symbol,
+    marketSymbol: input.asset.symbol,
     displayName,
     volatilityWindow: input.window,
+    news: input.news,
+    newsSentimentModifier: input.newsSentimentModifier,
   });
 }
 
-export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[]> {
+export async function runCryptoCycle(
+  cycleId: string,
+  selection?: CryptoSelectionSnapshot,
+): Promise<{ cards: CryptoSignalCard[]; selection: CryptoSelectionSnapshot }> {
   console.log(`[crypto-engine] Starting cycle ${cycleId}`);
 
+  const selected = selection ?? await selectTradableAssets();
   const timestamp = Date.now();
   const now = new Date(timestamp);
   const window = getCryptoVolatilityWindow(now.getUTCHours());
-  const wsPrices = getAllCryptoLivePrices();
-  const cards: CryptoSignalCard[] = [];
+  const wsPrices = getAllCryptoLivePrices(selected.assets.map(asset => asset.symbol));
+  const newsPairs = await mapWithConcurrency(selected.assets, 6, async asset => ({
+    symbol: asset.symbol,
+    news: await getCoinNews(asset.symbol, asset.label).catch(() => []),
+  }));
+  const newsBySymbol = new Map(newsPairs.map(item => [item.symbol, item.news]));
 
-  for (const symbol of CRYPTO_ACTIVE_SYMBOLS) {
+  const cards = await mapWithConcurrency(selected.assets, 4, async asset => {
+    const news = newsBySymbol.get(asset.symbol) ?? [];
+    const newsSentimentModifier = computeCoinNewsSentimentModifier(news);
+
     try {
-      const mtfCandles = await fetchMTFCandles(symbol);
-      let livePrice = wsPrices[symbol];
-      let livePriceSource: "binance_ws" | "binance_rest" | "unavailable" = livePrice != null
-        ? "binance_ws"
-        : "unavailable";
+      const mtfCandles = await fetchMTFCandles(asset.symbol);
+      let livePrice = wsPrices[asset.symbol] ?? null;
+      let livePriceSource = livePrice != null ? "binance_ws" : "unavailable";
       if (livePrice == null) {
-        livePrice = await fetchCryptoTickerPrice(symbol);
+        livePrice = await fetchCryptoTickerPrice(asset.symbol);
         if (livePrice != null) {
           livePriceSource = "binance_rest";
         }
+      }
+      if (livePrice == null && asset.lastPrice != null) {
+        livePrice = asset.lastPrice;
+        livePriceSource = `${selected.provider}_selection`;
       }
 
       const hasRequiredMtfInputs = (
@@ -876,41 +1095,51 @@ export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[
 
       if (livePrice == null || !hasRequiredMtfInputs) {
         console.log(
-          `[APEX CRYPTO] ${symbol}: insufficient MTF inputs (daily=${mtfCandles.daily.length}, h4=${mtfCandles.h4.length}, h1=${mtfCandles.h1.length}, m15=${mtfCandles.m15.length}, m5=${mtfCandles.m5.length}, livePrice=${livePrice ?? "null"}, livePriceSource=${livePriceSource}), skipping signal`,
+          `[APEX CRYPTO] ${asset.symbol}: insufficient MTF inputs (daily=${mtfCandles.daily.length}, h4=${mtfCandles.h4.length}, h1=${mtfCandles.h1.length}, m15=${mtfCandles.m15.length}, m5=${mtfCandles.m5.length}, livePrice=${livePrice ?? "null"}, livePriceSource=${livePriceSource}, candleSource=${"sourceProvider" in mtfCandles ? mtfCandles.sourceProvider : "unknown"})`,
         );
-        cards.push(await buildUnavailableCard({
-          symbol,
+        return buildUnavailableCard({
+          asset,
           cycleId,
           timestamp,
           window,
           livePrice,
-        }));
-        continue;
+          livePriceSource,
+          candleSource: "sourceProvider" in mtfCandles ? mtfCandles.sourceProvider ?? null : null,
+          news,
+          newsSentimentModifier,
+        });
       }
 
       console.log(
-        `[APEX CRYPTO] ${symbol}: daily=${mtfCandles.daily.length} h4=${mtfCandles.h4.length} h1=${mtfCandles.h1.length} m15=${mtfCandles.m15.length} m5=${mtfCandles.m5.length} livePrice=${livePrice} source=${livePriceSource}, running MTF scoring...`,
+        `[APEX CRYPTO] ${asset.symbol}: provider=${"sourceProvider" in mtfCandles ? mtfCandles.sourceProvider : "unknown"} d=${mtfCandles.daily.length} h4=${mtfCandles.h4.length} h1=${mtfCandles.h1.length} m15=${mtfCandles.m15.length} m5=${mtfCandles.m5.length} livePrice=${livePrice} priceSource=${livePriceSource} news=${news.length}`,
       );
-      cards.push(await buildCryptoCard({
-        symbol,
-        profile: CRYPTO_PAIR_PROFILES[symbol],
+      return buildCryptoCard({
+        asset,
+        profile: resolveCryptoPairProfile(asset.symbol),
         cycleId,
         timestamp,
         window,
         mtfCandles,
         livePrice,
-      }));
+        livePriceSource,
+        news,
+        newsSentimentModifier,
+      });
     } catch (error) {
-      console.error(`[crypto-engine] Failed for ${symbol}:`, error);
-      cards.push(await buildUnavailableCard({
-        symbol,
+      console.error(`[crypto-engine] Failed for ${asset.symbol}:`, error);
+      return buildUnavailableCard({
+        asset,
         cycleId,
         timestamp,
         window,
-        livePrice: wsPrices[symbol] ?? null,
-      }));
+        livePrice: wsPrices[asset.symbol] ?? asset.lastPrice ?? null,
+        livePriceSource: wsPrices[asset.symbol] != null ? "binance_ws" : asset.lastPrice != null ? `${selected.provider}_selection` : null,
+        candleSource: null,
+        news,
+        newsSentimentModifier,
+      });
     }
-  }
+  });
 
   const notifier = new TelegramNotifier();
   for (const card of cards) {
@@ -918,5 +1147,8 @@ export async function runCryptoCycle(cycleId: string): Promise<CryptoSignalCard[
   }
 
   console.log(`[crypto-engine] Cycle ${cycleId} complete — ${cards.length} cards built`);
-  return cards;
+  return {
+    cards,
+    selection: selected,
+  };
 }

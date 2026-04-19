@@ -5,6 +5,7 @@ import { fetchMemeBinanceLivePrice, fetchMemeBinanceMtfcandles, resetMemeBinance
 import { fetchMTFCandles } from "@/src/assets/shared/mtfDataFetcher";
 import { CRYPTO_ACTIVE_SYMBOLS, CRYPTO_PAIR_PROFILES, getCryptoVolatilityWindow } from "@/src/crypto/config/cryptoScope";
 import { fromBinanceSymbol, toBinanceSymbol } from "@/src/crypto/data/binanceSymbols";
+import { selectTradableAssets } from "@/src/crypto/engine/CryptoEngine";
 import { getCryptoRuntimeStatus, getCryptoSignalsPayload, resetCryptoRuntimeForTests } from "@/src/crypto/engine/cryptoRuntime";
 
 function intervalMs(interval: string): number {
@@ -42,10 +43,11 @@ test("crypto scope stays limited to the four supported Binance USD pairs", () =>
   assert.equal(getCryptoVolatilityWindow(5), "low_volume");
 });
 
-test("Binance symbol helpers only accept the active crypto universe", () => {
+test("Binance symbol helpers normalize Binance USDT symbols for the dynamic crypto universe", () => {
   assert.equal(toBinanceSymbol("BTCUSDT"), "BTCUSDT");
   assert.equal(fromBinanceSymbol("ETHUSDT"), "ETHUSDT");
-  assert.equal(fromBinanceSymbol("DOGEUSDT"), null);
+  assert.equal(fromBinanceSymbol("DOGEUSDT"), "DOGEUSDT");
+  assert.equal(fromBinanceSymbol("BTCUSD"), null);
 });
 
 test("crypto runtime exposes a safe empty payload before the first cycle", () => {
@@ -125,16 +127,84 @@ test("crypto MTF fetching uses Binance REST klines for serverless-safe inputs", 
   try {
     const mtf = await fetchMTFCandles("BTCUSDT");
 
-    assert.equal(requestedUrls.length, 4);
+    assert.equal(requestedUrls.length, 5);
     assert.equal(requestedUrls.every(url => url.includes("api.binance.com/api/v3/klines")), true);
     assert.equal(mtf.daily.length, 180);
+    assert.equal(mtf.h4.length, 240);
     assert.equal(mtf.h1.length, 240);
     assert.equal(mtf.m15.length, 240);
     assert.equal(mtf.m5.length, 240);
-    assert.ok(mtf.h4.length >= 20);
     assert.ok(mtf.weekly.length >= 8);
     assert.ok(mtf.monthly.length >= 4);
     assert.ok(mtf.h1[0]!.time > 1_000_000_000_000);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("crypto selection falls back to Bybit when Binance 24hr is geo-blocked", async () => {
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = String(input);
+
+    if (url.includes("api.binance.com/api/v3/ticker/24hr")) {
+      return new Response(JSON.stringify({ code: 0, msg: "restricted" }), { status: 451 });
+    }
+
+    if (url.includes("api.bybit.com/v5/market/tickers?category=spot")) {
+      const symbols = [
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB",
+        "XRP",
+        "DOGE",
+        "ADA",
+        "AVAX",
+        "LINK",
+        "DOT",
+        "TON",
+        "TRX",
+        "LTC",
+        "BCH",
+        "NEAR",
+        "APT",
+        "ARB",
+        "OP",
+        "ATOM",
+        "INJ",
+        "SUI",
+        "PEPE",
+        "SHIB",
+        "AAVE",
+      ];
+
+      return new Response(JSON.stringify({
+        retCode: 0,
+        result: {
+          list: symbols.map((symbol, index) => ({
+            symbol: `${symbol}USDT`,
+            lastPrice: String(100 + index),
+            price24hPcnt: String(0.02 + (index * 0.001)),
+            turnover24h: String(300_000_000 - (index * 1_000_000)),
+            highPrice24h: String(101 + index),
+            lowPrice24h: String(99 + index),
+          })),
+        },
+      }), { status: 200 });
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  try {
+    const selection = await selectTradableAssets({ force: true, limit: 24 });
+
+    assert.equal(selection.provider, "bybit_tickers");
+    assert.equal(selection.assets.length, 24);
+    assert.equal(selection.assets[0]?.symbol, "BTCUSDT");
+    assert.ok(selection.assets.some(asset => asset.symbol === "DOGEUSDT"));
   } finally {
     globalThis.fetch = originalFetch;
   }

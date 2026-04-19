@@ -3,8 +3,8 @@ import { preferredProviderWarmupSymbol } from "@/src/assets/shared/providerHealt
 import { captureShadowTradePlans } from "@/src/application/outcomes/shadowTracker";
 import {
   CRYPTO_ACTIVE_SYMBOLS,
-  CRYPTO_DISPLAY_NAMES,
   getCryptoVolatilityWindow,
+  getCryptoDisplayName,
   type CryptoSymbol,
 } from "@/src/crypto/config/cryptoScope";
 import { isAssetModuleEnabled } from "@/src/config/assetActivation";
@@ -16,14 +16,22 @@ import {
   waitForBinanceWebSocket,
 } from "@/src/crypto/data/BinanceWebSocket";
 import { fetchCryptoCandles, fetchCryptoTickerPrice } from "@/src/crypto/data/CryptoDataPlant";
-import { runCryptoCycle } from "@/src/crypto/engine/CryptoEngine";
-import type { CryptoLiveMarketBoardRow, CryptoSignalCard, CryptoSignalsPayload } from "@/src/crypto/types";
+import { runCryptoCycle, selectTradableAssets } from "@/src/crypto/engine/CryptoEngine";
+import type {
+  CryptoLiveMarketBoardRow,
+  CryptoSelectedAsset,
+  CryptoSignalCard,
+  CryptoSignalsPayload,
+} from "@/src/crypto/types";
 import { persistSignalViewModels } from "@/src/assets/shared/persistedSignalViewModel";
 
 type CryptoRuntimeState = {
   latestCryptoCards: CryptoSignalCard[];
   lastCycleAt: number | null;
   cycleRunning: boolean;
+  selectedAssets: CryptoSelectedAsset[];
+  selectionGeneratedAt: number | null;
+  selectionProvider: string | null;
 };
 
 const globalForCryptoRuntime = globalThis as typeof globalThis & {
@@ -34,6 +42,9 @@ const runtimeState = globalForCryptoRuntime.__apexCryptoRuntime ??= {
   latestCryptoCards: [],
   lastCycleAt: null,
   cycleRunning: false,
+  selectedAssets: [],
+  selectionGeneratedAt: null,
+  selectionProvider: null,
 };
 
 function isServerlessCryptoRuntime(): boolean {
@@ -48,12 +59,12 @@ export function shutdownCryptoRuntime(): void {
   stopBinanceWebSocket();
 }
 
-function ensureCryptoLiveFeedsStarted(): void {
+function ensureCryptoLiveFeedsStarted(symbols?: string[]): void {
   if (!isCryptoRuntimeEnabled()) {
     return;
   }
 
-  startBinanceWebSocket();
+  startBinanceWebSocket(symbols);
 }
 
 async function warmCryptoProvider(): Promise<void> {
@@ -93,20 +104,25 @@ export async function triggerCryptoCycle(): Promise<{ cycleId: string; cardCount
     };
   }
 
-  ensureCryptoLiveFeedsStarted();
+  const selection = await selectTradableAssets();
+  ensureCryptoLiveFeedsStarted(selection.assets.map(asset => asset.symbol));
   if (isServerlessCryptoRuntime()) {
     console.log("[crypto-runtime] Serverless execution detected, skipping websocket wait and relying on Binance REST fallbacks.");
   } else {
-    await waitForBinanceWebSocket();
+    await waitForBinanceWebSocket(1_500, selection.assets.map(asset => asset.symbol));
   }
   runtimeState.cycleRunning = true;
   const cycleId = createId("cryptocycle");
 
   try {
     await warmCryptoProvider();
-    const cards = await runCryptoCycle(cycleId);
+    const result = await runCryptoCycle(cycleId, selection);
+    const cards = result.cards;
     runtimeState.latestCryptoCards = cards;
     runtimeState.lastCycleAt = Date.now();
+    runtimeState.selectedAssets = result.selection.assets;
+    runtimeState.selectionGeneratedAt = result.selection.generatedAt;
+    runtimeState.selectionProvider = result.selection.provider;
     await persistSignalViewModels(cards, { logPrefix: "APEX CRYPTO" });
     await captureShadowTradePlans({
       source: "crypto-runtime",
@@ -149,7 +165,7 @@ function buildPlaceholderRow(symbol: CryptoSymbol): CryptoLiveMarketBoardRow {
   const window = getCryptoVolatilityWindow(new Date().getUTCHours());
   return {
     symbol,
-    displayName: CRYPTO_DISPLAY_NAMES[symbol],
+    displayName: getCryptoDisplayName(symbol),
     livePrice: getCryptoLivePrice(symbol),
     direction: "neutral",
     grade: null,
@@ -160,13 +176,17 @@ function buildPlaceholderRow(symbol: CryptoSymbol): CryptoLiveMarketBoardRow {
     smcScore: 0,
     pdLocation: "equilibrium",
     inOTE: false,
+    news: [],
   };
 }
 
 function buildLiveMarketBoard(cards: CryptoSignalCard[]): CryptoLiveMarketBoardRow[] {
   const cardsBySymbol = new Map(cards.map(card => [card.marketSymbol, card]));
+  const scopedSymbols = runtimeState.selectedAssets.length > 0
+    ? runtimeState.selectedAssets.map(asset => asset.symbol)
+    : [...CRYPTO_ACTIVE_SYMBOLS];
 
-  return CRYPTO_ACTIVE_SYMBOLS.map(symbol => {
+  return scopedSymbols.map(symbol => {
     const card = cardsBySymbol.get(symbol);
     if (!card) {
       return buildPlaceholderRow(symbol);
@@ -185,12 +205,13 @@ function buildLiveMarketBoard(cards: CryptoSignalCard[]): CryptoLiveMarketBoardR
       smcScore: card.smcAnalysis?.smcScore ?? 0,
       pdLocation: card.smcAnalysis?.pdLocation ?? "equilibrium",
       inOTE: card.smcAnalysis?.inOTE ?? false,
+      news: card.news,
     };
   });
 }
 
 export function getCryptoSignalsPayload(): CryptoSignalsPayload {
-  ensureCryptoLiveFeedsStarted();
+  ensureCryptoLiveFeedsStarted(runtimeState.selectedAssets.map(asset => asset.symbol));
   const cards = getLatestCryptoCards();
 
   return {
@@ -198,6 +219,9 @@ export function getCryptoSignalsPayload(): CryptoSignalsPayload {
     wsConnected: isBinanceWsConnected(),
     cycleRunning: runtimeState.cycleRunning,
     lastCycleAt: runtimeState.lastCycleAt,
+    selectionGeneratedAt: runtimeState.selectionGeneratedAt,
+    selectionProvider: runtimeState.selectionProvider,
+    selectedAssets: [...runtimeState.selectedAssets],
     cards,
     executable: cards.filter(card => card.displayCategory === "executable"),
     monitored: cards.filter(card => card.displayCategory === "monitored"),
@@ -211,4 +235,7 @@ export function resetCryptoRuntimeForTests(): void {
   runtimeState.latestCryptoCards = [];
   runtimeState.lastCycleAt = null;
   runtimeState.cycleRunning = false;
+  runtimeState.selectedAssets = [];
+  runtimeState.selectionGeneratedAt = null;
+  runtimeState.selectionProvider = null;
 }

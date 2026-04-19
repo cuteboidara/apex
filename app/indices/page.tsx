@@ -1,7 +1,5 @@
-import { IndicesPage } from "@/src/presentation/dashboard/IndicesPage";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <IndicesPage />;
+  redirect("/indices-v2");
 }

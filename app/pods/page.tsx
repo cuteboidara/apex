@@ -1,7 +1,5 @@
-import { PodsPage } from "@/src/dashboard/PodsPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <PodsPage />;
+export default function Page() {
+  redirect("/indices-v2");
 }

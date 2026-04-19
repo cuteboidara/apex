@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { CRYPTO_ACTIVE_SYMBOLS } from "@/src/crypto/config/cryptoScope";
+import { triggerCryptoCycle } from "@/src/crypto/engine/cryptoRuntime";
 import { getCryptoSignalsPayload } from "@/src/crypto/engine/cryptoRuntime";
+import { selectTradableAssets } from "@/src/crypto/engine/CryptoEngine";
+import type { CryptoNewsItem, CryptoSelectedAsset } from "@/src/crypto/types";
 import { readPersistedMarketSymbol, readPersistedSignalModel } from "@/src/assets/shared/persistedSignalViewModel";
 import { prisma } from "@/src/infrastructure/db/prisma";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
+
+const CRYPTO_BOOTSTRAP_TIMEOUT_MS = 25_000;
 
 type CryptoSignalRow = {
   symbol: string;
@@ -21,30 +25,17 @@ type CryptoSignalRow = {
   takeProfit3: number | null;
   reasoning: string | null;
   generatedAt: number | null;
+  news: CryptoNewsItem[];
 };
 
 type CryptoSignalsPayload = {
   generatedAt: number;
+  selectionGeneratedAt: number | null;
+  selectionProvider: string | null;
+  selectedAssets: CryptoSelectedAsset[];
   assets: CryptoSignalRow[];
 };
 
-type CryptoAssetDefinition = {
-  symbol: string;
-  aliases: string[];
-};
-
-const CRYPTO_ASSETS: CryptoAssetDefinition[] = [
-  { symbol: "BTCUSDT", aliases: ["BTCUSDT", "BTC/USD"] },
-  { symbol: "ETHUSDT", aliases: ["ETHUSDT", "ETH/USD"] },
-  { symbol: "SOLUSDT", aliases: ["SOLUSDT", "SOL/USD"] },
-  { symbol: "BNBUSDT", aliases: ["BNBUSDT", "BNB/USD"] },
-  { symbol: "XRPUSDT", aliases: ["XRPUSDT", "XRP/USD"] },
-  { symbol: "DOGEUSDT", aliases: ["DOGEUSDT", "DOGE/USD"] },
-  { symbol: "ADAUSDT", aliases: ["ADAUSDT", "ADA/USD"] },
-  { symbol: "AVAXUSDT", aliases: ["AVAXUSDT", "AVAX/USD"] },
-] as const;
-
-const ACTIVE_CRYPTO_SYMBOLS = new Set<string>([...CRYPTO_ACTIVE_SYMBOLS]);
 const STALE_PERSISTED_FALLBACK_MS = 2 * 60 * 60 * 1000;
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -53,9 +44,9 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-function emptyRow(symbol: string, reasoning: string): CryptoSignalRow {
+function emptyRow(asset: CryptoSelectedAsset, reasoning: string): CryptoSignalRow {
   return {
-    symbol,
+    symbol: asset.symbol,
     grade: null,
     status: "pending",
     direction: null,
@@ -67,6 +58,7 @@ function emptyRow(symbol: string, reasoning: string): CryptoSignalRow {
     takeProfit3: null,
     reasoning,
     generatedAt: null,
+    news: [],
   };
 }
 
@@ -82,6 +74,39 @@ function normalizeStatus(value: unknown): CryptoSignalRow["status"] {
     && ["active", "watchlist", "blocked", "pending", "invalidated", "expired"].includes(value)
     ? value as CryptoSignalRow["status"]
     : "pending";
+}
+
+function normalizeNews(value: unknown): CryptoNewsItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(item => {
+      const record = asRecord(item);
+      const headline = typeof record.headline === "string" ? record.headline : null;
+      const source = typeof record.source === "string" ? record.source : null;
+      const url = typeof record.url === "string" ? record.url : null;
+      const sentiment = typeof record.sentiment === "string"
+        && ["bullish", "bearish", "neutral"].includes(record.sentiment)
+        ? record.sentiment as CryptoNewsItem["sentiment"]
+        : "neutral";
+      const publishedAt = typeof record.publishedAt === "string" ? record.publishedAt : null;
+
+      if (!headline || !source || !url || !publishedAt) {
+        return null;
+      }
+
+      return {
+        headline,
+        source,
+        url,
+        sentiment,
+        publishedAt,
+      } satisfies CryptoNewsItem;
+    })
+    .filter((item): item is CryptoNewsItem => item != null)
+    .slice(0, 5);
 }
 
 function readPersistedAssetClass(uiSections: unknown): string | null {
@@ -121,6 +146,7 @@ function mapRuntimeCardToRow(card: ReturnType<typeof getCryptoSignalsPayload>["c
     takeProfit3: card.tp3 ?? null,
     reasoning: card.detailedReasoning || card.summary || card.noTradeExplanation || card.whyNow || null,
     generatedAt,
+    news: card.news ?? [],
   };
 }
 
@@ -146,7 +172,11 @@ function mapPersistedRowToSignal(row: {
   }
 
   return {
-    symbol: typeof persisted.marketSymbol === "string" ? persisted.marketSymbol : typeof persisted.symbol === "string" ? persisted.symbol : "",
+    symbol: typeof persisted.marketSymbol === "string"
+      ? persisted.marketSymbol
+      : typeof persisted.symbol === "string"
+        ? persisted.symbol
+        : "",
     grade,
     status: normalizeStatus(persisted.status),
     direction,
@@ -162,6 +192,7 @@ function mapPersistedRowToSignal(row: {
         ? commentary.short_reasoning
         : row.summary || row.headline || null,
     generatedAt: row.generated_at.getTime(),
+    news: normalizeNews(persisted.news),
   };
 }
 
@@ -180,7 +211,7 @@ async function readPersistedCryptoFallbacks(missingSymbols: string[]): Promise<M
     orderBy: {
       generated_at: "desc",
     },
-    take: 300,
+    take: 400,
   });
 
   const latest = new Map<string, CryptoSignalRow>();
@@ -205,15 +236,23 @@ async function readPersistedCryptoFallbacks(missingSymbols: string[]): Promise<M
   return latest;
 }
 
-export async function GET() {
+async function buildCryptoSignalPayload() {
   const livePayload = getCryptoSignalsPayload();
+  const selection = livePayload.selectedAssets.length > 0
+    ? {
+      generatedAt: livePayload.selectionGeneratedAt ?? livePayload.generatedAt,
+      provider: livePayload.selectionProvider ?? "runtime",
+      assets: livePayload.selectedAssets,
+    }
+    : await selectTradableAssets();
+
   const liveCards = new Map<string, CryptoSignalRow>(
     livePayload.cards.map(card => [card.marketSymbol, mapRuntimeCardToRow(card)]),
   );
-  const missingActiveSymbols = CRYPTO_ACTIVE_SYMBOLS.filter(symbol => !liveCards.has(symbol));
-  const persistedFallbacks = await readPersistedCryptoFallbacks(missingActiveSymbols);
+  const missingSymbols = selection.assets.map(asset => asset.symbol).filter(symbol => !liveCards.has(symbol));
+  const persistedFallbacks = await readPersistedCryptoFallbacks(missingSymbols);
 
-  const assets = CRYPTO_ASSETS.map(asset => {
+  const assets = selection.assets.map(asset => {
     const live = liveCards.get(asset.symbol);
     if (live) {
       return live;
@@ -224,13 +263,52 @@ export async function GET() {
       return persisted;
     }
 
-    return ACTIVE_CRYPTO_SYMBOLS.has(asset.symbol)
-      ? emptyRow(asset.symbol, livePayload.cycleRunning ? "Crypto runtime cycle is running." : "Crypto runtime is warming up.")
-      : emptyRow(asset.symbol, "This asset is not in the active crypto runtime.");
+    return emptyRow(
+      asset,
+      livePayload.cycleRunning
+        ? "Crypto runtime cycle is running."
+        : livePayload.lastCycleAt == null
+          ? "Crypto cycle has not completed yet."
+          : "No signal available for the latest crypto selection.",
+    );
   });
 
-  return NextResponse.json({
-    generatedAt: livePayload.lastCycleAt ?? livePayload.generatedAt ?? Date.now(),
+  return {
+    livePayload,
+    selection,
     assets,
+  };
+}
+
+async function maybeBootstrapCryptoRuntime(): Promise<void> {
+  const payload = getCryptoSignalsPayload();
+  if (payload.lastCycleAt != null || payload.cycleRunning) {
+    return;
+  }
+
+  console.log("[api/crypto/signals] Bootstrapping empty crypto runtime.");
+  await Promise.race([
+    triggerCryptoCycle().catch(error => {
+      console.error("[api/crypto/signals] Crypto bootstrap failed:", error);
+    }),
+    new Promise(resolve => setTimeout(resolve, CRYPTO_BOOTSTRAP_TIMEOUT_MS)),
+  ]);
+}
+
+export async function GET() {
+  let state = await buildCryptoSignalPayload();
+  const allPending = state.assets.length > 0 && state.assets.every(asset => asset.status === "pending");
+
+  if (allPending && state.livePayload.lastCycleAt == null && !state.livePayload.cycleRunning) {
+    await maybeBootstrapCryptoRuntime();
+    state = await buildCryptoSignalPayload();
+  }
+
+  return NextResponse.json({
+    generatedAt: state.livePayload.lastCycleAt ?? state.livePayload.generatedAt ?? Date.now(),
+    selectionGeneratedAt: state.selection.generatedAt,
+    selectionProvider: state.selection.provider,
+    selectedAssets: state.selection.assets,
+    assets: state.assets,
   } satisfies CryptoSignalsPayload);
 }

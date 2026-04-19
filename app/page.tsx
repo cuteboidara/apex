@@ -1,7 +1,5 @@
-import { SystemOverviewPage } from "@/src/presentation/dashboard/SystemOverviewPage";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  return <SystemOverviewPage />;
+export default function Home() {
+  redirect("/indices-v2");
 }

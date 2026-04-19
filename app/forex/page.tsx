@@ -1,7 +1,5 @@
-import { ForexPage } from "@/src/presentation/dashboard/ForexPage";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ForexPage />;
+  redirect("/indices-v2");
 }

@@ -92,7 +92,7 @@ export function CryptoPageClient({
           </div>
           <div className="text-[12px] text-[var(--apex-text-secondary)]">
             <p>Last cycle: {payload.lastCycleAt ? new Date(payload.lastCycleAt).toLocaleString() : "Not run yet"}</p>
-            <p className="mt-1">{payload.cards.length} cards built across BTC, ETH, SOL, and BNB.</p>
+            <p className="mt-1">{payload.cards.length} cards built across {payload.selectedAssets.length || payload.liveMarketBoard.length} selected coins.</p>
           </div>
         </div>
       </section>
@@ -100,7 +100,9 @@ export function CryptoPageClient({
       <section className="apex-surface px-6 py-5">
         <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-[var(--apex-border-subtle)] pb-4">
           <span className="font-[var(--apex-font-body)] text-[18px] italic text-[var(--apex-text-primary)]">Crypto Market Board</span>
-          <span className="font-[var(--apex-font-mono)] text-[9px] uppercase tracking-[0.14em] text-[var(--apex-text-tertiary)]">BTC · ETH · SOL · BNB</span>
+          <span className="font-[var(--apex-font-mono)] text-[9px] uppercase tracking-[0.14em] text-[var(--apex-text-tertiary)]">
+            {payload.selectedAssets.slice(0, 8).map(asset => asset.short).join(" · ") || "Dynamic selection"}
+          </span>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">

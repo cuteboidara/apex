@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import type { CryptoNewsItem } from "@/src/crypto/types";
+
 type CryptoPriceRow = {
   symbol: string;
   label: string;
@@ -14,7 +16,7 @@ type CryptoPriceRow = {
   volume24h: number | null;
   marketCap?: number | null;
   direction: "up" | "down" | "flat";
-  provider: "binance" | "coingecko";
+  provider: string;
   freshAt: number;
   stale?: boolean;
   reason?: string | null;
@@ -33,6 +35,7 @@ type CryptoSignalRow = {
   takeProfit3: number | null;
   reasoning: string | null;
   generatedAt: number | null;
+  news: CryptoNewsItem[];
 };
 
 function formatPrice(value: number | null): string {
@@ -183,6 +186,7 @@ export function CryptoGrid({
                 takeProfit3: null,
                 reasoning: null,
                 generatedAt: null,
+                news: [],
               };
 
               return (
@@ -286,6 +290,29 @@ export function CryptoGrid({
                         <p className="mt-3 text-[11px] text-[var(--apex-text-tertiary)]">
                           {signalAge(now, signal.generatedAt)}
                         </p>
+                        {signal.news.length > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            {signal.news.slice(0, 2).map(item => (
+                              <div key={`${price.symbol}-${item.url}-${item.publishedAt}`} className="rounded-[var(--apex-radius-sm)] border border-[var(--apex-border-subtle)] px-2 py-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-[var(--apex-font-mono)] text-[9px] uppercase tracking-[0.12em] text-[var(--apex-text-tertiary)]">
+                                    {item.source}
+                                  </span>
+                                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] uppercase tracking-[0.1em] ${
+                                    item.sentiment === "bullish"
+                                      ? "bg-[rgba(80,160,100,0.10)] text-[var(--apex-status-active-text)]"
+                                      : item.sentiment === "bearish"
+                                        ? "bg-[rgba(239,68,68,0.10)] text-[#F87171]"
+                                        : "bg-[rgba(255,255,255,0.06)] text-[var(--apex-text-secondary)]"
+                                  }`}>
+                                    {item.sentiment}
+                                  </span>
+                                </div>
+                                <p className="mt-2 text-[11px] leading-5 text-[var(--apex-text-secondary)]">{item.headline}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
                       </>
                     ) : (
                       <div className="flex items-center gap-2 text-[12px] text-[var(--apex-text-secondary)]">

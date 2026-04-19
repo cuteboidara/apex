@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "testType": "paper-trading",
+    "startTime": "2026-04-19T07:17:43.583Z",
+    "lastUpdate": "2026-04-19T07:17:43.584Z",
+    "totalCycles": 1
+  },
+  "summary": {
+    "totalSignals": 3,
+    "executableSignals": 0,
+    "watchlistSignals": 3,
+    "highConfidenceSignals": 0,
+    "avgScore": 54.67,
+    "signalsByAsset": {
+      "EURUSD": 1,
+      "USDJPY": 1,
+      "NAS100": 1
+    },
+    "signalsBySetup": {
+      "breakout_acceptance": 2,
+      "failed_auction_long": 1
+    },
+    "signalsByDirection": {
+      "long": 3,
+      "short": 0
+    }
+  },
+  "signals": [
+    {
+      "cycleNumber": 1,
+      "timestamp": "2026-04-19T07:17:43.583Z",
+      "asset": "EURUSD",
+      "setupType": "breakout_acceptance",
+      "direction": "long",
+      "score": 59,
+      "candleQuality": 20,
+      "orderFlowConfidence": 19,
+      "smcTaAlignment": 15,
+      "macroAdjustment": 2,
+      "entryZone": {
+        "high": 1.1779241887331007,
+        "low": 1.1755706938505173,
+        "mid": 1.176747441291809
+      },
+      "stopLoss": 1.1648740040544556,
+      "tp1": 1.1886208785291625,
+      "tp2": 1.200494315766516,
+      "tp3": 1.2123677530038695,
+      "riskRewardRatio": 2,
+      "positionSize": 1684.43,
+      "riskAmount": 200,
+      "newsRisk": "clear",
+      "setupDescription": "Breakout Acceptance — price accepted above FVA, continuation expected"
+    },
+    {
+      "cycleNumber": 1,
+      "timestamp": "2026-04-19T07:17:43.583Z",
+      "asset": "USDJPY",
+      "setupType": "failed_auction_long",
+      "direction": "long",
+      "score": 54,
+      "candleQuality": 19,
+      "orderFlowConfidence": 22,
+      "smcTaAlignment": 13,
+      "macroAdjustment": 0,
+      "entryZone": {
+        "high": 159.63794232454964,
+        "low": 158.2790069580078,
+        "mid": 158.9584746412787
+      },
+      "stopLoss": 157.36879000160974,
+      "tp1": 160.5481592809477,
+      "tp2": 162.13784392061666,
+      "tp3": 163.72752856028563,
+      "riskRewardRatio": 2,
+      "positionSize": 13.84,
+      "riskAmount": 200,
+      "newsRisk": "clear",
+      "setupDescription": "Failed Auction Below Value — bearish attempt rejected, bullish recovery expected"
+    },
+    {
+      "cycleNumber": 1,
+      "timestamp": "2026-04-19T07:17:43.583Z",
+      "asset": "NAS100",
+      "setupType": "breakout_acceptance",
+      "direction": "long",
+      "score": 51,
+      "candleQuality": 9,
+      "orderFlowConfidence": 23,
+      "smcTaAlignment": 11,
+      "macroAdjustment": 3,
+      "entryZone": {
+        "high": 26852.325499999995,
+        "low": 26798.6745,
+        "mid": 26825.5
+      },
+      "stopLoss": 25131.27420090005,
+      "tp1": 28519.72579909995,
+      "tp2": 30213.9515981999,
+      "tp3": 31908.17739729985,
+      "riskRewardRatio": 2,
+      "positionSize": 0.01,
+      "riskAmount": 200,
+      "newsRisk": "clear",
+      "setupDescription": "Breakout Acceptance — price accepted above FVA, continuation expected"
+    }
+  ]
+}

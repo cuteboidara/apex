@@ -1,7 +1,5 @@
-import { CryptoPage } from "@/src/presentation/dashboard/CryptoPage";
-
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <CryptoPage />;
+  redirect("/indices-v2");
 }

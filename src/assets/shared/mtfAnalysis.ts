@@ -187,6 +187,7 @@ type ConfluenceScoreBreakdown = {
   ltfConfirmation: number;
   tightStopPlacement: number;
   rrQuality: number;
+  newsSentiment: number;
 };
 
 type ZoneRange = {
@@ -1536,6 +1537,7 @@ export interface MTFAnalysisResult {
   };
   promotionStatus?: "active" | "waiting_for_sweep" | "waiting_for_rr" | "ranging_bias";
   promotionBlockers?: string[];
+  newsSentimentModifier?: number;
 }
 
 function logMtfScoringInput(symbol: string, mtf: MTFCandles, livePrice: number): void {
@@ -1908,6 +1910,9 @@ export function runTopDownAnalysis(
   symbol: string,
   mtf: MTFCandles,
   livePrice: number,
+  options?: {
+    newsSentimentModifier?: number;
+  },
 ): MTFAnalysisResult | null {
   logMtfScoringInput(symbol, mtf, livePrice);
 
@@ -2023,6 +2028,7 @@ export function runTopDownAnalysis(
       ltfConfirmation: 0,
       tightStopPlacement: 0,
       rrQuality: 0,
+      newsSentiment: 0,
     },
     htfZone: null,
     mtfZone: null,
@@ -2164,6 +2170,11 @@ export function runTopDownAnalysis(
   }
 
   const rr2 = calculateRiskReward(sweep.entry, sweep.stopLoss, tp2Reference);
+  const newsSentimentModifier = clamp(
+    Math.round(options?.newsSentimentModifier ?? 0),
+    -10,
+    10,
+  );
   const scoreBreakdown: ConfluenceScoreBreakdown = {
     htfAlignment: computeHtfAlignmentScore({
       dailyBias,
@@ -2183,6 +2194,7 @@ export function runTopDownAnalysis(
       sweep.entryTimeframe === "5m" ? mtf.m5 : mtf.m15,
     ),
     rrQuality: computeRrScore(rr),
+    newsSentiment: newsSentimentModifier,
   };
   const confluenceScore = clamp(
     scoreBreakdown.htfAlignment
@@ -2193,7 +2205,8 @@ export function runTopDownAnalysis(
     0,
     100,
   );
-  const grade = gradeFromConfluenceScore(confluenceScore);
+  const adjustedConfluenceScore = clamp(confluenceScore + newsSentimentModifier, 0, 100);
+  const grade = gradeFromConfluenceScore(adjustedConfluenceScore);
   const chosenTakeProfit = formatPrice(tp1Reference, symbol);
   const chosenTakeProfit2 = formatPrice(tp2Reference, symbol);
   const entryPrice = formatPrice(sweep.entry, symbol);
@@ -2224,7 +2237,7 @@ export function runTopDownAnalysis(
     entryConfluence,
     entryTrigger: "liquidity_sweep",
     direction,
-    confidence: confluenceScore,
+    confidence: adjustedConfluenceScore,
     grade,
     entry: entryPrice,
     stopLoss,
@@ -2250,7 +2263,7 @@ export function runTopDownAnalysis(
       h4Bias,
     }),
     liquiditySweepDescription: sweep.sweepDescription,
-    confluenceScore,
+    confluenceScore: adjustedConfluenceScore,
     scoreBreakdown,
     htfZone: htfZoneRange,
     mtfZone: mtfZoneRange,
@@ -2263,5 +2276,6 @@ export function runTopDownAnalysis(
     },
     promotionStatus: "active",
     promotionBlockers: [],
+    newsSentimentModifier,
   };
 }
