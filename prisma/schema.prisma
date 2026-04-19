@@ -996,6 +996,76 @@ model DecisionJournal {
   @@schema("apex")
 }
 
+model IndicesSignal {
+  id                 String   @id @default(cuid())
+  cycleId            String
+  assetId            String
+  assetClass         String   // 'index' | 'forex'
+  direction          String   // 'long' | 'short'
+  rank               Int
+  smcScore           Float
+  taScore            Float
+  macroScore         Float
+  quantBonus         Float
+  totalScore         Float
+  entryZoneHigh      Float?
+  entryZoneLow       Float?
+  entryZoneMid       Float?
+  stopLoss           Float?
+  tp1                Float?
+  tp2                Float?
+  tp3                Float?
+  riskRewardRatio    Float?
+  positionSize       Float?
+  riskAmount         Float?
+  historicalWinRate  Float?
+  expectedValue      Float?
+  newsRisk           String   // 'clear' | 'caution' | 'blocked'
+  reasoning          String?
+  macroSummary       String?
+  smcSetupJson       Json?
+  taConfluenceJson   Json?
+  macroScoreJson     Json?
+  quantAnalysisJson  Json?
+  correlationsJson   Json?
+  sentTelegram       Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  trades             IndicesTrade[]
+
+  @@index([assetId, createdAt])
+  @@index([totalScore, createdAt])
+  @@index([cycleId])
+  @@schema("apex")
+}
+
+model IndicesTrade {
+  id              String   @id @default(cuid())
+  signalId        String
+  signal          IndicesSignal @relation(fields: [signalId], references: [id])
+  assetId         String
+  direction       String
+  entryPrice      Float?
+  entryTime       DateTime?
+  exitPrice       Float?
+  exitTime        DateTime?
+  positionSize    Float?
+  profitLoss      Float?
+  returnPct       Float?
+  status          String   @default("open") // 'open' | 'partial' | 'closed'
+  tp1Hit          Boolean  @default(false)
+  tp2Hit          Boolean  @default(false)
+  tp3Hit          Boolean  @default(false)
+  slHit           Boolean  @default(false)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([assetId, createdAt])
+  @@index([status, createdAt])
+  @@schema("apex")
+}
+
 model LearningFeedback {
   id                     String   @id @default(cuid())
   feedbackId             String   @unique
