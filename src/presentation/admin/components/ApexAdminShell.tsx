@@ -18,10 +18,23 @@ type AdminNavItem = {
   icon: (props: IconProps) => ReactElement;
 };
 
+type AdminNavSection = {
+  section: string;
+  items: AdminNavItem[];
+};
+
 function LayoutDashboardIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z" />
+    </svg>
+  );
+}
+
+function ZapIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
     </svg>
   );
 }
@@ -37,11 +50,12 @@ function UsersIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-function RadioIcon({ className = "h-4 w-4" }: IconProps) {
+function UserCheckIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="3" />
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+      <circle cx="9.5" cy="7" r="3" />
+      <path d="m16.5 11.5 2 2 4-4" />
     </svg>
   );
 }
@@ -54,38 +68,10 @@ function BarChart2Icon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-function FlaskIcon({ className = "h-4 w-4" }: IconProps) {
+function ActivityIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M9 3h6M10 3v5l-5 9a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-9V3" />
-      <path d="M8 14h8" />
-    </svg>
-  );
-}
-
-function ClipboardListIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 3h6v4H9zM9 12h6M9 16h4" />
-    </svg>
-  );
-}
-
-function CpuIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="7" y="7" width="10" height="10" rx="2" />
-      <path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8 7 17M17 7l2.8-2.8" />
-    </svg>
-  );
-}
-
-function SettingsIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V22a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H2a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V2a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H22a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z" />
+      <path d="M3 12h4l2.5-6 5 12 2.5-6H21" />
     </svg>
   );
 }
@@ -115,23 +101,29 @@ function CloseIcon({ className = "h-5 w-5" }: IconProps) {
   );
 }
 
-const PRIMARY_NAV_ITEMS: AdminNavItem[] = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboardIcon },
-  { href: "/admin/users", label: "Users", icon: UsersIcon },
-  { href: "/admin/signals", label: "Signals", icon: RadioIcon },
-  { href: "/admin/assets", label: "Assets", icon: BarChart2Icon },
-  { href: "/admin/daily-runs", label: "Daily Runs", icon: ClipboardListIcon },
-  { href: "/admin/backtests", label: "Backtests", icon: FlaskIcon },
-  { href: "/admin/execution", label: "Execution", icon: CpuIcon },
-  { href: "/admin/system", label: "System", icon: SettingsIcon },
-  { href: "/admin/telegram", label: "Telegram", icon: SendIcon },
-];
-
-const OBSERVABILITY_NAV_ITEMS: AdminNavItem[] = [
-  { href: "/admin/risk-shadow", label: "Shadow Risk", icon: ClipboardListIcon },
-  { href: "/admin/risk-rules", label: "Rule Distribution", icon: BarChart2Icon },
-  { href: "/admin/data-quality", label: "Data Quality", icon: CpuIcon },
-  { href: "/admin/conversion", label: "Conversion Rates", icon: FlaskIcon },
+const NAV_SECTIONS: AdminNavSection[] = [
+  {
+    section: "COMMAND",
+    items: [
+      { href: "/admin", label: "Overview", icon: LayoutDashboardIcon },
+      { href: "/admin/signals", label: "Signals", icon: ZapIcon },
+      { href: "/admin/assets", label: "Assets", icon: BarChart2Icon },
+    ],
+  },
+  {
+    section: "USERS",
+    items: [
+      { href: "/admin/users", label: "All Users", icon: UsersIcon },
+      { href: "/admin/users/approvals", label: "Approvals", icon: UserCheckIcon },
+    ],
+  },
+  {
+    section: "SYSTEM",
+    items: [
+      { href: "/admin/system", label: "Runtime", icon: ActivityIcon },
+      { href: "/admin/telegram", label: "Telegram", icon: SendIcon },
+    ],
+  },
 ];
 
 function getSessionLabel(date: Date) {
@@ -156,6 +148,9 @@ function formatUtcTime(date: Date) {
 function isActivePath(pathname: string, href: string) {
   if (href === "/admin") {
     return pathname === "/admin";
+  }
+  if (href === "/admin/users") {
+    return pathname === "/admin/users" || (pathname.startsWith("/admin/users/") && !pathname.startsWith("/admin/users/approvals"));
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -208,54 +203,41 @@ export function ApexAdminShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="apex-sidebar-nav flex-1">
-          {PRIMARY_NAV_ITEMS.map((item, index) => {
-            const active = isActivePath(pathname, item.href);
-            const Icon = item.icon;
+        <nav className="apex-sidebar-nav flex-1 overflow-y-auto pr-1">
+          <div className="space-y-6">
+            {NAV_SECTIONS.map((section, sectionIndex) => (
+              <div key={section.section} className="space-y-2">
+                <p className="px-1 font-[var(--apex-font-mono)] text-[9px] uppercase tracking-[0.16em] text-[var(--apex-text-tertiary)]">
+                  {section.section}
+                </p>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                data-active={active}
-                className="apex-sidebar-nav-link apex-slide-in text-[13px] transition-all"
-                style={{
-                  animationDelay: `${index * 60}ms`,
-                  fontFamily: "var(--apex-font-body)",
-                  fontWeight: active ? 600 : 400,
-                }}
-              >
-                <Icon className={`relative z-[1] h-4 w-4 ${active ? "text-[var(--apex-text-primary)]" : "text-[var(--apex-text-tertiary)]"}`} />
-                <span className="relative z-[1]">{item.label}</span>
-              </Link>
-            );
-          })}
+                <div className="space-y-1">
+                  {section.items.map((item, itemIndex) => {
+                    const active = isActivePath(pathname, item.href);
+                    const Icon = item.icon;
+                    const animationIndex = sectionIndex * 8 + itemIndex;
 
-          <div className="px-3 pb-2 pt-5 font-[var(--apex-font-mono)] text-[9px] uppercase tracking-[0.16em] text-[var(--apex-text-tertiary)]">
-            Observability
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        data-active={active}
+                        className="apex-sidebar-nav-link apex-slide-in text-[13px] transition-all"
+                        style={{
+                          animationDelay: `${animationIndex * 60}ms`,
+                          fontFamily: "var(--apex-font-body)",
+                          fontWeight: active ? 600 : 400,
+                        }}
+                      >
+                        <Icon className={`relative z-[1] h-4 w-4 ${active ? "text-[var(--apex-text-primary)]" : "text-[var(--apex-text-tertiary)]"}`} />
+                        <span className="relative z-[1]">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
-
-          {OBSERVABILITY_NAV_ITEMS.map((item, index) => {
-            const active = isActivePath(pathname, item.href);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                data-active={active}
-                className="apex-sidebar-nav-link apex-slide-in text-[13px] transition-all"
-                style={{
-                  animationDelay: `${(PRIMARY_NAV_ITEMS.length + index) * 60}ms`,
-                  fontFamily: "var(--apex-font-body)",
-                  fontWeight: active ? 600 : 400,
-                }}
-              >
-                <Icon className={`relative z-[1] h-4 w-4 ${active ? "text-[var(--apex-text-primary)]" : "text-[var(--apex-text-tertiary)]"}`} />
-                <span className="relative z-[1]">{item.label}</span>
-              </Link>
-            );
-          })}
         </nav>
 
         <div className="apex-sidebar-footer mt-auto">

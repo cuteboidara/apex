@@ -1,93 +1,123 @@
 import { NextResponse } from "next/server";
 
-import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { prisma } from "@/lib/prisma";
+import { fetchMacroContext } from "@/src/indices/data/fetchers/macroFetcher";
 
 export const dynamic = "force-dynamic";
 
 type AdminStatsRouteDependencies = {
   prisma: typeof prisma;
   requireAdmin: typeof requireAdmin;
+  fetchMacroContextFn?: typeof fetchMacroContext;
 };
 
-const EMPTY_ADMIN_STATS = {
-  ok: true,
-  users: { total: 0, pending: 0, activeToday: 0, banned: 0 },
-  signals: { total: 0, b: 0, a: 0, s: 0 },
-  recentUsers: [] as Array<{ id: string; name: string | null; email: string; status: string; createdAt: Date }>,
-  recentSignals: [] as Array<{ id: string; asset: string; direction: string; rank: string; total: number; createdAt: Date }>,
-};
+function toRuntimeStatus(lastCycleAt: Date | null): "live" | "idle" | "error" {
+  if (!lastCycleAt) return "idle";
+
+  const elapsedMs = Date.now() - lastCycleAt.getTime();
+  if (elapsedMs <= 30 * 60 * 1000) return "live";
+  if (elapsedMs <= 4 * 60 * 60 * 1000) return "idle";
+  return "error";
+}
+
+function getSetupType(row: { smcSetupJson: unknown }): string {
+  const value = row.smcSetupJson;
+  if (!value || typeof value !== "object") return "unknown";
+
+  const setupType = (value as { setupType?: unknown }).setupType;
+  return typeof setupType === "string" && setupType.trim().length > 0
+    ? setupType
+    : "unknown";
+}
 
 export function createAdminStatsRouteHandler(deps: AdminStatsRouteDependencies) {
   return async function GET() {
-    try {
-      const auth = await deps.requireAdmin();
-      if (!auth.ok) return auth.response;
+    const auth = await deps.requireAdmin();
+    if (!auth.ok) return auth.response;
 
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+    try {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
       const [
-        totalUsers,
-        pendingUsers,
-        activeToday,
-        bannedUsers,
-        recentUsers,
         totalSignals,
-        bSignals,
-        aSignals,
-        sSignals,
-        recentSignals,
+        executableSignals,
+        watchlistSignals,
+        signalScoreAvg,
+        signalRows,
+        latestCycle,
+        assetsScanned,
+        totalUsers,
+        activeUsers,
+        pendingApprovals,
+        newUsersToday,
+        macro,
       ] = await Promise.all([
-        deps.prisma.user.count().catch(() => 0),
-        deps.prisma.user.count({ where: { status: "PENDING" } }).catch(() => 0),
-        deps.prisma.user.count({ where: { lastLoginAt: { gte: todayStart } } }).catch(() => 0),
-        deps.prisma.user.count({ where: { status: "BANNED" } }).catch(() => 0),
-        deps.prisma.user.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 20,
-          select: { id: true, name: true, email: true, status: true, createdAt: true },
-        }).catch(() => []),
-        deps.prisma.signal.count().catch(() => 0),
-        deps.prisma.signal.count({ where: { rank: "B" } }).catch(() => 0),
-        deps.prisma.signal.count({ where: { rank: "A" } }).catch(() => 0),
-        deps.prisma.signal.count({ where: { rank: { in: ["S", "S+"] } } }).catch(() => 0),
-        deps.prisma.signal.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 10,
+        deps.prisma.indicesSignal.count(),
+        deps.prisma.indicesSignal.count({ where: { totalScore: { gte: 60 } } }),
+        deps.prisma.indicesSignal.count({ where: { totalScore: { gte: 40, lt: 60 } } }),
+        deps.prisma.indicesSignal.aggregate({ _avg: { totalScore: true } }),
+        deps.prisma.indicesSignal.findMany({
           select: {
-            id: true,
-            asset: true,
-            direction: true,
-            rank: true,
-            total: true,
-            createdAt: true,
+            assetId: true,
+            smcSetupJson: true,
           },
-        }).catch(() => []),
+          orderBy: { createdAt: "desc" },
+          take: 2000,
+        }),
+        deps.prisma.indicesSignal.findFirst({
+          orderBy: { createdAt: "desc" },
+          select: { createdAt: true },
+        }),
+        deps.prisma.indicesAssetState.count(),
+        deps.prisma.user.count(),
+        deps.prisma.user.count({ where: { lastLoginAt: { gte: sevenDaysAgo } } }),
+        deps.prisma.user.count({ where: { status: "PENDING" } }),
+        deps.prisma.user.count({ where: { createdAt: { gte: startOfDay } } }),
+        (deps.fetchMacroContextFn ?? fetchMacroContext)().catch(() => null),
       ]);
 
+      const signalsByAsset: Record<string, number> = {};
+      const signalsBySetup: Record<string, number> = {};
+
+      for (const row of signalRows) {
+        signalsByAsset[row.assetId] = (signalsByAsset[row.assetId] ?? 0) + 1;
+
+        const setupType = getSetupType(row);
+        signalsBySetup[setupType] = (signalsBySetup[setupType] ?? 0) + 1;
+      }
+
+      const lastCycleAt = latestCycle?.createdAt ?? null;
+
       return NextResponse.json({
-        ok: true,
-        users: {
-          total: totalUsers ?? 0,
-          pending: pendingUsers ?? 0,
-          activeToday: activeToday ?? 0,
-          banned: bannedUsers ?? 0,
-        },
-        signals: {
-          total: totalSignals ?? 0,
-          b: bSignals ?? 0,
-          a: aSignals ?? 0,
-          s: sSignals ?? 0,
-        },
-        recentUsers: Array.isArray(recentUsers) ? recentUsers : EMPTY_ADMIN_STATS.recentUsers,
-        recentSignals: Array.isArray(recentSignals) ? recentSignals : EMPTY_ADMIN_STATS.recentSignals,
+        runtimeStatus: toRuntimeStatus(lastCycleAt),
+        lastCycle: lastCycleAt?.toISOString() ?? null,
+        cycleLatency: 0,
+        assetsScanned,
+
+        totalSignals,
+        executableSignals,
+        watchlistSignals,
+        avgScore: signalScoreAvg._avg.totalScore ?? 0,
+        signalsByAsset,
+        signalsBySetup,
+
+        totalUsers,
+        activeUsers,
+        pendingApprovals,
+        newUsersToday,
+
+        macroRegime: macro?.dxy?.trend ? String(macro.dxy.trend).toUpperCase() : "NORMAL",
+        dxy: macro?.dxy?.price ?? 0,
+        vix: macro?.vix?.price ?? 0,
+        eventRisk: Array.isArray(macro?.economicEvents) ? macro.economicEvents.length : 0,
       });
     } catch (error) {
-      return buildRouteErrorResponse(error, {
-        publicMessage: "Unable to load admin overview stats.",
-      });
+      console.error("[admin/stats] Failed to build command center stats:", error);
+      return NextResponse.json({ error: "Failed to load stats" }, { status: 500 });
     }
   };
 }

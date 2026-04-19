@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
+import { auditLog } from "@/lib/admin/auditLog";
 import { isKnownSymbol } from "@/src/config/marketScope";
 import {
   ASSET_MODULE_IDS,
@@ -30,6 +32,7 @@ export async function POST(req: NextRequest) {
   };
 
   if (body.action === "enable_all") {
+    await auditLog("assets_enable_all", ADMIN_EMAIL);
     return NextResponse.json({
       success: true,
       config: enableAllAssets(),
@@ -45,6 +48,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "active boolean required" }, { status: 400 });
     }
 
+    await auditLog("asset_module_toggled", ADMIN_EMAIL, {
+      module: body.module,
+      active: body.active,
+    });
     return NextResponse.json({
       success: true,
       module: body.module,
@@ -63,6 +70,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "active boolean required" }, { status: 400 });
   }
 
+  await auditLog("asset_symbol_toggled", ADMIN_EMAIL, {
+    symbol: body.symbol,
+    active: body.active,
+  });
   return NextResponse.json({
     success: true,
     symbol: body.symbol,

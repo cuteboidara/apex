@@ -344,6 +344,19 @@ model AuditEvent {
   @@schema("apex")
 }
 
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  adminId   String
+  metadata  String?
+  timestamp DateTime @default(now())
+
+  @@index([adminId, timestamp])
+  @@index([action, timestamp])
+  @@map("admin_audit_log")
+  @@schema("apex")
+}
+
 model ExplanationCache {
   id            String   @id @default(cuid())
   fingerprint   String

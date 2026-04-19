@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
+import { auditLog } from "@/lib/admin/auditLog";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -65,5 +67,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: data.description ?? "Telegram error" }, { status: 500 });
   }
 
+  await auditLog("telegram_broadcast", ADMIN_EMAIL, {
+    messageLength: message.trim().length,
+  });
   return NextResponse.json({ success: true });
 }

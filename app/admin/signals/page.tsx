@@ -2,43 +2,42 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { fetchJsonResponse, formatApiError } from "@/lib/http/fetchJson";
-import { ExecutableSignalCard } from "@/src/presentation/dashboard/components/ExecutableSignalCard";
-import { MonitoredSignalCard } from "@/src/presentation/dashboard/components/MonitoredSignalCard";
-import { RejectedSignalCard } from "@/src/presentation/dashboard/components/RejectedSignalCard";
-import type { SignalViewModel } from "@/src/domain/models/signalPipeline";
+type SignalFilter = "all" | "executable" | "watchlist";
 
-type AdminSignalsPayload = {
-  generatedAt: number;
-  pipelineDiagnostics?: Record<string, unknown> | null;
-  executable: SignalViewModel[];
-  monitored: SignalViewModel[];
-  rejected: SignalViewModel[];
+type Signal = {
+  id: string;
+  assetId: string;
+  setupType: string;
+  direction: string;
+  score: number;
+  entryZone: { high: number | null; low: number | null; mid: number | null };
+  stopLoss: number | null;
+  tp1: number | null;
+  riskRewardRatio: number | null;
+  createdAt: string;
 };
 
 export default function AdminSignalsPage() {
-  const [payload, setPayload] = useState<AdminSignalsPayload | null>(null);
+  const [signals, setSignals] = useState<Signal[]>([]);
+  const [filter, setFilter] = useState<SignalFilter>("all");
+  const [assetFilter, setAssetFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"executable" | "monitored" | "rejected">("executable");
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
-      const result = await fetchJsonResponse<AdminSignalsPayload>("/api/admin/signals");
-      if (cancelled) {
-        return;
+      try {
+        const response = await fetch("/api/admin/signals?limit=1000", { cache: "no-store" });
+        const payload = await response.json() as { signals?: Signal[] };
+        if (cancelled) return;
+        setSignals(Array.isArray(payload.signals) ? payload.signals : []);
+      } catch {
+        if (cancelled) return;
+        setSignals([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      if (result.ok && result.data) {
-        setPayload(result.data);
-        setError(null);
-      } else {
-        setPayload(null);
-        setError(formatApiError(result, "Failed to load canonical admin signals."));
-      }
-      setLoading(false);
     })();
 
     return () => {
@@ -46,76 +45,123 @@ export default function AdminSignalsPage() {
     };
   }, []);
 
-  const items = useMemo(() => payload?.[tab] ?? [], [payload, tab]);
+  const assets = useMemo(
+    () => Array.from(new Set(signals.map(signal => signal.assetId))).sort(),
+    [signals],
+  );
+
+  const filtered = useMemo(() => {
+    return signals.filter(signal => {
+      if (filter === "executable" && signal.score < 60) return false;
+      if (filter === "watchlist" && (signal.score < 40 || signal.score >= 60)) return false;
+      if (assetFilter !== "all" && signal.assetId !== assetFilter) return false;
+      return true;
+    });
+  }, [assetFilter, filter, signals]);
 
   return (
-    <div className="space-y-6">
-      <section className="apex-surface px-6 py-6">
-        <p className="apex-eyebrow">Canonical Signal Truth</p>
-        <h2 className="mt-3 font-[var(--apex-font-display)] text-[28px] font-semibold tracking-[-0.05em] text-[var(--apex-text-primary)]">
-          Executable, monitored, and rejected
-        </h2>
-        <p className="mt-3 text-[14px] leading-7 text-[var(--apex-text-secondary)]">
-          Admin visibility over the same canonical signal view models used by the trader surface.
-        </p>
-        {payload?.pipelineDiagnostics ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {Object.entries((payload.pipelineDiagnostics.stageCounts as Record<string, unknown> | undefined) ?? {}).map(([key, value]) => (
-              <span
-                key={key}
-                className="rounded-full border border-[var(--apex-border-subtle)] px-2.5 py-1 font-[var(--apex-font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--apex-text-secondary)]"
-              >
-                {key.replace(/([A-Z])/g, " $1").trim()}: {String(value)}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </section>
+    <div className="space-y-4 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-[var(--apex-font-mono)] text-lg font-bold text-[var(--apex-text-primary)]">AMT SIGNAL BOARD</h1>
+          <p className="font-[var(--apex-font-mono)] text-xs text-[var(--apex-text-tertiary)]">All signals from paper trading and live cycles</p>
+        </div>
 
-      <div className="apex-tab-row">
-        {(["executable", "monitored", "rejected"] as const).map(item => (
-          <button key={item} onClick={() => setTab(item)} data-active={tab === item} className="apex-tab-button">
-            {item}
-            {payload ? ` (${payload[item].length})` : ""}
+        <div className="flex gap-2">
+          {(["all", "executable", "watchlist"] as const).map(current => (
+            <button
+              key={current}
+              onClick={() => setFilter(current)}
+              className={`rounded border px-3 py-1 font-[var(--apex-font-mono)] text-[10px] uppercase transition-colors ${filter === current
+                ? "border-[var(--apex-text-primary)] bg-[var(--apex-text-primary)] text-[var(--apex-surface-bg)]"
+                : "border-[var(--apex-border-default)] text-[var(--apex-text-secondary)] hover:text-[var(--apex-text-primary)]"
+              }`}
+            >
+              {current}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setAssetFilter("all")}
+          className={`rounded px-2 py-0.5 font-[var(--apex-font-mono)] text-[10px] ${assetFilter === "all"
+            ? "bg-[var(--apex-text-secondary)] text-[var(--apex-surface-bg)]"
+            : "text-[var(--apex-text-tertiary)] hover:text-[var(--apex-text-primary)]"
+          }`}
+        >
+          ALL
+        </button>
+        {assets.map(asset => (
+          <button
+            key={asset}
+            onClick={() => setAssetFilter(asset)}
+            className={`rounded px-2 py-0.5 font-[var(--apex-font-mono)] text-[10px] ${assetFilter === asset
+              ? "bg-[var(--apex-text-secondary)] text-[var(--apex-surface-bg)]"
+              : "text-[var(--apex-text-tertiary)] hover:text-[var(--apex-text-primary)]"
+            }`}
+          >
+            {asset}
           </button>
         ))}
       </div>
 
-      {loading ? (
-        <div className="apex-empty-state">Loading canonical signals…</div>
-      ) : error ? (
-        <div className="apex-stack-card border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] text-sm text-[var(--apex-status-blocked-text)]">
-          {error}
-        </div>
-      ) : tab === "executable" ? (
-        items.length === 0 ? (
-          <div className="apex-empty-state">No executable signals.</div>
-        ) : (
-          <div className="space-y-4">
-            {items.map(signal => (
-              <ExecutableSignalCard key={signal.id} signal={signal} />
-            ))}
-          </div>
-        )
-      ) : tab === "monitored" ? (
-        items.length === 0 ? (
-          <div className="apex-empty-state">No monitored setups.</div>
-        ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {items.map(signal => (
-              <MonitoredSignalCard key={signal.id} signal={signal} />
-            ))}
-          </div>
-        )
-      ) : items.length === 0 ? (
-        <div className="apex-empty-state">No rejected signals.</div>
-      ) : (
-        <div className="space-y-2">
-          {items.map(signal => (
-            <RejectedSignalCard key={signal.id} signal={signal} />
-          ))}
-        </div>
-      )}
+      <div className="overflow-hidden rounded-lg border border-[var(--apex-border-default)]">
+        <table className="w-full font-[var(--apex-font-mono)] text-xs">
+          <thead className="border-b border-[var(--apex-border-default)] bg-[var(--apex-surface-card)]">
+            <tr>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Asset</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Setup</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Direction</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Score</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Entry</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">SL</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">RR</th>
+              <th className="p-3 text-left text-[10px] uppercase text-[var(--apex-text-tertiary)]">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={8} className="p-8 text-center font-[var(--apex-font-mono)] text-sm text-[var(--apex-text-tertiary)]">
+                  Loading AMT signals...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="p-8 text-center font-[var(--apex-font-mono)] text-sm text-[var(--apex-text-tertiary)]">
+                  No signals match the current filter.
+                </td>
+              </tr>
+            ) : (
+              filtered.map(signal => (
+                <tr key={signal.id} className="border-b border-[var(--apex-border-default)]/50 hover:bg-[var(--apex-surface-card)]/40">
+                  <td className="p-3 font-bold text-[var(--apex-text-primary)]">{signal.assetId}</td>
+                  <td className="p-3 text-[var(--apex-text-secondary)]">{signal.setupType.replaceAll("_", " ")}</td>
+                  <td className={`p-3 ${signal.direction === "long" ? "text-[var(--apex-status-active-text)]" : "text-[var(--apex-status-blocked-text)]"}`}>
+                    {signal.direction.toUpperCase()}
+                  </td>
+                  <td className="p-3">
+                    <span className={`rounded px-2 py-0.5 text-[10px] ${signal.score >= 60
+                      ? "border border-[var(--apex-status-active-border)] bg-[var(--apex-status-active-bg)] text-[var(--apex-status-active-text)]"
+                      : signal.score >= 40
+                        ? "border border-[var(--apex-status-watchlist-border)] bg-[var(--apex-status-watchlist-bg)] text-[var(--apex-status-watchlist-text)]"
+                        : "bg-[var(--apex-surface-card)] text-[var(--apex-text-tertiary)]"
+                    }`}>
+                      {signal.score.toFixed(1)}
+                    </span>
+                  </td>
+                  <td className="p-3 text-[var(--apex-text-secondary)]">{signal.entryZone.mid != null ? signal.entryZone.mid.toFixed(4) : "-"}</td>
+                  <td className="p-3 text-[var(--apex-status-blocked-text)]">{signal.stopLoss != null ? signal.stopLoss.toFixed(4) : "-"}</td>
+                  <td className="p-3 text-[var(--apex-text-secondary)]">{signal.riskRewardRatio != null ? `${signal.riskRewardRatio.toFixed(2)}:1` : "-"}</td>
+                  <td className="p-3 text-[var(--apex-text-tertiary)]">{new Date(signal.createdAt).toLocaleTimeString()}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

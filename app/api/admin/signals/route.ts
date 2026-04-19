@@ -1,38 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/admin/requireAdmin";
-import { getSignalsPayload } from "@/src/presentation/api/signals";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-function applyFilters<T extends { symbol: string; grade: string }>(
-  items: T[],
-  filters: { asset: string | null; rank: string | null; limit: number },
-): T[] {
-  return items
-    .filter(item => (filters.asset ? item.symbol === filters.asset : true))
-    .filter(item => (filters.rank ? item.grade === filters.rank : true))
-    .slice(0, filters.limit);
+function parseSetupType(value: unknown): string {
+  if (!value || typeof value !== "object") return "unknown";
+
+  const setupType = (value as { setupType?: unknown }).setupType;
+  return typeof setupType === "string" && setupType.trim().length > 0
+    ? setupType
+    : "unknown";
 }
 
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin();
   if (!auth.ok) return auth.response;
 
-  const { searchParams } = new URL(req.url);
-  const filters = {
-    asset: searchParams.get("asset"),
-    rank: searchParams.get("rank"),
-    limit: Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 200),
-  };
+  const searchParams = req.nextUrl.searchParams;
+  const limitRaw = Number(searchParams.get("limit") ?? 500);
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(2000, Math.trunc(limitRaw))) : 500;
 
-  const payload = await getSignalsPayload();
+  const rows = await prisma.indicesSignal.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: {
+      id: true,
+      assetId: true,
+      direction: true,
+      totalScore: true,
+      entryZoneHigh: true,
+      entryZoneLow: true,
+      entryZoneMid: true,
+      stopLoss: true,
+      tp1: true,
+      riskRewardRatio: true,
+      createdAt: true,
+      smcSetupJson: true,
+    },
+  });
 
   return NextResponse.json({
-    generatedAt: payload.generatedAt,
-    pipelineDiagnostics: payload.pipelineDiagnostics ?? null,
-    executable: applyFilters(payload.executable, filters),
-    monitored: applyFilters(payload.monitored, filters),
-    rejected: applyFilters(payload.rejected, filters),
+    signals: rows.map(row => ({
+      id: row.id,
+      assetId: row.assetId,
+      setupType: parseSetupType(row.smcSetupJson),
+      direction: row.direction,
+      score: row.totalScore,
+      entryZone: {
+        high: row.entryZoneHigh,
+        low: row.entryZoneLow,
+        mid: row.entryZoneMid,
+      },
+      stopLoss: row.stopLoss,
+      tp1: row.tp1,
+      riskRewardRatio: row.riskRewardRatio,
+      createdAt: row.createdAt.toISOString(),
+    })),
   });
 }

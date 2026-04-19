@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { recordAuditEvent } from "@/lib/audit";
 import { ADMIN_EMAIL } from "@/lib/admin/auth";
+import { auditLog } from "@/lib/admin/auditLog";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +92,11 @@ export function createAdminUserRouteHandlers(deps: AdminUserRouteDependencies) {
           suspendedReason: updated.suspendedReason,
         },
       });
+      await auditLog(`user_${body.action}`, deps.adminEmail, {
+        userId: user.id,
+        beforeStatus: user.status,
+        afterStatus: updated.status,
+      });
       return NextResponse.json({ success: true, status: updated.status });
     },
 
@@ -110,6 +116,10 @@ export function createAdminUserRouteHandlers(deps: AdminUserRouteDependencies) {
           email: existing.email,
           status: existing.status,
         } : null,
+      });
+      await auditLog("user_deleted", deps.adminEmail, {
+        userId: id,
+        email: existing?.email ?? null,
       });
       return NextResponse.json({ success: true });
     },

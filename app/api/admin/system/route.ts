@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
+import { auditLog } from "@/lib/admin/auditLog";
 import { buildRouteErrorResponse } from "@/lib/api/routeErrors";
 import { validateRuntimeEnv } from "@/scripts/validate-env.mjs";
 import { getLatestAlphaAnalyticsReport, runAlphaAnalyticsRefresh } from "@/src/application/analytics/alphaReport";
@@ -108,6 +110,7 @@ export async function POST(request: Request) {
 
     if (action === "run_live_smoke") {
       const liveSmokeReport = await runLiveRuntimeSmokeVerification();
+      await auditLog("run_live_smoke", ADMIN_EMAIL);
       return NextResponse.json({
         ok: true,
         action,
@@ -119,6 +122,9 @@ export async function POST(request: Request) {
       const alphaAnalytics = await runAlphaAnalyticsRefresh({
         includeSmoke: body?.includeSmoke !== false,
       });
+      await auditLog("refresh_alpha_analytics", ADMIN_EMAIL, {
+        includeSmoke: body?.includeSmoke !== false,
+      });
       return NextResponse.json({
         ok: true,
         action,
@@ -128,6 +134,9 @@ export async function POST(request: Request) {
 
     if (action === "run_daily_alpha_report") {
       const dailyAlphaReport = await generateDailyAlphaReport({
+        includeSmoke: body?.includeSmoke !== false,
+      });
+      await auditLog("run_daily_alpha_report", ADMIN_EMAIL, {
         includeSmoke: body?.includeSmoke !== false,
       });
       return NextResponse.json({
