@@ -3,6 +3,7 @@
 // Full expanded breakdown of a selected AMT signal
 
 import type { DBSignal, CorrelationPair } from '../types';
+import { TradingViewChart } from './TradingViewChart';
 
 function fmt(price: number | null | undefined, digits?: number): string {
   if (price == null) return '—';
@@ -239,14 +240,6 @@ export function SignalDetail({
 
           {/* Action buttons */}
           <div className="flex gap-2 pt-2">
-            <a
-              href={`https://www.tradingview.com/chart/?symbol=${signal.assetId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center text-xs py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-            >
-              📊 View Chart
-            </a>
             <button className="flex-1 text-xs py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors">
               ✏️ Edit Levels
             </button>
@@ -255,6 +248,36 @@ export function SignalDetail({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* ── Live TradingView chart ── */}
+      <div className="pt-2">
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+          Live Chart — {signal.assetId} 4H
+        </div>
+        <TradingViewChart
+          symbol={signal.assetId}
+          interval="240"
+          height={480}
+          signal={
+            signal.entryZoneHigh != null &&
+            signal.entryZoneLow  != null &&
+            signal.stopLoss      != null &&
+            signal.tp1           != null &&
+            signal.tp2           != null &&
+            signal.tp3           != null
+              ? {
+                  entryHigh:  signal.entryZoneHigh,
+                  entryLow:   signal.entryZoneLow,
+                  stopLoss:   signal.stopLoss,
+                  tp1:        signal.tp1,
+                  tp2:        signal.tp2,
+                  tp3:        signal.tp3,
+                  direction:  signal.direction,
+                }
+              : undefined
+          }
+        />
       </div>
     </div>
   );

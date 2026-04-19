@@ -14,8 +14,10 @@ import { fetchMacroContext } from './data/fetchers/macroFetcher';
 
 import { fetchIndexCandles } from './data/fetchers/indicesFetcher';
 import { fetchForexCandles } from './data/fetchers/forexFetcher';
+import { fetchCommodityCandles } from './data/fetchers/commodityFetcher';
+import { fetchRateCandles } from './data/fetchers/ratesFetcher';
 import { runSMCAnalysis } from './engine/smc/smcScorer';
-import { ASSET_SYMBOLS, isForex, isIndex, type AssetSymbol } from './data/fetchers/assetConfig';
+import { ASSET_SYMBOLS, isForex, isIndex, isCommodity, isRate, type AssetSymbol } from './data/fetchers/assetConfig';
 
 // ─── Telegram send ─────────────────────────────────────────────────────────
 // Reuse the existing Telegram client directly.
@@ -33,9 +35,11 @@ async function sendTelegramMessage(text: string): Promise<void> {
 
 // ─── Asset Universe ────────────────────────────────────────────────────────
 
-const INDEX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isIndex(symbol));
-const FOREX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(symbol => isForex(symbol));
-const ALL_ASSETS: AssetSymbol[] = [...INDEX_ASSETS, ...FOREX_ASSETS];
+const INDEX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(isIndex);
+const FOREX_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(isForex);
+const COMMODITY_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(isCommodity);
+const RATE_ASSETS: AssetSymbol[] = ASSET_SYMBOLS.filter(isRate);
+const ALL_ASSETS: AssetSymbol[] = [...INDEX_ASSETS, ...FOREX_ASSETS, ...COMMODITY_ASSETS, ...RATE_ASSETS];
 const ASSET_FETCH_TIMEOUT_MS = 12_000;
 
 // ─── Singleton State ───────────────────────────────────────────────────────
@@ -92,12 +96,17 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 
 async function fetchAssetInput(assetId: AssetSymbol): Promise<AssetInput | null> {
   try {
-    const indexAsset = INDEX_ASSETS.includes(assetId);
-
-    // Fetch candles (use 4H candles for AMT — sufficient for FVA + pattern detection)
-    const mtfData = indexAsset
-      ? await fetchIndexCandles(assetId)
-      : await fetchForexCandles(assetId);
+    // Fetch candles using the appropriate fetcher per asset class
+    let mtfData;
+    if (INDEX_ASSETS.includes(assetId)) {
+      mtfData = await fetchIndexCandles(assetId);
+    } else if (COMMODITY_ASSETS.includes(assetId)) {
+      mtfData = await fetchCommodityCandles(assetId);
+    } else if (RATE_ASSETS.includes(assetId)) {
+      mtfData = await fetchRateCandles(assetId);
+    } else {
+      mtfData = await fetchForexCandles(assetId);
+    }
 
     const candles = mtfData.h4 ?? mtfData.daily ?? [];
     if (candles.length < 10) {

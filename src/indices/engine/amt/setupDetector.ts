@@ -61,16 +61,40 @@ function computeRR(
 function computeCorrelationBonus(assetId: string, direction: 'long' | 'short'): number {
   void direction;
 
-  // NAS + SPX + DAX tend to move together
-  const indexGroup = ['NAS100', 'SPX500', 'DAX'];
-  if (indexGroup.includes(assetId)) return 5; // assume some correlation bonus
+  // US indices — high intra-group correlation
+  const usIndices = ['NAS100', 'SPX500'];
+  if (usIndices.includes(assetId)) return 5;
 
-  // FX pairs with USD leg usually co-move through broad USD regime.
+  // European indices — moderate intra-group correlation
+  const euIndices = ['DAX', 'FTSE100', 'CAC40'];
+  if (euIndices.includes(assetId)) return 4;
+
+  // Asian indices — moderate intra-group correlation
+  const asianIndices = ['NIKKEI', 'HANGSENG', 'ASX200'];
+  if (asianIndices.includes(assetId)) return 3;
+
+  // FX pairs with USD leg — co-move through broad USD regime
   const usdPairs = ['EURUSD', 'GBPUSD', 'AUDUSD', 'USDJPY', 'USDCAD', 'USDCHF'];
   if (usdPairs.includes(assetId)) return 3;
 
-  // JPY crosses are moderately correlated in risk-on/off swings.
+  // JPY crosses — moderately correlated in risk-on/off swings
   if (assetId === 'EURJPY' || assetId === 'GBPJPY') return 2;
+
+  // Metals — gold and silver move together
+  const metals = ['XAUUSD', 'XAGUSD', 'COPPER'];
+  if (metals.includes(assetId)) return 4;
+
+  // Energy — WTI and Brent near-identical
+  const energy = ['USOIL', 'UKOIL'];
+  if (energy.includes(assetId)) return 5;
+  if (assetId === 'NATGAS') return 2; // loosely correlated with energy complex
+
+  // Rates — US rates tend to lead globally
+  const usRates = ['US10Y', 'US2Y'];
+  if (usRates.includes(assetId)) return 4;
+
+  const globalRates = ['DE10Y', 'JP10Y', 'UK10Y'];
+  if (globalRates.includes(assetId)) return 3;
 
   return 0;
 }

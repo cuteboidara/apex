@@ -21,6 +21,17 @@ function getGrade(score: number): string {
   return 'F';
 }
 
+const CATEGORY_COLORS: Record<string, { text: string; bg: string; border: string }> = {
+  index:     { text: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
+  forex:     { text: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30'   },
+  commodity: { text: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/30'  },
+  rate:      { text: 'text-cyan-400',   bg: 'bg-cyan-500/10',   border: 'border-cyan-500/30'   },
+};
+
+function getCategoryStyle(assetClass: string) {
+  return CATEGORY_COLORS[assetClass.toLowerCase()] ?? CATEGORY_COLORS['forex']!;
+}
+
 export function AMTSignalCard({
   signal,
   selected,
@@ -33,6 +44,7 @@ export function AMTSignalCard({
   const executable = signal.totalScore >= 70;
   const directionLabel = signal.direction === 'long' ? '↑ LONG' : '↓ SHORT';
   const assetClass = signal.assetClass.toUpperCase();
+  const catStyle = getCategoryStyle(signal.assetClass);
 
   return (
     <div
@@ -45,7 +57,10 @@ export function AMTSignalCard({
       ].join(' ')}
     >
       <div className="mb-4 flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+        <span className={[
+          'rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest',
+          catStyle.text, catStyle.bg,
+        ].join(' ')}>
           {assetClass}
         </span>
         <span

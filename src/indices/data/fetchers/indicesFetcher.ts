@@ -2,7 +2,7 @@
 // Fetch OHLCV candles for NAS100, SPX500, DAX
 
 import type { AssetData, Candle } from '@/src/indices/types';
-import { ASSET_CONFIG, CANDLE_LIMITS, type AssetSymbol } from './assetConfig';
+import { ASSET_CONFIG, ASSET_SYMBOLS, CANDLE_LIMITS, isIndex, type AssetSymbol } from './assetConfig';
 import { fetchYahooCandles, fetchYahooCurrentPrice } from './yahooFinance';
 import { getCache, setCache, CacheKeys, CacheTTL } from '../cache/cacheManager';
 
@@ -49,7 +49,7 @@ export async function fetchIndexCandles(symbol: AssetSymbol): Promise<MultiTimef
 }
 
 export async function fetchAllIndicesCandles(): Promise<Map<AssetSymbol, MultiTimeframeCandles>> {
-  const indexSymbols: AssetSymbol[] = ['NAS100', 'SPX500', 'DAX'];
+  const indexSymbols: AssetSymbol[] = ASSET_SYMBOLS.filter(isIndex);
   const results = await Promise.all(
     indexSymbols.map(async symbol => ({ symbol, data: await fetchIndexCandles(symbol) })),
   );
