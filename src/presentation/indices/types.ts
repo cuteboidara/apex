@@ -27,6 +27,8 @@ export interface DBSignal {
   expectedValue: number | null;
   newsRisk: string;
   reasoning: string | null;
+  finalScore?: number | null;
+  finalAction?: string | null;
   macroSummary: string | null;
   smcSetupJson: { setupType?: string; orderFlowConfirmation?: object } | null;
   taConfluenceJson: { patterns?: object[]; confirmationCandles?: object[] } | null;

@@ -24,9 +24,9 @@ export function SignalsPanel({
         </div>
         {signals.length > 0 && (
           <div className="flex items-center gap-1.5 font-mono text-[10px]">
-            {signals.some(s => s.totalScore >= 70) && (
+            {signals.some(s => s.totalScore >= 60) && (
               <span className="rounded border border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 px-1.5 py-0.5 text-[var(--accent-green)]">
-                {signals.filter(s => s.totalScore >= 70).length} exec
+                {signals.filter(s => s.totalScore >= 60).length} exec
               </span>
             )}
             <span className="text-[var(--text-secondary)]">

@@ -2,8 +2,9 @@
 // Full health check for the AMT indices system
 // Run: node --import tsx src/indices/backtest/diagnose.ts
 
-import { ASSET_CONFIG, ASSET_SYMBOLS, type AssetSymbol } from '@/src/indices/data/fetchers/assetConfig';
+import { ASSET_CONFIG, ASSET_SYMBOLS, isRate, type AssetSymbol } from '@/src/indices/data/fetchers/assetConfig';
 import { fetchYahooCandles } from '@/src/indices/data/fetchers/yahooFinance';
+import { fetchRateCandles } from '@/src/indices/data/fetchers/ratesFetcher';
 import { fetchDXY, fetchVIX, fetchYield10Y, fetchFearGreed, fetchEconomicCalendar } from '@/src/indices/data/fetchers/macroFetcher';
 import { runSMCAnalysis } from '@/src/indices/engine/smc/smcScorer';
 import { detectFairValueArea } from '@/src/indices/engine/amt/fairValueDetector';
@@ -124,6 +125,13 @@ async function checkYahooFinance() {
   let successCount = 0;
   for (const assetId of ASSET_SYMBOLS) {
     const cfg = ASSET_CONFIG[assetId];
+    if (isRate(assetId)) {
+      const { result } = await timed(() => fetchRateCandles(assetId));
+      const price = result?.currentPrice ?? null;
+      if (price != null && Number.isFinite(price) && price > 0) successCount++;
+      continue;
+    }
+
     const { result } = await timed(() => fetchYahooCandles(cfg.yahooSymbol, '1d', 10));
     if (result && result.candles.length > 0) successCount++;
   }

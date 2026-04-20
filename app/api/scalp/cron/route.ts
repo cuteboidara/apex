@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server";
+import { runScalpCycle } from "@/src/scalp/runtime";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+async function handleCron(req: Request) {
+  const authHeader = req.headers.get("authorization");
+  const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+
+  if (!authHeader || authHeader !== expectedAuth) {
+    console.warn("[scalp-cron] Unauthorized access attempt");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    console.log("[scalp-cron] Triggered by external cron");
+    const result = await runScalpCycle();
+    return NextResponse.json({
+      success: true,
+      cycleId: result.cycleId,
+      signalsGenerated: result.signals.length,
+      session: result.session,
+      latency: result.latency,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[scalp-cron] Error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(req: Request) {
+  return handleCron(req);
+}
+
+export async function POST(req: Request) {
+  return handleCron(req);
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
+import { ADMIN_EMAIL } from "@/lib/admin/auth";
 import { recordAuditEvent } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
@@ -109,6 +110,13 @@ export function createSignupRouteHandlers(deps: SignupRouteDependencies) {
   };
 }
 
-export async function POST() {
-  return NextResponse.json({ error: "Registration is not open" }, { status: 403 });
-}
+const signupHandlers = createSignupRouteHandlers({
+  prisma,
+  adminEmail: process.env.ADMIN_EMAIL?.trim().toLowerCase() || ADMIN_EMAIL.toLowerCase(),
+  hashPassword: bcrypt.hash,
+  notifyAdminTelegram,
+  notifyAdminEmail,
+  recordAuditEvent,
+});
+
+export const POST = signupHandlers.POST;

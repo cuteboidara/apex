@@ -2,11 +2,13 @@
 // Asset metadata: Yahoo Finance symbols, pip sizes, point values
 
 export const ASSET_SYMBOLS = [
-  // Indices (8)
+  // Indices (10)
   'NAS100',
   'SPX500',
+  'US30',
   'DAX',
   'FTSE100',
+  'UK100',
   'NIKKEI',
   'HANGSENG',
   'CAC40',
@@ -81,6 +83,19 @@ export const ASSET_CONFIG: Record<AssetSymbol, AssetConfig> = {
     sessionOpen: 13,
     sessionClose: 20,
   },
+  US30: {
+    symbol: 'US30',
+    yahooSymbol: '^DJI',        // Dow Jones Industrial Average
+    displayName: 'US 30',
+    assetClass: 'index',
+    pipSize: 1,
+    pointValue: 5,
+    minRR: 1.5,
+    minConfidence: 60,
+    typicalSpread: 3,
+    sessionOpen: 13,            // NYSE open 09:30 ET = 13:30 UTC
+    sessionClose: 20,
+  },
   DAX: {
     symbol: 'DAX',
     yahooSymbol: '^GDAXI',      // DAX index (spot)
@@ -98,6 +113,19 @@ export const ASSET_CONFIG: Record<AssetSymbol, AssetConfig> = {
     symbol: 'FTSE100',
     yahooSymbol: '^FTSE',
     displayName: 'FTSE 100',
+    assetClass: 'index',
+    pipSize: 1,
+    pointValue: 10,
+    minRR: 1.5,
+    minConfidence: 60,
+    typicalSpread: 1,
+    sessionOpen: 8,             // London open 08:00 UTC
+    sessionClose: 16,
+  },
+  UK100: {
+    symbol: 'UK100',
+    yahooSymbol: '^FTSE',
+    displayName: 'UK 100',
     assetClass: 'index',
     pipSize: 1,
     pointValue: 10,

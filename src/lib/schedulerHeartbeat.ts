@@ -3,7 +3,7 @@ import { getCachedJson, setCachedJson } from "@/src/lib/redis";
 export const APEX_SCHEDULER_HEARTBEAT_KEY = "apex:scheduler:heartbeat";
 
 export type SchedulerHeartbeat = {
-  mode: "manual";
+  mode: "manual" | "auto";
   startedAt: number | null;
   lastRunAt: number | null;
   nextRunAt: number | null;
@@ -30,7 +30,7 @@ export async function writeSchedulerHeartbeat(
   const next: SchedulerHeartbeat = {
     ...current,
     ...update,
-    mode: "manual",
+    mode: update.mode ?? current?.mode ?? "manual",
     startedAt: update.startedAt ?? current?.startedAt ?? lastRunAt,
     lastRunAt,
     nextRunAt: update.nextRunAt ?? null,

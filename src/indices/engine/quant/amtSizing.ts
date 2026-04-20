@@ -94,7 +94,10 @@ function computeExpectedValue(
 const POINT_VALUES: Record<string, number> = {
   NAS100: 20,    // $20 per point per lot (mini futures equivalent)
   SPX500: 50,    // $50 per point
+  US30: 5,       // $5 per point
   DAX: 25,       // €25 ≈ $25 per point
+  FTSE100: 10,   // £10 per point
+  UK100: 10,     // £10 per point
   EURUSD: 10,    // $10 per pip (standard lot)
   GBPUSD: 10,
   USDJPY: 9.09,  // ~$9.09 per pip at 110 USDJPY

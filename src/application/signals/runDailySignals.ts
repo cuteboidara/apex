@@ -56,7 +56,7 @@ function gradeMeetsMinimum(grade: string, minimumGrade: string): boolean {
 }
 
 function gradeEligibleForTelegramAlert(grade: string): boolean {
-  return grade === "S" || grade === "S+" || grade === "A";
+  return grade === "S" || grade === "S+" || grade === "A" || grade === "B";
 }
 
 function hasCanonicalSignalPersistence(payload: Awaited<ReturnType<typeof getSignalsPayload>>): boolean {

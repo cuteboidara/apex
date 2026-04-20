@@ -10,6 +10,22 @@ import type {
   CalendarRisk,
   SentimentBias,
 } from '@/src/indices/types/amtTypes';
+import { ASSET_SYMBOLS, isIndex as isIndexAsset } from '@/src/indices/data/fetchers/assetConfig';
+
+const INDEX_ASSET_SET = new Set<string>(ASSET_SYMBOLS.filter(isIndexAsset));
+
+function toTimeMs(value: unknown): number | null {
+  if (value instanceof Date) {
+    return Number.isFinite(value.getTime()) ? value.getTime() : null;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isFinite(parsed.getTime()) ? parsed.getTime() : null;
+  }
+
+  return null;
+}
 
 // ─── DXY ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +50,7 @@ function computeDXYAlignment(
   direction: 'long' | 'short',
   assetId: string,
 ): number {
-  const isIndex = ['NAS100', 'SPX500', 'DAX'].includes(assetId);
+  const assetIsIndex = INDEX_ASSET_SET.has(assetId);
   const hasUsd = assetId.includes('USD');
   const usdIsBase = assetId.startsWith('USD');
 
@@ -43,10 +59,10 @@ function computeDXYAlignment(
   const isStrong = trend === 'strong_up' || trend === 'strong_down';
 
   // If the pair has no USD leg (ex: EURJPY/GBPJPY), DXY signal is neutral.
-  if (!isIndex && !hasUsd) return 0;
+  if (!assetIsIndex && !hasUsd) return 0;
 
   // DXY up helps long for USD-base pairs, hurts long for indices/USD-quote pairs.
-  const usdHelpsLong = isIndex ? false : usdIsBase;
+  const usdHelpsLong = assetIsIndex ? false : usdIsBase;
   const magnitude = isStrong ? 10 : 5;
 
   if (dxyIsUp) {
@@ -113,25 +129,25 @@ function computeYieldEquityBias(
   direction: 'long' | 'short',
   assetId: string,
 ): number {
-  const isIndex = ['NAS100', 'SPX500', 'DAX'].includes(assetId);
+  const assetIsIndex = INDEX_ASSET_SET.has(assetId);
   const hasUsd = assetId.includes('USD');
   const usdIsBase = assetId.startsWith('USD');
 
   if (trend === 'rising') {
     // Bearish for indices, bullish for USD pairs with USD as base
-    if (isIndex && direction === 'short') return 5;
-    if (isIndex && direction === 'long') return -5;
+    if (assetIsIndex && direction === 'short') return 5;
+    if (assetIsIndex && direction === 'long') return -5;
     // USD-quote pairs: rising yields → USD strong (slightly bearish these pairs)
-    if (!isIndex && hasUsd) {
+    if (!assetIsIndex && hasUsd) {
       if (usdIsBase && direction === 'long') return 3;
       if (!usdIsBase && direction === 'short') return 3;
     }
   }
 
   if (trend === 'falling') {
-    if (isIndex && direction === 'long') return 5;
-    if (isIndex && direction === 'short') return -5;
-    if (!isIndex && hasUsd) {
+    if (assetIsIndex && direction === 'long') return 5;
+    if (assetIsIndex && direction === 'short') return -5;
+    if (!assetIsIndex && hasUsd) {
       if (!usdIsBase && direction === 'long') return 3;
       if (usdIsBase && direction === 'short') return 3;
     }
@@ -146,11 +162,14 @@ function computeCalendarRisk(
   macro: MacroContext,
 ): { risk: CalendarRisk; riskAdjustment: number; timeToEventMin: number } {
   const now = new Date();
+  const nowMs = now.getTime();
   const highImpact = macro.economicEvents.filter(e => e.impact === 'high');
 
   let nearest = Infinity;
   for (const event of highImpact) {
-    const diff = (event.time.getTime() - now.getTime()) / 60_000; // minutes
+    const eventMs = toTimeMs(event.time);
+    if (eventMs == null) continue;
+    const diff = (eventMs - nowMs) / 60_000; // minutes
     if (diff > 0 && diff < nearest) nearest = diff;
   }
 
@@ -233,7 +252,7 @@ export function analyzeMarketRegime(
   const { risk: eventRisk, riskAdjustment, timeToEventMin } = computeCalendarRisk(macro);
   const nextEvent = macro.economicEvents
     .filter(e => e.impact === 'high')
-    .sort((a, b) => a.time.getTime() - b.time.getTime())[0] ?? null;
+    .sort((a, b) => (toTimeMs(a.time) ?? Number.POSITIVE_INFINITY) - (toTimeMs(b.time) ?? Number.POSITIVE_INFINITY))[0] ?? null;
 
   // ── Sentiment ──
   const sentimentBias = classifySentiment(macro.sentiment.fearGreed);

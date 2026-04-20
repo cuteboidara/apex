@@ -12,6 +12,7 @@ export function isAdminToken(token: { email?: string | null; role?: string | nul
 
 export function isPublicApiPath(pathname: string): boolean {
   return pathname.startsWith("/api/auth/")
+    || pathname === "/api/billing/crypto/webhook"
     || pathname === "/api/cycle"
     || pathname === "/api/crypto-cycle"
     || pathname === "/api/crypto-signals"
@@ -34,17 +35,15 @@ export function isProtectedApiPath(pathname: string): boolean {
 }
 
 export function shouldAllowAnonymousPath(pathname: string): boolean {
-  return pathname === "/auth/signin" || isPublicApiPath(pathname);
+  return pathname === "/auth/signin"
+    || pathname === "/auth/signup"
+    || isPublicApiPath(pathname);
 }
 
 export const proxy = withAuth(
   function middleware(request) {
     const { pathname } = request.nextUrl;
     const token = request.nextauth.token;
-
-    if (pathname === "/auth/signup") {
-      return NextResponse.redirect(new URL("/auth/signin", request.url));
-    }
 
     if (shouldAllowAnonymousPath(pathname)) {
       return NextResponse.next();

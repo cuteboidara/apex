@@ -4,9 +4,16 @@
 import type { AssetInput, AMTRankingInput } from './engine/ranking/amtRanker';
 import type { AMTSignal } from './types/amtTypes';
 import { rankAMTSignals, buildCycleResult } from './engine/ranking/amtRanker';
-import { persistAMTSignals } from './api/amtSignals';
+import {
+  getPersistedSignalsForCycle,
+  persistAMTSignals,
+  persistAssetStates,
+  updateCycleSignalRanks,
+} from './api/amtSignals';
 import { formatAMTAlert } from './alerts/formatter';
 import { fetchMacroContext } from './data/fetchers/macroFetcher';
+import { ReasoningOrchestrator } from './reasoning/ReasoningOrchestrator';
+import type { ReasoningMarketData } from './reasoning/types';
 
 // ─── Asset imports ─────────────────────────────────────────────────────────
 // These use the existing SMC engine data fetchers to supply candles + OBs + FVGs.
@@ -19,8 +26,9 @@ import { fetchRateCandles } from './data/fetchers/ratesFetcher';
 import { runSMCAnalysis } from './engine/smc/smcScorer';
 import { ASSET_SYMBOLS, isForex, isIndex, isCommodity, isRate, type AssetSymbol } from './data/fetchers/assetConfig';
 import { computeCorrelationMatrix } from './engine/quant/correlationMatrix';
-import { persistAssetStates } from './api/amtSignals';
 import type { Candle } from './types';
+
+const reasoningOrchestrator = new ReasoningOrchestrator();
 
 // ─── Telegram send ─────────────────────────────────────────────────────────
 // Reuse the existing Telegram client directly.
@@ -100,7 +108,18 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 interface AssetFetchResult {
   input: AssetInput;
   dailyCandles: Candle[];
+  recentCandles: Candle[];
   currentPrice: number;
+}
+
+export interface RunAMTCycleOptions {
+  skipReasoning?: boolean;
+  skipTelegram?: boolean;
+}
+
+function isReasoningEnabled(): boolean {
+  const raw = process.env.LLM_REASONING_ENABLED?.trim().toLowerCase();
+  return raw === 'true' || raw === '1' || raw === 'yes';
 }
 
 async function fetchAssetInput(assetId: AssetSymbol): Promise<AssetFetchResult | null> {
@@ -139,6 +158,7 @@ async function fetchAssetInput(assetId: AssetSymbol): Promise<AssetFetchResult |
         currentPrice,
       },
       dailyCandles: mtfData.daily,
+      recentCandles: candles,
       currentPrice,
     };
   } catch (err) {
@@ -166,7 +186,25 @@ export async function runAMTCycle(): Promise<{
   watchlistCount: number;
   signals: AMTSignal[];
   error?: string;
+}>;
+export async function runAMTCycle(options: RunAMTCycleOptions): Promise<{
+  success: boolean;
+  cycleId: string | null;
+  executableCount: number;
+  watchlistCount: number;
+  signals: AMTSignal[];
+  error?: string;
+}>;
+export async function runAMTCycle(options?: RunAMTCycleOptions): Promise<{
+  success: boolean;
+  cycleId: string | null;
+  executableCount: number;
+  watchlistCount: number;
+  signals: AMTSignal[];
+  error?: string;
 }> {
+  const skipReasoning = options?.skipReasoning ?? false;
+  const skipTelegram = options?.skipTelegram ?? false;
   const state = getState();
 
   if (state.cycleRunning) {
@@ -232,7 +270,8 @@ export async function runAMTCycle(): Promise<{
     const cycleResult = buildCycleResult(ranking, macro);
 
     // 5. Persist signals + asset scan states
-    if (process.env.DATABASE_URL) {
+    const hasDatabaseUrl = Boolean(process.env.DATABASE_URL || process.env.DIRECT_DATABASE_URL);
+    if (hasDatabaseUrl) {
       const signalAssetIds = new Set(ranking.ranked.map(s => s.assetId));
       const assetStateData = validFetches.map(r => ({
         assetId: r.input.assetId,
@@ -246,18 +285,73 @@ export async function runAMTCycle(): Promise<{
           console.warn('[amt-runtime] Asset state persist failed (table may need migration):', err),
         ),
       ]);
+
+      if (isReasoningEnabled() && !skipReasoning) {
+        try {
+          const persistedSignals = await getPersistedSignalsForCycle(cycleResult.cycleId);
+          const eligibleSignals = persistedSignals.filter(signal => signal.totalScore >= 40);
+
+          if (eligibleSignals.length > 0) {
+            console.log(`[amt-runtime] Running LLM reasoning for ${eligibleSignals.length} signals`);
+
+            const marketDataMap = new Map<string, ReasoningMarketData>(
+              validFetches.map(fetch => [
+                fetch.input.assetId,
+                {
+                  recentCandles: fetch.recentCandles,
+                  currentPrice: fetch.currentPrice,
+                },
+              ]),
+            );
+
+            const reasonedSignals = await reasoningOrchestrator.batchAnalyze(
+              eligibleSignals,
+              marketDataMap,
+              macro,
+            );
+
+            const finalScoreMap = new Map(reasonedSignals.map(result => [
+              result.signalId,
+              result.decision.finalScore,
+            ]));
+
+            const reranked = [...persistedSignals].sort(
+              (left, right) =>
+                (finalScoreMap.get(right.id) ?? right.totalScore)
+                - (finalScoreMap.get(left.id) ?? left.totalScore),
+            );
+
+            await updateCycleSignalRanks(
+              cycleResult.cycleId,
+              reranked.map(signal => signal.id),
+            );
+
+            console.log(`[amt-runtime] LLM reasoning complete for ${reasonedSignals.length} signals`);
+          } else {
+            console.log('[amt-runtime] LLM reasoning skipped (no eligible signals >= 40)');
+          }
+        } catch (reasoningError) {
+          console.warn('[amt-runtime] LLM reasoning layer failed:', reasoningError);
+        }
+      } else if (skipReasoning) {
+        console.log('[amt-runtime] LLM reasoning skipped (manual quick mode)');
+      }
     } else {
-      console.warn('[amt-runtime] DATABASE_URL not set — skipping DB persistence');
+      console.warn('[amt-runtime] DATABASE_URL / DIRECT_DATABASE_URL not set — skipping DB persistence');
     }
 
     // 6. Format + send Telegram
-    const alert = formatAMTAlert(cycleResult);
-    for (const msg of alert.telegramMessages) {
-      try {
-        await sendTelegramMessage(msg);
-      } catch (tgErr) {
-        console.warn('[amt-runtime] Telegram send failed:', tgErr);
+    if (!skipTelegram) {
+      const alert = formatAMTAlert(cycleResult);
+      for (const msg of alert.telegramMessages) {
+        try {
+          await sendTelegramMessage(msg);
+        } catch (tgErr) {
+          console.warn('[amt-runtime] Telegram send failed:', tgErr);
+        }
       }
+    } else {
+      console.log('[amt-runtime] Telegram send skipped (manual quick mode)');
     }
 
     // 7. Update state

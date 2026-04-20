@@ -13,7 +13,7 @@ export async function GET() {
     scheduler: {
       mode: scheduler?.mode ?? "manual",
       lastRunAt: scheduler?.lastRunAt ?? null,
-      nextRunAt: null,
+      nextRunAt: scheduler?.nextRunAt ?? null,
       startedAt: scheduler?.startedAt ?? null,
       intervalMinutes: scheduler?.intervalMinutes ?? null,
       lastSource: scheduler?.lastSource ?? null,

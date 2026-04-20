@@ -2,6 +2,7 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { resolveSignInErrorMessage } from "@/src/lib/authErrors";
 
@@ -148,9 +149,14 @@ export default function SignInPage() {
             <SignInForm />
           </Suspense>
 
-          <div className="mt-8 flex items-center gap-3 text-[12px] text-[var(--apex-text-tertiary)]">
-            <div className="apex-amber-rule" />
-            Registration is closed. Operator access is controlled centrally.
+          <div className="mt-8 flex items-center justify-between gap-3 text-[12px] text-[var(--apex-text-tertiary)]">
+            <div className="flex items-center gap-3">
+              <div className="apex-amber-rule" />
+              Need a new operator account?
+            </div>
+            <Link href="/auth/signup" className="text-[var(--apex-text-accent)] hover:underline">
+              Create one
+            </Link>
           </div>
         </div>
       </section>

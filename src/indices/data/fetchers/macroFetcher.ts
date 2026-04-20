@@ -134,50 +134,127 @@ export async function fetchFearGreed(): Promise<SentimentData | null> {
   }
 }
 
-// ─── Economic Calendar ────────────────────────────────────────────────────────
+// ─── Economic Calendar (Public Feed Only) ────────────────────────────────────
+
+type PublicCalendarEvent = {
+  date?: string;
+  country?: string;
+  title?: string;
+  event?: string;
+  impact?: string;
+  forecast?: string | number;
+  previous?: string | number;
+  actual?: string | number;
+};
+
+function coerceDate(value: unknown): Date | null {
+  if (value instanceof Date) {
+    return Number.isFinite(value.getTime()) ? value : null;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isFinite(parsed.getTime()) ? parsed : null;
+  }
+
+  return null;
+}
+
+function normalizeEconomicEvent(value: unknown): EconomicEvent | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const raw = value as Partial<EconomicEvent>;
+  const time = coerceDate(raw.time);
+  if (!time) return null;
+
+  const impact = raw.impact;
+  if (impact !== 'low' && impact !== 'medium' && impact !== 'high') {
+    return null;
+  }
+
+  const eventName = typeof raw.event === 'string' ? raw.event.trim() : '';
+  const country = typeof raw.country === 'string' ? raw.country.trim() : '';
+
+  return {
+    time,
+    country: country || 'N/A',
+    event: eventName || 'Unnamed event',
+    impact,
+    forecast: typeof raw.forecast === 'number' && Number.isFinite(raw.forecast) ? raw.forecast : undefined,
+    previous: typeof raw.previous === 'number' && Number.isFinite(raw.previous) ? raw.previous : undefined,
+    actual: typeof raw.actual === 'number' && Number.isFinite(raw.actual) ? raw.actual : undefined,
+  };
+}
+
+function parseImpact(value: string | undefined): EconomicEvent['impact'] | null {
+  if (!value) return null;
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized.includes('high')) return 'high';
+  if (normalized.includes('medium')) return 'medium';
+  if (normalized.includes('low')) return 'low';
+  return null;
+}
+
+function parseOptionalNumber(value: string | number | undefined): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.replace(/[^0-9+-.]/g, '');
+  if (!normalized) {
+    return undefined;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 export async function fetchEconomicCalendar(): Promise<EconomicEvent[]> {
-  const cached = await getCache<EconomicEvent[]>(CacheKeys.calendar());
-  if (cached) return cached;
+  const cached = await getCache<unknown>(CacheKeys.calendar());
+  if (Array.isArray(cached)) {
+    const normalizedCached = cached
+      .map(normalizeEconomicEvent)
+      .filter((event): event is EconomicEvent => event !== null);
+    if (normalizedCached.length > 0) {
+      return normalizedCached;
+    }
+  }
 
   try {
-    // Use Finnhub if available (existing dependency)
-    const apiKey = process.env.FINNHUB_API_KEY;
-    if (!apiKey) return [];
-
-    const now = new Date();
-    const from = now.toISOString().split('T')[0];
-    const to = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-    const response = await axios.get<{
-      economicCalendar?: Array<{
-        event: string;
-        country: string;
-        time: string;
-        impact: string;
-        estimate?: number;
-        prev?: number;
-        actual?: number;
-      }>;
-    }>(`https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${apiKey}`, {
+    // Public-source feed (no API key): Forex Factory mirror via Fair Economy.
+    const response = await axios.get<PublicCalendarEvent[]>(
+      'https://nfs.faireconomy.media/ff_calendar_thisweek.json',
+      {
       timeout: 8_000,
-    });
+      },
+    );
 
-    const rawEvents = Array.isArray(response.data)
-      ? response.data
-      : (response.data?.economicCalendar ?? []);
-
+    const rawEvents = Array.isArray(response.data) ? response.data : [];
     const events: EconomicEvent[] = rawEvents
-      .filter((e: { impact: string }) => e.impact === 'high' || e.impact === 'medium')
-      .map((e: { event?: string; eventName?: string; country: string; time: string; impact: string; estimate?: number; prev?: number; actual?: number }) => ({
-        time: new Date(e.time),
-        country: e.country,
-        event: e.event ?? e.eventName ?? '',
-        impact: (e.impact === 'high' ? 'high' : e.impact === 'medium' ? 'medium' : 'low') as EconomicEvent['impact'],
-        forecast: e.estimate,
-        previous: e.prev,
-        actual: e.actual,
-      }));
+      .map((event): EconomicEvent | null => {
+        const impact = parseImpact(event.impact);
+        if (!impact || impact === 'low') return null;
+
+        const timestamp = new Date(event.date ?? '');
+        if (Number.isNaN(timestamp.getTime())) return null;
+
+        return {
+          time: timestamp,
+          country: event.country ?? 'N/A',
+          event: (event.title ?? event.event ?? '').trim() || 'Unnamed event',
+          impact,
+          forecast: parseOptionalNumber(event.forecast),
+          previous: parseOptionalNumber(event.previous),
+          actual: parseOptionalNumber(event.actual),
+        };
+      })
+      .filter((event): event is EconomicEvent => event !== null);
 
     await setCache(CacheKeys.calendar(), events, CacheTTL.calendar);
     return events;
@@ -212,6 +289,8 @@ export async function fetchMacroContext(): Promise<MacroContext> {
     sentiment: sentiment
       ? { fearGreed: sentiment.fearGreed, classification: sentiment.classification }
       : { fearGreed: 50, classification: 'neutral' },
-    economicEvents: events,
+    economicEvents: events
+      .map(normalizeEconomicEvent)
+      .filter((event): event is EconomicEvent => event !== null),
   };
 }

@@ -36,8 +36,10 @@ const SYMBOL_MAP: Record<string, string> = {
   // Indices
   NAS100:   'NASDAQ:NDX',
   SPX500:   'SP:SPX',
+  US30:     'DJ:DJI',
   DAX:      'XETR:DAX',
   FTSE100:  'LSE:UKX',
+  UK100:    'TVC:UKX',
   NIKKEI:   'TVC:NI225',
   HANGSENG: 'TVC:HSI',
   CAC40:    'EURONEXT:PX1',

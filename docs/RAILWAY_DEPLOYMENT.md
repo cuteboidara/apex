@@ -1,6 +1,6 @@
 # Railway Deployment
 
-APEX runs in manual-only mode on Railway. Deploy the web app and trigger signal generation through direct API calls after authentication.
+APEX supports embedded server-side scheduling on Railway. Deploy the web app and use direct API calls for manual overrides/force-runs when needed.
 
 Recommended services:
 
@@ -38,7 +38,8 @@ Use Railway reference variables so the web app shares the same database and opti
 - `npm start` uses `scripts/start-web.mjs`, which binds Next.js to `0.0.0.0` and Railway's injected `PORT`.
 - `npm run migrate:deploy` should run on the web service before each deploy so schema changes are applied once per release.
 - `/api/health` is intentionally lightweight and does not depend on PostgreSQL or Redis, so it is safe to use as the web healthcheck.
-- Signal generation is manual-only. Trigger runs through authenticated API calls such as `/api/cycle`, `/api/crypto-cycle-trigger`, `/api/meme-cycle-trigger`, `/api/meme-discovery-trigger`, `/api/all-assets-cycle-trigger`, and `/api/jobs/daily-signals`.
+- Auto scheduler defaults: all-assets cycle loop + daily-signal session checks run inside the web process.
+- Signal generation can still be triggered manually through authenticated API calls such as `/api/cycle`, `/api/crypto-cycle-trigger`, `/api/meme-cycle-trigger`, `/api/meme-discovery-trigger`, `/api/all-assets-cycle-trigger`, and `/api/jobs/daily-signals`.
 
 ## First production deploy
 
@@ -47,4 +48,5 @@ Use Railway reference variables so the web app shares the same database and opti
 3. Add the reference variables above to the web service.
 4. Add the provider and auth secrets needed by your enabled modules.
 5. Deploy `apex-web` and confirm `/api/health` returns `200`.
-6. Trigger cycles manually through the secured API routes once the deploy is live.
+6. Verify `/api/health` reports scheduler heartbeat activity (`mode`, `lastRunAt`, `nextRunAt`).
+7. Use secured API routes for manual/force triggers when needed.

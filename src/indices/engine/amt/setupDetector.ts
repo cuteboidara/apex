@@ -62,11 +62,11 @@ function computeCorrelationBonus(assetId: string, direction: 'long' | 'short'): 
   void direction;
 
   // US indices — high intra-group correlation
-  const usIndices = ['NAS100', 'SPX500'];
+  const usIndices = ['NAS100', 'SPX500', 'US30'];
   if (usIndices.includes(assetId)) return 5;
 
   // European indices — moderate intra-group correlation
-  const euIndices = ['DAX', 'FTSE100', 'CAC40'];
+  const euIndices = ['DAX', 'FTSE100', 'UK100', 'CAC40'];
   if (euIndices.includes(assetId)) return 4;
 
   // Asian indices — moderate intra-group correlation

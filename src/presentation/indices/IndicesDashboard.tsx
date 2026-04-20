@@ -71,12 +71,20 @@ export function IndicesDashboard() {
   }, []);
 
   const triggerCycle = async () => {
-    setState(prev => ({ ...prev, cycleRunning: true }));
+    setState(prev => ({ ...prev, cycleRunning: true, error: null }));
     try {
-      await fetch('/api/indices/cycle', { method: 'POST' });
+      const response = await fetch('/api/indices/cycle', { method: 'POST' });
+      const payload = await response.json().catch(() => null) as { error?: string; ok?: boolean } | null;
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error ?? 'Scan request failed');
+      }
       setTimeout(fetchAll, 3000); // allow cycle to complete
-    } catch {
-      setState(prev => ({ ...prev, cycleRunning: false }));
+    } catch (error) {
+      setState(prev => ({
+        ...prev,
+        cycleRunning: false,
+        error: error instanceof Error ? error.message : 'Scan request failed',
+      }));
     }
   };
 

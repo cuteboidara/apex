@@ -7,9 +7,21 @@ import { runAMTCycle, getAMTRuntimeStatus } from '@/src/indices/runtime';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 90;
 
-export async function POST() {
+type CycleRequestPayload = {
+  quick?: boolean;
+  skipReasoning?: boolean;
+  skipTelegram?: boolean;
+};
+
+export async function POST(request: Request) {
   try {
-    const result = await runAMTCycle();
+    const body = await request.json().catch(() => ({})) as CycleRequestPayload;
+    const quickMode = body.quick === true;
+
+    const result = await runAMTCycle({
+      skipReasoning: body.skipReasoning ?? quickMode,
+      skipTelegram: body.skipTelegram ?? quickMode,
+    });
 
     return NextResponse.json({
       ok: result.success,
@@ -17,6 +29,7 @@ export async function POST() {
       executableCount: result.executableCount,
       watchlistCount: result.watchlistCount,
       error: result.error,
+      mode: quickMode ? 'quick' : 'full',
     });
   } catch (error) {
     console.error('[api/indices/amt/cycle] Error:', error);

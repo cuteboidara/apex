@@ -746,6 +746,31 @@ model UserSubscription {
   @@schema("apex")
 }
 
+model CryptoPayment {
+  id               String   @id @default(cuid())
+  userId           String
+  planId           String
+  provider         String   @default("coinbase_commerce")
+  providerChargeId String   @unique
+  status           String   @default("PENDING")
+  amountUsd        Int
+  currency         String   @default("USD")
+  assetSymbol      String?
+  amountCrypto     Float?
+  paymentAddress   String?
+  checkoutUrl      String
+  txHash           String?
+  metadata         Json?
+  expiresAt        DateTime?
+  confirmedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@index([provider, status, createdAt])
+  @@schema("apex")
+}
+
 model Team {
   id          String   @id @default(cuid())
   name        String
@@ -1035,6 +1060,8 @@ model IndicesSignal {
   expectedValue      Float?
   newsRisk           String   // 'clear' | 'caution' | 'blocked'
   reasoning          String?
+  finalScore         Int?
+  finalAction        String?
   macroSummary       String?
   smcSetupJson       Json?
   taConfluenceJson   Json?
@@ -1045,9 +1072,11 @@ model IndicesSignal {
   createdAt          DateTime @default(now())
 
   trades             IndicesTrade[]
+  llmReasoning       SignalReasoning?
 
   @@index([assetId, createdAt])
   @@index([totalScore, createdAt])
+  @@index([finalAction, createdAt])
   @@index([cycleId])
   @@schema("apex")
 }
@@ -1088,6 +1117,175 @@ model IndicesAssetState {
   updatedAt   DateTime @updatedAt
 
   @@map("indices_asset_state")
+  @@schema("apex")
+}
+
+model SignalReasoning {
+  id              String   @id @default(cuid())
+  signalId        String   @unique
+
+  // Agent outputs
+  analystOutput   Json
+  riskOutput      Json
+  macroOutput     Json
+  decisionOutput  Json
+
+  // Metrics
+  totalLatencyMs  Int
+  totalTokensUsed Int
+  totalCostUsd    Float
+
+  createdAt       DateTime @default(now())
+
+  signal          IndicesSignal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+
+  @@map("signal_reasoning")
+  @@schema("apex")
+}
+
+model SniperSignal {
+  id             String   @id @default(cuid())
+
+  // Asset info
+  assetId        String
+  symbol         String
+
+  // Setup details
+  setupType      String
+  direction      String
+
+  // Scoring
+  score          Int
+  sweepQuality   Int
+  rejection      Int
+  structure      Int
+  sessionScore   Int
+
+  // Trade management
+  entryPrice     Float
+  stopLoss       Float
+  takeProfit     Float
+  riskReward     Float
+  positionSize   Float
+  riskUsd        Float
+
+  // Key levels
+  sweepLevel     Float
+  structureLevel Float
+
+  // Timing
+  sessionName    String
+  timeframe      String
+
+  // Status + outcome
+  status         String   @default("ACTIVE")
+  outcomePrice   Float?
+  outcomePnl     Float?
+  outcomeTime    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("sniper_signals")
+  @@index([assetId, createdAt])
+  @@index([status])
+  @@schema("apex")
+}
+
+model SniperAssetState {
+  id              String   @id @default(cuid())
+  assetId         String   @unique
+  lastScanned     DateTime
+  lastPrice       Float
+  hasActiveSignal Boolean  @default(false)
+  recentSweeps    Json
+  updatedAt       DateTime @updatedAt
+
+  @@map("sniper_asset_state")
+  @@schema("apex")
+}
+
+model ScalpSignal {
+  id              String   @id @default(cuid())
+  assetId         String
+  symbol          String
+  direction       String
+  setupType       String
+
+  // Scoring
+  score           Int
+  gate1Trend      Int
+  gate2Level      Int
+  gate3Momentum   Int
+  gate4Candle     Int
+  gate5Context    Int
+
+  // Gate flags
+  trendAligned    Boolean
+  atKeyLevel      Boolean
+  momentumOk      Boolean
+  candleConfirmed Boolean
+  contextClear    Boolean
+
+  // Trade
+  entryPrice      Float
+  stopLoss        Float
+  tp1             Float
+  tp2             Float
+  positionSize    Float
+  riskUsd         Float
+
+  // Context
+  session         String
+  atrPct          Float
+  keyLevelType    String
+  keyLevelPrice   Float
+
+  description     String
+  reasoning       Json
+
+  status          String   @default("ACTIVE")
+  hitTp1At        DateTime?
+  hitTp2At        DateTime?
+  closedAt        DateTime?
+  outcomePnl      Float?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("scalp_signals")
+  @@index([assetId, createdAt])
+  @@index([status])
+  @@schema("apex")
+}
+
+model ScalpAssetState {
+  id              String   @id @default(cuid())
+  assetId         String   @unique
+  lastScanned     DateTime
+  lastPrice       Float
+  hasActiveSignal Boolean  @default(false)
+  trend1h         String?
+  trend4h         String?
+  currentSession  String
+  atrPct          Float?
+  updatedAt       DateTime @updatedAt
+
+  @@map("scalp_asset_state")
+  @@schema("apex")
+}
+
+model ScalpDiagnostic {
+  id               String   @id @default(cuid())
+  cycleId          String   @unique
+  totalEvaluations Int
+  signalsGenerated Int
+  rejectionByGate  Json
+  gateResults      Json
+  createdAt        DateTime @default(now())
+
+  @@map("scalp_diagnostic")
+  @@index([createdAt])
   @@schema("apex")
 }
 

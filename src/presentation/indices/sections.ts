@@ -31,8 +31,10 @@ export const AMT_CLASS_ASSETS: Record<AMTClassSection, AMTAssetDefinition[]> = {
   indices: [
     { symbol: "NAS100", label: "Nasdaq 100" },
     { symbol: "SPX500", label: "S&P 500" },
+    { symbol: "US30", label: "US 30" },
     { symbol: "DAX", label: "DAX 40" },
     { symbol: "FTSE100", label: "FTSE 100" },
+    { symbol: "UK100", label: "UK 100" },
     { symbol: "NIKKEI", label: "Nikkei 225" },
     { symbol: "HANGSENG", label: "Hang Seng" },
     { symbol: "CAC40", label: "CAC 40" },

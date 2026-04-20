@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ASSET_SYMBOLS } from "@/src/indices/data/fetchers/assetConfig";
 
 type RuntimeStatus = "live" | "idle" | "error";
 
@@ -78,6 +79,7 @@ export function AdminCommandCenter() {
   const [loading, setLoading] = useState(true);
   const [cycling, setCycling] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(() => new Date());
+  const [cycleError, setCycleError] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchStats();
@@ -104,9 +106,20 @@ export function AdminCommandCenter() {
 
   async function runAmtCycle() {
     setCycling(true);
+    setCycleError(null);
     try {
-      await fetch("/api/indices/amt/cycle", { method: "POST" });
+      const response = await fetch("/api/indices/amt/cycle", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quick: true }),
+      });
+      const payload = await response.json().catch(() => null) as { ok?: boolean; error?: string } | null;
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error ?? "AMT cycle trigger failed.");
+      }
       await fetchStats();
+    } catch (error) {
+      setCycleError(error instanceof Error ? error.message : "AMT cycle trigger failed.");
     } finally {
       setCycling(false);
     }
@@ -123,6 +136,7 @@ export function AdminCommandCenter() {
   const executablePct = stats.totalSignals > 0
     ? Math.round((stats.executableSignals / stats.totalSignals) * 100)
     : 0;
+  const expectedAssetCount = ASSET_SYMBOLS.length;
 
   return (
     <div className="space-y-6 p-6">
@@ -153,6 +167,11 @@ export function AdminCommandCenter() {
           </button>
         </div>
       </div>
+      {cycleError ? (
+        <div className="rounded-lg border border-[var(--apex-status-blocked-border)] bg-[var(--apex-status-blocked-bg)] px-4 py-3 font-[var(--apex-font-mono)] text-xs text-[var(--apex-status-blocked-text)]">
+          Cycle error: {cycleError}
+        </div>
+      ) : null}
 
       <section>
         <div className="mb-3 font-[var(--apex-font-mono)] text-[10px] uppercase tracking-widest text-[var(--apex-text-tertiary)]">System Health</div>
@@ -171,9 +190,9 @@ export function AdminCommandCenter() {
           />
           <KpiCard
             label="ASSETS SCANNED"
-            value={`${stats.assetsScanned}/11`}
-            valueColor={stats.assetsScanned === 11 ? "text-green-400" : "text-yellow-400"}
-            sub="FX + Indices active"
+            value={`${stats.assetsScanned}/${expectedAssetCount}`}
+            valueColor={stats.assetsScanned >= expectedAssetCount ? "text-green-400" : "text-yellow-400"}
+            sub="All AMT assets"
           />
           <KpiCard
             label="EVENT RISK"

@@ -39,6 +39,11 @@ const YAHOO_HOSTS = [
 const REQUEST_TIMEOUT_MS = 4_000;
 
 const YAHOO_SYMBOL_MAP: Record<string, string> = {
+  NAS100: "^NDX",
+  SPX500: "^GSPC",
+  US30: "^DJI",
+  FTSE100: "^FTSE",
+  UK100: "^FTSE",
   EURUSD: "EURUSD=X",
   GBPUSD: "GBPUSD=X",
   USDJPY: "USDJPY=X",

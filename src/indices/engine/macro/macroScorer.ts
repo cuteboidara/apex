@@ -8,6 +8,19 @@ import type { AssetSymbol } from '@/src/indices/data/fetchers/assetConfig';
 const NEWS_BLOCK_WINDOW_MS = 30 * 60 * 1000;   // 30 min
 const NEWS_CAUTION_WINDOW_MS = 2 * 60 * 60 * 1000; // 2 hours
 
+function toTimeMs(value: unknown): number | null {
+  if (value instanceof Date) {
+    return Number.isFinite(value.getTime()) ? value.getTime() : null;
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isFinite(parsed.getTime()) ? parsed.getTime() : null;
+  }
+
+  return null;
+}
+
 function usdExposure(assetId: AssetSymbol): 'base' | 'quote' | 'none' {
   if (!assetId.includes('USD')) return 'none';
   if (assetId.startsWith('USD')) return 'base';
@@ -21,6 +34,7 @@ export function scoreMacroContext(
   macro: MacroContext,
 ): MacroScore {
   const now = new Date();
+  const nowMs = now.getTime();
   const assetIsIndex = isIndex(assetId);
 
   // ─── DXY Alignment (0-8 pts) ────────────────────────────────────────────
@@ -74,14 +88,15 @@ export function scoreMacroContext(
   }
 
   // ─── Economic Calendar (0-5 or -10) ────────────────────────────────────
-  const upcomingHighImpact = macro.economicEvents.filter(e =>
-    e.impact === 'high' &&
-    e.time.getTime() > now.getTime() &&
-    e.time.getTime() < now.getTime() + NEWS_CAUTION_WINDOW_MS,
-  );
-  const imminent = upcomingHighImpact.filter(e =>
-    e.time.getTime() < now.getTime() + NEWS_BLOCK_WINDOW_MS,
-  );
+  const upcomingHighImpact = macro.economicEvents.filter(e => {
+    if (e.impact !== 'high') return false;
+    const eventMs = toTimeMs(e.time);
+    return eventMs != null && eventMs > nowMs && eventMs < nowMs + NEWS_CAUTION_WINDOW_MS;
+  });
+  const imminent = upcomingHighImpact.filter(e => {
+    const eventMs = toTimeMs(e.time);
+    return eventMs != null && eventMs < nowMs + NEWS_BLOCK_WINDOW_MS;
+  });
 
   let eventRisk: MacroScore['eventRisk'];
   let eventPoints: number;
@@ -140,8 +155,10 @@ export function buildMacroSummary(score: MacroScore): string {
   return parts.join(' | ');
 }
 
-function formatTimeUntil(time: Date): string {
-  const diffMs = time.getTime() - Date.now();
+function formatTimeUntil(time: Date | string | number): string {
+  const eventMs = toTimeMs(time);
+  if (eventMs == null) return 'unknown';
+  const diffMs = eventMs - Date.now();
   const mins = Math.round(diffMs / 60_000);
   if (mins < 60) return `${mins}min`;
   return `${Math.round(mins / 60)}h`;

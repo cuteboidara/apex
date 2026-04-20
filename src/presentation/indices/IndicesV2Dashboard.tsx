@@ -36,8 +36,8 @@ const EMPTY_RUNTIME_STATUS: RuntimeStatus = {
 const REFRESH_INTERVAL_MS = 45_000;
 
 function statusTone(score: number): string {
-  if (score >= 70) return 'text-[var(--accent-green)]';
-  if (score >= 60) return 'text-[var(--accent-yellow)]';
+  if (score >= 60) return 'text-[var(--accent-green)]';
+  if (score >= 40) return 'text-[var(--accent-yellow)]';
   return 'text-[var(--text-secondary)]';
 }
 
@@ -100,7 +100,7 @@ function AssetClassGrid({
             <span
               className={[
                 'rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider',
-                latest && latest.totalScore >= 70
+                latest && latest.totalScore >= 60
                   ? 'border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 text-[var(--accent-green)]'
                   : state
                     ? 'border-[var(--border)] bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
@@ -289,21 +289,29 @@ export function IndicesV2Dashboard({
     return sectionSignals.find(signal => signal.id === selectedId) ?? sectionSignals[0] ?? null;
   }, [asset, selectedId, sectionSignals]);
 
-  const executableCount = sectionSignals.filter(signal => signal.totalScore >= 70).length;
+  const executableCount = sectionSignals.filter(signal => signal.totalScore >= 60).length;
   const lastScanLabel = formatTime(runtime.lastCycleAt);
 
   const runCycle = useCallback(async () => {
     setRuntime(current => ({ ...current, cycleRunning: true }));
+    setError(null);
     try {
-      const response = await fetch('/api/indices/amt/cycle', { method: 'POST' });
-      if (!response.ok) {
-        throw new Error('Cycle trigger failed');
+      const response = await fetch('/api/indices/amt/cycle', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ quick: true }),
+      });
+      const payload = await response.json().catch(() => null) as { ok?: boolean; error?: string } | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error ?? 'Cycle trigger failed');
       }
       window.setTimeout(() => {
         void fetchAll();
       }, 1200);
-    } catch {
+    } catch (error) {
       setRuntime(current => ({ ...current, cycleRunning: false }));
+      setError(error instanceof Error ? error.message : 'Cycle trigger failed');
     }
   }, [fetchAll]);
 
@@ -488,14 +496,29 @@ export function IndicesV2Dashboard({
                 <div className="space-y-2">
                   {(Object.keys(AMT_CLASS_ASSETS) as AMTClassSection[]).map(classKey => {
                     const classCount = signals.filter(signal => matchesClassSection(classKey, signal)).length;
-                    const classExecutable = signals.filter(signal => matchesClassSection(classKey, signal) && signal.totalScore >= 70).length;
+                    const classColor: Record<AMTClassSection, string> = {
+                      fx: '#3b82f6',
+                      indices: '#8b5cf6',
+                      commodities: '#f59e0b',
+                      rates: '#06b6d4',
+                    };
+                    const total = Math.max(signals.length, 1);
+
                     return (
-                      <div key={classKey} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2">
-                        <div>
-                          <p className="font-mono text-xs uppercase tracking-[0.12em] text-[var(--text-primary)]">{classKey}</p>
-                          <p className="text-[11px] text-[var(--text-secondary)]">{classCount} tracked</p>
+                      <div key={classKey}>
+                        <div className="mb-1.5 flex items-center justify-between font-mono text-[10px]">
+                          <span className="text-slate-400">{classKey}</span>
+                          <span className={['font-bold', statusTone(classCount > 0 ? 65 : 30)].join(' ')}>{classCount}</span>
                         </div>
-                        <p className={['font-mono text-sm', statusTone(classExecutable > 0 ? 72 : 55)].join(' ')}>{classExecutable} exec</p>
+                        <div className="h-1 overflow-hidden rounded-full bg-slate-800">
+                          <div
+                            className="signal-progress-bar h-full rounded-full"
+                            style={{
+                              width: `${(classCount / total) * 100}%`,
+                              backgroundColor: classColor[classKey],
+                            }}
+                          />
+                        </div>
                       </div>
                     );
                   })}

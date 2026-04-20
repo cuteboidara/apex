@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { AccountPage } from "@/src/presentation/dashboard/AccountPage";
 
 export default function Page() {
-  redirect("/indices-v2");
+  return <AccountPage />;
 }

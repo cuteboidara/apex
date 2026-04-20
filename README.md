@@ -7,7 +7,7 @@ APEX is a Next.js multi-asset trading system with:
 - stocks runtime on Polygon
 - commodities and indices with ranked fallback providers
 - meme-coin discovery/runtime on Binance + CoinGecko
-- Telegram delivery, admin tooling, diagnostics, and manual API triggers
+- Telegram delivery, admin tooling, diagnostics, server-side auto scheduling, and manual API triggers
 
 ## Runtime Environment
 
@@ -52,7 +52,7 @@ APEX_ALLOW_DAILY_SIGNAL_MEMORY_FALLBACK=false
 Daily signal scheduling:
 
 ```env
-APEX_DAILY_SIGNALS_ENABLED=false
+APEX_DAILY_SIGNALS_ENABLED=true
 APEX_DAILY_SIGNALS_TIME=08:00
 APEX_DAILY_SIGNALS_ASIA_TIME=00:00
 APEX_DAILY_SIGNALS_LONDON_TIME=08:00
@@ -61,6 +61,17 @@ APEX_DAILY_SIGNALS_TIMEZONE=UTC
 APEX_DAILY_SIGNALS_MIN_GRADE=B
 APEX_DAILY_SIGNALS_TELEGRAM_ENABLED=true
 APEX_DAILY_SIGNALS_SEND_ZERO_SIGNAL_SUMMARY=true
+```
+
+Server-side auto scheduler:
+
+```env
+APEX_AUTO_SCHEDULER_ENABLED=true
+APEX_AUTO_SCHEDULER_RUN_ON_START=true
+APEX_AUTO_ALL_ASSETS_ENABLED=true
+APEX_AUTO_ALL_ASSETS_INTERVAL_MINUTES=15
+APEX_AUTO_DAILY_SIGNALS_ENABLED=true
+APEX_AUTO_DAILY_SIGNALS_CHECK_INTERVAL_SECONDS=60
 ```
 
 ## Local Development
@@ -79,9 +90,9 @@ npm run apex:diagnostics -- --smoke
 npm run apex:diagnostics -- --alpha
 ```
 
-## Manual Triggers
+## Triggers
 
-APEX runs in manual-only mode. There is no deployed scheduler service or cron worker.
+APEX now runs an embedded server-side scheduler by default (all-assets interval + daily-signal session checks). Manual trigger routes remain available for force-runs and operational control.
 
 Trigger the runtime directly through the API:
 
@@ -111,9 +122,9 @@ GET /api/health
 
 The health response exposes manual runtime heartbeat fields:
 
-- `scheduler.mode = "manual"`
+- `scheduler.mode = "auto"` (or `"manual"` when auto scheduler is disabled)
 - `scheduler.lastRunAt`
-- `scheduler.nextRunAt = null`
+- `scheduler.nextRunAt`
 - `scheduler.intervalMinutes`
 - `scheduler.lastSource`
 
@@ -122,4 +133,4 @@ The health response exposes manual runtime heartbeat fields:
 Typical split:
 
 - web/API: Vercel or Railway web service
-- manual trigger calls: direct API requests against the deployed web service
+- optional manual trigger calls: direct API requests against the deployed web service

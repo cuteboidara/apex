@@ -1,14 +1,12 @@
 'use client';
-// src/presentation/indices/components/AMTSignalCard.tsx
-// Compact card for a single AMT signal (as stored in IndicesSignal table)
 
 import type { DBSignal } from '../types';
 
 function fmt(price: number | null | undefined): string {
-  if (price == null) return '—';
+  if (price == null) return '-';
   if (price >= 10000) return price.toFixed(0);
-  if (price >= 100)   return price.toFixed(2);
-  if (price >= 10)    return price.toFixed(3);
+  if (price >= 100) return price.toFixed(2);
+  if (price >= 10) return price.toFixed(3);
   return price.toFixed(5);
 }
 
@@ -21,15 +19,28 @@ function getGrade(score: number): string {
   return 'F';
 }
 
-const CATEGORY_COLORS: Record<string, { text: string; bg: string; border: string }> = {
-  index:     { text: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
-  forex:     { text: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30'   },
-  commodity: { text: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/30'  },
-  rate:      { text: 'text-cyan-400',   bg: 'bg-cyan-500/10',   border: 'border-cyan-500/30'   },
+const GRADE_COLORS: Record<string, string> = {
+  'A+': 'text-emerald-300',
+  A: 'text-emerald-400',
+  B: 'text-green-400',
+  C: 'text-yellow-400',
+  D: 'text-orange-400',
+  F: 'text-red-400',
 };
 
-function getCategoryStyle(assetClass: string) {
-  return CATEGORY_COLORS[assetClass.toLowerCase()] ?? CATEGORY_COLORS['forex']!;
+const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
+  FOREX: { bg: 'bg-blue-500/15', text: 'text-blue-300' },
+  INDEX: { bg: 'bg-violet-500/15', text: 'text-violet-300' },
+  COMMODITY: { bg: 'bg-amber-500/15', text: 'text-amber-300' },
+  RATE: { bg: 'bg-cyan-500/15', text: 'text-cyan-300' },
+};
+
+function toCategory(assetClass: string): 'FOREX' | 'INDEX' | 'COMMODITY' | 'RATE' {
+  const normalized = assetClass.toLowerCase();
+  if (normalized === 'index') return 'INDEX';
+  if (normalized === 'commodity') return 'COMMODITY';
+  if (normalized === 'rate') return 'RATE';
+  return 'FOREX';
 }
 
 export function AMTSignalCard({
@@ -41,100 +52,83 @@ export function AMTSignalCard({
   selected?: boolean;
   onClick?: () => void;
 }) {
-  const executable = signal.totalScore >= 70;
-  const directionLabel = signal.direction === 'long' ? '↑ LONG' : '↓ SHORT';
-  const assetClass = signal.assetClass.toUpperCase();
-  const catStyle = getCategoryStyle(signal.assetClass);
+  const category = toCategory(signal.assetClass);
+  const catStyle = CATEGORY_STYLES[category];
+  const grade = getGrade(signal.totalScore);
+  const gradeColor = GRADE_COLORS[grade] ?? 'text-slate-400';
+  const isLong = signal.direction === 'long';
+  const statusLabel = signal.totalScore >= 60 ? 'EXECUTABLE' : signal.totalScore >= 40 ? 'WATCHLIST' : 'SKIP';
+  const statusStyle = signal.totalScore >= 60
+    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+    : signal.totalScore >= 40
+      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      : 'bg-slate-800 text-slate-500 border-slate-700';
+  const entry = signal.entryZoneMid ?? 0;
+  const rr = signal.riskRewardRatio ?? 0;
+  const newsRisk = signal.newsRisk.toLowerCase();
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className={[
-        'cursor-pointer rounded-lg border bg-[var(--bg-secondary)] p-6 transition-all',
+      className={`w-full rounded-xl border p-5 text-left transition-all duration-150 ${
         selected
-          ? 'border-[var(--accent-blue)]/50 shadow-[0_0_0_1px_rgba(88,166,255,0.2)]'
-          : 'border-[var(--border)] hover:border-[var(--accent-blue)]/30',
-      ].join(' ')}
+          ? 'border-cyan-500/50 bg-cyan-500/5 shadow-[0_0_0_1px_rgba(6,182,212,0.3)]'
+          : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+      }`}
     >
       <div className="mb-4 flex items-center justify-between">
-        <span className={[
-          'rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest',
-          catStyle.text, catStyle.bg,
-        ].join(' ')}>
-          {assetClass}
+        <span className={`rounded px-2 py-0.5 text-[10px] font-mono font-medium ${catStyle.bg} ${catStyle.text}`}>
+          {category}
         </span>
-        <span
-          className={[
-            'rounded border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider',
-            executable
-              ? 'border-[var(--accent-green)]/30 bg-[var(--accent-green)]/10 text-[var(--accent-green)]'
-              : 'border-[var(--accent-yellow)]/30 bg-[var(--accent-yellow)]/10 text-[var(--accent-yellow)]',
-          ].join(' ')}
-        >
-          {executable ? 'EXECUTABLE' : 'WATCHLIST'}
+        <span className={`rounded border px-2 py-0.5 text-[10px] font-mono ${statusStyle}`}>
+          {statusLabel}
         </span>
       </div>
 
-      <div className="mb-1 font-mono text-2xl font-bold text-[var(--text-primary)]">
-        {signal.assetId}
+      <div className="mb-1 flex items-baseline justify-between">
+        <span className="text-xl font-mono font-bold tracking-tight text-white">{signal.assetId}</span>
+        <span className={`text-sm font-mono font-semibold ${isLong ? 'text-emerald-400' : 'text-red-400'}`}>
+          {isLong ? 'UP LONG' : 'DN SHORT'}
+        </span>
       </div>
 
-      <div
-        className={[
-          'font-mono text-sm',
-          signal.direction === 'long' ? 'text-[var(--accent-green)]' : 'text-[var(--accent-red)]',
-        ].join(' ')}
-      >
-        {directionLabel}
-      </div>
+      <div className="mb-4 text-[10px] font-mono text-slate-600">RANK #{signal.rank}</div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div>
-          <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
-            BEST GRADE
-          </div>
-          <div className="font-mono text-lg font-bold text-[var(--text-primary)]">
-            {getGrade(signal.totalScore)}
-          </div>
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="rounded-lg bg-slate-800/50 p-3">
+          <div className="mb-1 text-[9px] font-mono uppercase text-slate-500">Grade</div>
+          <div className={`text-2xl font-mono font-bold ${gradeColor}`}>{grade}</div>
         </div>
-        <div>
-          <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
-            SCORE
-          </div>
-          <div className="font-mono text-lg font-bold text-[var(--text-primary)]">
-            {signal.totalScore}/100
+        <div className="rounded-lg bg-slate-800/50 p-3">
+          <div className="mb-1 text-[9px] font-mono uppercase text-slate-500">Score</div>
+          <div className="text-2xl font-mono font-bold text-white">
+            {signal.totalScore}
+            <span className="text-sm text-slate-500">/100</span>
           </div>
         </div>
       </div>
 
-      <div className="mt-4 space-y-1">
-        <div className="font-mono text-[11px] text-[var(--text-secondary)]">
-          Entry: {fmt(signal.entryZoneMid)}
-        </div>
-        <div className="font-mono text-[11px] text-[var(--text-secondary)]">
-          RR: {(signal.riskRewardRatio ?? 0).toFixed(2)}:1
-        </div>
-        <div className="font-mono text-[11px] text-[var(--text-muted)]">
-          Rank: #{signal.rank}
-        </div>
+      <div className="flex justify-between border-t border-slate-800 pt-3 text-xs font-mono">
+        <span className="text-slate-500">
+          Entry <span className="text-slate-300">{fmt(entry)}</span>
+        </span>
+        <span className="text-slate-500">
+          RR <span className="text-slate-300">{rr.toFixed(2)}:1</span>
+        </span>
       </div>
 
-      <div className="mt-4 border-t border-[var(--border)] pt-3">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-[var(--text-secondary)]">
-          <span>News Risk</span>
-          <span
-            className={
-              signal.newsRisk === 'clear'
-                ? 'text-[var(--accent-green)]'
-                : signal.newsRisk === 'caution'
-                  ? 'text-[var(--accent-yellow)]'
-                  : 'text-[var(--accent-red)]'
-            }
-          >
-            {signal.newsRisk}
-          </span>
-        </div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="text-[9px] font-mono uppercase text-slate-600">News Risk</span>
+        <span className={`text-[9px] font-mono uppercase ${
+          newsRisk === 'clear' ? 'text-emerald-500'
+            : newsRisk === 'caution' ? 'text-amber-500'
+              : 'text-red-500'
+        }`}>
+          {newsRisk}
+        </span>
       </div>
-    </div>
+    </button>
   );
 }
+

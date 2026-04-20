@@ -159,7 +159,7 @@ export function getDueDailySignalSessions(
 }
 
 export async function getDailySignalsConfig(): Promise<DailySignalsConfig> {
-  const defaultEnabled = normalizeBoolean(process.env.APEX_DAILY_SIGNALS_ENABLED, false);
+  const defaultEnabled = normalizeBoolean(process.env.APEX_DAILY_SIGNALS_ENABLED, true);
   const legacyDefaultTime = normalizeTime(
     process.env.APEX_DAILY_SIGNALS_TIME,
     DEFAULT_DAILY_SIGNAL_SESSION_TIMES.london,

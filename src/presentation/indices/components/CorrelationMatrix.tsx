@@ -10,7 +10,7 @@ interface CorrelationPair {
 
 const ASSET_ORDER = [
   // Indices
-  'NAS100', 'SPX500', 'DAX', 'FTSE100', 'NIKKEI', 'HANGSENG', 'CAC40', 'ASX200',
+  'NAS100', 'SPX500', 'US30', 'DAX', 'FTSE100', 'UK100', 'NIKKEI', 'HANGSENG', 'CAC40', 'ASX200',
   // FX
   'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD', 'USDCHF', 'EURJPY', 'GBPJPY',
   // Commodities

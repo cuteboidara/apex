@@ -13,6 +13,9 @@ const RATE_SYMBOLS: AssetSymbol[] = ASSET_SYMBOLS.filter(isRate);
 const MACRO_RATE_FALLBACK: Partial<Record<AssetSymbol, number>> = {
   US10Y: 4.5,
   US2Y: 4.8,
+  DE10Y: 2.6,
+  JP10Y: 1.4,
+  UK10Y: 4.4,
 };
 
 export async function fetchRateCandles(symbol: AssetSymbol): Promise<MultiTimeframeCandles> {

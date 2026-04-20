@@ -3,9 +3,15 @@
 
 import { prisma as _prisma } from '@/src/infrastructure/db/prisma';
 import type { RankedSignal } from '@/src/indices/types';
+import { ASSET_CONFIG } from '@/src/indices/data/fetchers/assetConfig';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma = _prisma as any; // IndicesSignal/IndicesTrade available after `prisma generate`
+
+function resolveAssetClass(assetId: string): string {
+  const config = (ASSET_CONFIG as Record<string, { assetClass?: string }>)[assetId];
+  return config?.assetClass ?? 'other';
+}
 
 export async function persistIndicesSignals(
   cycleId: string,
@@ -19,9 +25,7 @@ export async function persistIndicesSignals(
         data: {
           cycleId,
           assetId: signal.assetId,
-          assetClass: signal.smcSetup.assetId === 'NAS100' || signal.smcSetup.assetId === 'SPX500' || signal.smcSetup.assetId === 'DAX'
-            ? 'index'
-            : 'forex',
+          assetClass: resolveAssetClass(signal.smcSetup.assetId),
           direction: signal.direction,
           rank: signal.rank,
           smcScore: signal.scores.smc,

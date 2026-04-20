@@ -271,7 +271,11 @@ export function shouldSendMarketCardTelegramSignal(
   }
 
   const normalizedGrade = grade === "S+" ? "S" : grade;
-  if (!["S", "A"].includes(normalizedGrade)) {
+  if (!["S", "A", "B"].includes(normalizedGrade)) {
+    return false;
+  }
+
+  if (normalizedGrade === "B" && !preferences.includeBTelegramSignals) {
     return false;
   }
 
