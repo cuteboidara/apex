@@ -169,27 +169,19 @@ export default function AdminSystemPage() {
     setCycleResult(null);
     try {
       const result = await fetchJsonResponse<{
-        success: boolean;
-        partial?: boolean;
-        okCount?: number;
-        failureCount?: number;
-        queuedCount?: number;
-        completedCount?: number;
-        failedModules?: string[];
+        ok: boolean;
+        cycleId?: string;
+        executableCount?: number;
+        watchlistCount?: number;
         error?: string;
-        message?: string;
-      }>("/api/all-assets-cycle-trigger", {
+      }>("/api/indices/amt/cycle", {
         method: "POST",
       });
       const payload = result.data;
-      const success = Boolean(payload?.success);
-      const failedModules = payload?.failedModules ?? [];
       setCycleResult(
-        success
-          ? `All asset cycles triggered — ${payload?.completedCount ?? 0} completed, ${payload?.queuedCount ?? 0} queued`
-          : payload?.partial
-            ? `All asset cycles triggered with failures (${payload?.okCount ?? 0} ok, ${payload?.failureCount ?? failedModules.length} failed): ${failedModules.join(", ")}`
-            : formatApiError(result, "Cycle trigger failed."),
+        payload?.ok
+          ? `AMT cycle complete · executable ${payload?.executableCount ?? 0} · watchlist ${payload?.watchlistCount ?? 0}${payload?.cycleId ? ` · ${payload.cycleId}` : ""}`
+          : formatApiError(result, "AMT cycle trigger failed."),
       );
       await load();
     } catch (loadError) {

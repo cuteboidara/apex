@@ -74,11 +74,11 @@ export function UnifiedSignalsPageClient({
     try {
       const [fxResponse, cryptoResponse, stocksResponse, commoditiesResponse, indicesResponse, memecoinResponse] = await Promise.all([
         fetch("/api/signals", { cache: "no-store" }),
-        fetch("/api/crypto-signals", { cache: "no-store" }),
-        fetch("/api/stocks-signals", { cache: "no-store" }),
-        fetch("/api/commodities-signals", { cache: "no-store" }),
-        fetch("/api/indices-signals", { cache: "no-store" }),
-        fetch("/api/meme-signals", { cache: "no-store" }),
+        fetch("/api/crypto/signals", { cache: "no-store" }),
+        fetch("/api/stocks/signals", { cache: "no-store" }),
+        fetch("/api/commodities/signals", { cache: "no-store" }),
+        fetch("/api/indices/signals", { cache: "no-store" }),
+        fetch("/api/meme-scanner", { cache: "no-store" }),
       ]);
 
       const [nextFx, nextCrypto, nextStocks, nextCommodities, nextIndices, nextMemecoins] = await Promise.all([
@@ -224,3 +224,4 @@ export function UnifiedSignalsPageClient({
     </div>
   );
 }
+

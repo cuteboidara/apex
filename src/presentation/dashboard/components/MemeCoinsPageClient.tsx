@@ -165,7 +165,7 @@ export function MemeCoinsPageClient({
 
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch("/api/meme-signals", { cache: "no-store" });
+      const response = await fetch("/api/meme-scanner", { cache: "no-store" });
       if (!response.ok) {
         return;
       }
@@ -186,7 +186,7 @@ export function MemeCoinsPageClient({
 
   async function runCycle() {
     setMessage(null);
-    const response = await fetch("/api/meme-cycle-trigger", { method: "POST" });
+    const response = await fetch("/api/indices/amt/cycle", { method: "POST" });
     const next = await response.json().catch(() => null) as
       | { queued?: boolean; cardCount?: number; universeSize?: number; error?: string }
       | null;
@@ -344,3 +344,4 @@ export function MemeCoinsPageClient({
     </div>
   );
 }
+

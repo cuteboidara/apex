@@ -307,7 +307,7 @@ export async function getOverviewData(): Promise<OverviewDashboardPayload> {
       },
       marketCommentary: null,
     }),
-    fetchDashboardRoute<CryptoSignalsPayload>("/api/crypto-signals", EMPTY_CRYPTO_PAYLOAD),
+    fetchDashboardRoute<CryptoSignalsPayload>("/api/crypto/signals", EMPTY_CRYPTO_PAYLOAD),
     fetchDashboardRoute<AllocationIntent[]>("/api/allocations", []),
     fetchDashboardRoute<RiskDashboardPayload>("/api/risk/decisions", EMPTY_RISK_PAYLOAD),
     fetchDashboardRoute<DecisionJournalEntry[]>("/api/journal?limit=6", []),
@@ -356,23 +356,23 @@ export async function getSystemStatusData() {
 }
 
 export async function getCryptoPageData() {
-  return fetchDashboardRoute<CryptoSignalsPayload>("/api/crypto-signals", EMPTY_CRYPTO_PAYLOAD);
+  return fetchDashboardRoute<CryptoSignalsPayload>("/api/crypto/signals", EMPTY_CRYPTO_PAYLOAD);
 }
 
 export async function getStocksPageData() {
-  return fetchDashboardRoute<StocksSignalsPayload>("/api/stocks-signals", EMPTY_STOCKS_PAYLOAD);
+  return fetchDashboardRoute<StocksSignalsPayload>("/api/stocks/signals", EMPTY_STOCKS_PAYLOAD);
 }
 
 export async function getCommoditiesPageData() {
-  return fetchDashboardRoute<CommoditiesSignalsPayload>("/api/commodities-signals", EMPTY_COMMODITIES_PAYLOAD);
+  return fetchDashboardRoute<CommoditiesSignalsPayload>("/api/commodities/signals", EMPTY_COMMODITIES_PAYLOAD);
 }
 
 export async function getIndicesPageData() {
-  return fetchDashboardRoute<IndicesSignalsPayload>("/api/indices-signals", EMPTY_INDICES_PAYLOAD);
+  return fetchDashboardRoute<IndicesSignalsPayload>("/api/indices/signals", EMPTY_INDICES_PAYLOAD);
 }
 
 export async function getMemePageData() {
-  return fetchDashboardRoute<MemeSignalsPayload>("/api/meme-signals", EMPTY_MEME_PAYLOAD);
+  return fetchDashboardRoute<MemeSignalsPayload>("/api/meme-scanner", EMPTY_MEME_PAYLOAD);
 }
 
 export async function getRiskPageData() {
@@ -450,3 +450,4 @@ export async function getValidationDetailData(runId: string): Promise<Validation
     EMPTY_VALIDATION_DETAIL_PAYLOAD,
   );
 }
+

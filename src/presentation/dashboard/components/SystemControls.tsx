@@ -74,18 +74,15 @@ export function SystemControls({
   async function runCycle() {
     setCycleMessage(null);
 
-    const response = await fetch("/api/all-assets-cycle-trigger", {
+    const response = await fetch("/api/indices/amt/cycle", {
       method: "POST",
     });
     const payload = await response.json().catch(() => null) as
       | {
-        success?: boolean;
-        partial?: boolean;
-        okCount?: number;
-        failureCount?: number;
-        queuedCount?: number;
-        completedCount?: number;
-        failedModules?: string[];
+        ok?: boolean;
+        cycleId?: string;
+        executableCount?: number;
+        watchlistCount?: number;
         error?: string;
       }
       | null;
@@ -93,49 +90,42 @@ export function SystemControls({
     if (!response.ok) {
       setCycleMessage(
         response.status === 401
-          ? "Cycle trigger is unauthorized."
-          : payload?.error ?? "Cycle trigger failed.",
+          ? "AMT cycle trigger is unauthorized."
+          : payload?.error ?? "AMT cycle trigger failed.",
       );
       return;
     }
 
-    const failedModules = payload?.failedModules ?? [];
-    if (failedModules.length > 0) {
-      setCycleMessage(
-        `All asset cycles triggered (${payload?.okCount ?? 0} ok, ${payload?.failureCount ?? failedModules.length} failed). Failed: ${failedModules.join(", ")}.`,
-      );
-    } else {
-      setCycleMessage(
-        `All asset cycles triggered (${payload?.completedCount ?? 0} completed, ${payload?.queuedCount ?? 0} queued).`,
-      );
-    }
+    setCycleMessage(
+      payload?.ok
+        ? `AMT cycle complete${payload?.cycleId ? ` (${payload.cycleId})` : ""} · executable ${payload?.executableCount ?? 0} · watchlist ${payload?.watchlistCount ?? 0}.`
+        : payload?.error ?? "AMT cycle trigger failed.",
+    );
     router.refresh();
   }
 
-  async function runCryptoCycle() {
+  async function runSniperCycle() {
     setCycleMessage(null);
 
-    const response = await fetch("/api/crypto-cycle-trigger", {
+    const response = await fetch("/api/sniper/cycle", {
       method: "POST",
     });
     const payload = await response.json().catch(() => null) as
       | {
-        queued?: boolean;
-        cycleId?: string;
-        cardCount?: number;
+        signals?: Array<unknown>;
+        errors?: string[];
+        session?: string;
         error?: string;
       }
       | null;
 
     if (!response.ok) {
-      setCycleMessage(payload?.error ?? "Crypto cycle trigger failed.");
+      setCycleMessage(payload?.error ?? "Sniper cycle trigger failed.");
       return;
     }
 
     setCycleMessage(
-      payload?.queued
-        ? `Crypto cycle queued (${payload.cardCount ?? 0} cards).`
-        : `Crypto cycle completed${payload?.cycleId ? ` (${payload.cycleId})` : ""}.`,
+      `Sniper cycle complete · signals ${payload?.signals?.length ?? 0} · errors ${payload?.errors?.length ?? 0} · session ${payload?.session ?? "-"}.`,
     );
     router.refresh();
   }
@@ -152,15 +142,15 @@ export function SystemControls({
               disabled={pending}
               className="apex-button apex-button-amber disabled:opacity-60"
             >
-              {pending ? "Running All Assets" : "Run All Assets"}
+              {pending ? "Running AMT" : "Run AMT Cycle"}
             </button>
             <button
               type="button"
-              onClick={() => startTransition(() => void runCryptoCycle())}
+              onClick={() => startTransition(() => void runSniperCycle())}
               disabled={pending}
               className="inline-flex h-9 items-center rounded-[var(--apex-radius-md)] border border-[rgba(59,130,246,0.35)] bg-[rgba(59,130,246,0.10)] px-4 font-[var(--apex-font-mono)] text-[11px] uppercase tracking-[0.12em] text-[#60A5FA] transition hover:border-[rgba(96,165,250,0.55)] hover:bg-[rgba(59,130,246,0.16)] disabled:opacity-60"
             >
-              {pending ? "Running Crypto" : "Run Crypto Cycle"}
+              {pending ? "Running Sniper" : "Run Sniper Cycle"}
             </button>
             <button
               type="button"
@@ -213,3 +203,4 @@ export function SystemControls({
     </section>
   );
 }
+

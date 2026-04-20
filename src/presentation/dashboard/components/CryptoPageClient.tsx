@@ -20,7 +20,7 @@ export function CryptoPageClient({
 
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch("/api/crypto-signals", {
+      const response = await fetch("/api/crypto/signals", {
         cache: "no-store",
       });
       if (!response.ok) {
@@ -44,7 +44,7 @@ export function CryptoPageClient({
   async function runCycle() {
     setMessage(null);
 
-    const response = await fetch("/api/crypto-cycle-trigger", {
+    const response = await fetch("/api/indices/amt/cycle", {
       method: "POST",
     });
     const payload = await response.json().catch(() => null) as
@@ -153,3 +153,4 @@ export function CryptoPageClient({
     </div>
   );
 }
+

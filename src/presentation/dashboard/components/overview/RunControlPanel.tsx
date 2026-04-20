@@ -537,15 +537,23 @@ export function RunControlPanel({ adminMode = false }: { adminMode?: boolean }) 
     resetStatuses(nextClasses);
 
     try {
-      const response = await fetch("/api/admin/run-assets", {
+      const response = await fetch("/api/indices/amt/cycle", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({}),
       });
 
-      const data = await response.json().catch(() => null) as RunResponse | { error?: string } | null;
+      const data = await response.json().catch(() => null) as
+        | {
+          ok?: boolean;
+          cycleId?: string;
+          executableCount?: number;
+          watchlistCount?: number;
+          error?: string;
+        }
+        | null;
 
       if (!response.ok) {
         throw new Error(data && "error" in data && typeof data.error === "string"
@@ -553,7 +561,51 @@ export function RunControlPanel({ adminMode = false }: { adminMode?: boolean }) 
           : "Run request failed.");
       }
 
-      const typedData = data as RunResponse;
+      const amtSignals = (data?.executableCount ?? 0) + (data?.watchlistCount ?? 0);
+      const typedData: RunResponse = {
+        success: Boolean(data?.ok),
+        partial: nextClasses.some(assetClass => assetClass !== "indices"),
+        authMode: "admin_session",
+        headerName: "n/a",
+        selection: {
+          all: payload.all === true,
+          classes: nextClasses,
+          assets: payload.assets ?? [],
+        },
+        startedAt,
+        completedAt: Date.now(),
+        results: nextClasses.map((assetClass): RunResult => {
+          if (assetClass === "indices") {
+            return {
+              class: assetClass,
+              route: "/api/indices/amt/cycle",
+              status: data?.ok ? "completed" : "failed",
+              duration: Date.now() - startedAt,
+              error: data?.ok ? undefined : (data?.error ?? "AMT cycle failed."),
+              cycleId: data?.cycleId ?? null,
+              jobId: null,
+              cardCount: amtSignals,
+              universeSize: null,
+              selectionApplied: "class",
+              requestedAssets: [],
+            };
+          }
+          return {
+            class: assetClass,
+            route: "/api/indices/amt/cycle",
+            status: "failed",
+            duration: Date.now() - startedAt,
+            error: "Legacy class trigger removed. Use dedicated runtime dashboards.",
+            cycleId: null,
+            jobId: null,
+            cardCount: 0,
+            universeSize: null,
+            selectionApplied: "class_fallback",
+            requestedAssets: [],
+          };
+        }),
+      };
+
       setLastAuthMode(typedData.authMode);
       setHeaderName(typedData.headerName);
       for (const result of typedData.results) {
@@ -564,8 +616,8 @@ export function RunControlPanel({ adminMode = false }: { adminMode?: boolean }) 
       const signalCount = typedData.results.reduce((sum, result) => sum + (result.cardCount ?? 0), 0);
       const duration = Date.now() - startedAt;
       const summary = typedData.partial
-        ? `Run complete with partial failures: ${signalCount} signals across ${successCount}/${typedData.results.length} classes.`
-        : `Run complete: ${signalCount} signals generated across ${typedData.results.length} classes.`;
+        ? `Run complete: AMT updated (${amtSignals} signals). Legacy class triggers are disabled.`
+        : `Run complete: AMT generated ${signalCount} signals.`;
 
       setMessage(summary);
       showToast({
@@ -685,7 +737,7 @@ export function RunControlPanel({ adminMode = false }: { adminMode?: boolean }) 
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <div>
               <p className="text-[11px] text-[var(--apex-text-tertiary)]">Endpoint</p>
-              <p className="mt-1 font-[var(--apex-font-mono)] text-[12px] text-[var(--apex-text-primary)]">/api/admin/run-assets</p>
+              <p className="mt-1 font-[var(--apex-font-mono)] text-[12px] text-[var(--apex-text-primary)]">/api/indices/amt/cycle</p>
             </div>
             <div>
               <p className="text-[11px] text-[var(--apex-text-tertiary)]">Header</p>

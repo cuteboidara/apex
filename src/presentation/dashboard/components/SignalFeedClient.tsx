@@ -61,7 +61,7 @@ export function SignalFeedClient({
 
   const refreshCrypto = useEffectEvent(async () => {
     try {
-      const response = await fetch("/api/crypto-signals", {
+      const response = await fetch("/api/crypto/signals", {
         cache: "no-store",
       });
       if (!response.ok) {
@@ -239,3 +239,4 @@ export function SignalFeedClient({
     </div>
   );
 }
+
