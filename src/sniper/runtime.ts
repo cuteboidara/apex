@@ -16,9 +16,14 @@ import { TelegramNotifier } from "@/src/lib/telegram";
 
 import type { Session, SniperSetup } from "@/src/sniper/types/sniperTypes";
 
+export const SNIPER_ENGINE_VERSION = "SNIPER_V2_SWEEP_BOS";
+
 type SniperCycleResult = {
   skipped: boolean;
   session: Session;
+  engine: string;
+  assetsScanned: number;
+  assetsWithData: number;
   signals: Array<{ id: string; assetId: string; setupType: string; score: number }>;
   errors: string[];
   latencyMs: number;
@@ -181,6 +186,9 @@ export async function runSniperCycle(): Promise<SniperCycleResult> {
     return {
       skipped: true,
       session,
+      engine: SNIPER_ENGINE_VERSION,
+      assetsScanned: 0,
+      assetsWithData: 0,
       signals: [],
       errors: [],
       latencyMs: Date.now() - started,
@@ -189,13 +197,15 @@ export async function runSniperCycle(): Promise<SniperCycleResult> {
   }
 
   const created: Array<{ id: string; assetId: string; setupType: string; score: number }> = [];
+  const assetsScanned = SNIPER_ASSETS.length;
+  let assetsWithData = 0;
 
   const assetResults = await Promise.allSettled(
     SNIPER_ASSETS.map(async (assetId) => {
       const config = sniperAssetConfig[assetId];
       const end = new Date();
-      const start15m = new Date(end.getTime() - (24 * 60 * 60 * 1000));
-      const start1h = new Date(end.getTime() - (7 * 24 * 60 * 60 * 1000));
+      const start15m = new Date(end.getTime() - (5 * 24 * 60 * 60 * 1000));
+      const start1h = new Date(end.getTime() - (21 * 24 * 60 * 60 * 1000));
 
       const [candles15m, candles1h] = await Promise.all([
         fetchCandles(config.symbol, start15m, end, "15m"),
@@ -212,19 +222,20 @@ export async function runSniperCycle(): Promise<SniperCycleResult> {
       continue;
     }
 
-    const { assetId, config, candles15m, candles1h } = assetResult.value;
+      const { assetId, config, candles15m, candles1h } = assetResult.value;
 
     try {
-      if (candles15m.length === 0) {
+      if (candles15m.length < 50 || candles1h.length < 50) {
         await updateSniperAssetState({
           assetId,
           lastScanned: new Date(),
-          lastPrice: 0,
+          lastPrice: candles15m.at(-1)?.close ?? 0,
           hasActiveSignal: false,
-          recentSweeps: [],
+          recentSweeps: [{ status: "no_data", candles15m: candles15m.length, candles1h: candles1h.length }],
         });
         continue;
       }
+      assetsWithData += 1;
 
       const sweepSetups = detectLiquiditySweepSetups(
         assetId,
@@ -301,6 +312,13 @@ export async function runSniperCycle(): Promise<SniperCycleResult> {
       const message = error instanceof Error ? error.message : String(error);
       errors.push(`${assetId}: ${message}`);
       console.error(`[sniper] asset ${assetId} failed:`, error);
+      await updateSniperAssetState({
+        assetId,
+        lastScanned: new Date(),
+        lastPrice: 0,
+        hasActiveSignal: false,
+        recentSweeps: [{ status: "error", message }],
+      });
     }
   }
 
@@ -312,6 +330,9 @@ export async function runSniperCycle(): Promise<SniperCycleResult> {
   return {
     skipped: false,
     session,
+    engine: SNIPER_ENGINE_VERSION,
+    assetsScanned,
+    assetsWithData,
     signals: created,
     errors,
     latencyMs,

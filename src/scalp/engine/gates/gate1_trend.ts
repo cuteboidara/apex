@@ -14,13 +14,21 @@ function trendFromCandles1h(candles1h: ScalpCandle[]): Trend {
 }
 
 function trendFromCandles4h(candles4h: ScalpCandle[]): Trend {
-  if (candles4h.length < 210) return "neutral";
+  if (candles4h.length < 55) return "neutral";
 
   const closes = candles4h.map(c => c.close);
   const ema21 = ema(closes, 21);
   const ema50 = ema(closes, 50);
-  const ema200 = ema(closes, 200);
   const current = closes[closes.length - 1];
+
+  // Fallback regime for assets where Yahoo has limited intraday history.
+  if (candles4h.length < 210) {
+    if (current > ema21 && ema21 > ema50) return "bullish";
+    if (current < ema21 && ema21 < ema50) return "bearish";
+    return "neutral";
+  }
+
+  const ema200 = ema(closes, 200);
 
   if (current > ema21 && ema50 > ema200) return "bullish";
   if (current < ema21 && ema50 < ema200) return "bearish";

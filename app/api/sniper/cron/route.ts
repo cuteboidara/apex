@@ -18,8 +18,11 @@ async function handleCron(req: Request) {
     const result = await runSniperCycle();
     return NextResponse.json({
       success: true,
+      engine: result.engine,
       cycleId: `sniper-${Date.now()}`,
       signalsGenerated: result.signals.length,
+      assetsScanned: result.assetsScanned,
+      assetsWithData: result.assetsWithData,
       session: result.session,
       latency: result.latencyMs,
       timestamp: new Date().toISOString(),

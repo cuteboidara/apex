@@ -28,7 +28,18 @@ type SniperStats = {
   active: number;
   winRate: number;
   totalPnl: number;
+  engine?: string;
   currentSession?: string;
+};
+
+type SniperAssetState = {
+  assetId: string;
+  symbol: string;
+  category: string;
+  lastScanned: string | null;
+  lastPrice: number | null;
+  hasActiveSignal: boolean;
+  dataStatus: "never" | "ready" | "no_data" | "error";
 };
 
 type SniperResponse = {
@@ -37,10 +48,22 @@ type SniperResponse = {
   stats: SniperStats;
 };
 
+type SniperCycleResponse = {
+  cycleId: string;
+  engine: string;
+  assetsScanned: number;
+  assetsWithData: number;
+  signals: Array<{ id: string }>;
+};
+
 function isSniperResponse(value: unknown): value is SniperResponse {
   if (!value || typeof value !== "object") return false;
   const row = value as Partial<SniperResponse>;
   return Array.isArray(row.active) && Array.isArray(row.recent) && typeof row.stats === "object" && row.stats != null;
+}
+
+function isSniperStateArray(value: unknown): value is SniperAssetState[] {
+  return Array.isArray(value);
 }
 
 const REFRESH_MS = 15 * 60 * 1000;
@@ -51,15 +74,21 @@ function toFixedSafe(value: number | null | undefined, digits: number): string {
 
 export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
   const [data, setData] = useState<SniperResponse | null>(null);
+  const [assetStates, setAssetStates] = useState<SniperAssetState[]>([]);
   const [loading, setLoading] = useState(true);
   const [cycling, setCycling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastRun, setLastRun] = useState<string | null>(null);
 
   async function fetchData() {
     try {
-      const response = await fetch("/api/sniper/signals", { cache: "no-store" });
-      const payload = await response.json() as unknown;
-      if (!response.ok) {
+      const [signalsResponse, statesResponse] = await Promise.all([
+        fetch("/api/sniper/signals", { cache: "no-store" }),
+        fetch("/api/sniper/state", { cache: "no-store" }),
+      ]);
+
+      const payload = await signalsResponse.json() as unknown;
+      if (!signalsResponse.ok) {
         const err = typeof payload === "object" && payload && "error" in payload
           ? String((payload as { error?: unknown }).error ?? "Failed to fetch sniper data")
           : "Failed to fetch sniper data";
@@ -69,6 +98,13 @@ export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
         throw new Error("Invalid sniper API response");
       }
       setData(payload);
+
+      const statePayload = await statesResponse.json().catch(() => null) as unknown;
+      if (statesResponse.ok && isSniperStateArray(statePayload)) {
+        setAssetStates(statePayload);
+      } else {
+        setAssetStates([]);
+      }
       setError(null);
     } catch (fetchError) {
       setError(fetchError instanceof Error ? fetchError.message : String(fetchError));
@@ -90,9 +126,14 @@ export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
     setError(null);
     try {
       const response = await fetch("/api/sniper/cycle", { method: "POST" });
-      const payload = await response.json().catch(() => null) as { error?: string } | null;
+      const payload = await response.json().catch(() => null) as (SniperCycleResponse & { error?: string }) | null;
       if (!response.ok) {
         throw new Error(payload?.error ?? "Sniper cycle failed");
+      }
+      if (payload) {
+        setLastRun(
+          `${payload.engine} · scanned ${payload.assetsScanned}/${payload.assetsWithData} data-ready · signals ${payload.signals?.length ?? 0}`,
+        );
       }
       await fetchData();
     } catch (cycleError) {
@@ -123,7 +164,7 @@ export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
         <div>
           <h1 className="font-mono text-xl font-bold text-white">{title}</h1>
           <p className="mt-0.5 font-mono text-xs text-slate-500">
-            15m tactical entries · 1-48h holds · Session: {stats?.currentSession ?? "-"}
+            15m tactical entries · 1-48h holds · Session: {stats?.currentSession ?? "-"} · Engine: {stats?.engine ?? "-"}
           </p>
         </div>
         <button
@@ -141,6 +182,11 @@ export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
           {error}
         </div>
       ) : null}
+      {lastRun ? (
+        <div className="rounded border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 font-mono text-xs text-cyan-200">
+          Last scan: {lastRun}
+        </div>
+      ) : null}
 
       {(view === "all" || view === "stats") && stats ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-6">
@@ -151,6 +197,35 @@ export function SniperDashboard({ view = "all" }: { view?: DashboardView }) {
           <StatCard label="Closed" value={stats.closed} color="text-slate-300" />
           <StatCard label="Total PnL" value={`$${toFixedSafe(stats.totalPnl, 0)}`} color={stats.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"} />
         </div>
+      ) : null}
+
+      {view === "all" ? (
+        <section>
+          <div className="mb-3 font-mono text-[10px] uppercase tracking-widest text-slate-500">
+            Assets Monitored ({assetStates.length})
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
+            {assetStates.map(asset => (
+              <div key={asset.assetId} className="rounded-lg border border-slate-800 bg-slate-900/50 p-3">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-white">{asset.assetId}</span>
+                  <span
+                    className={[
+                      "font-mono text-[9px] uppercase",
+                      asset.dataStatus === "ready" ? "text-emerald-400" : asset.dataStatus === "error" ? "text-red-400" : "text-amber-400",
+                    ].join(" ")}
+                  >
+                    {asset.dataStatus}
+                  </span>
+                </div>
+                <div className="font-mono text-[10px] text-slate-500">{asset.symbol}</div>
+                <div className="mt-1 font-mono text-[10px] text-slate-400">
+                  {asset.lastScanned ? new Date(asset.lastScanned).toLocaleTimeString() : "not scanned"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       ) : null}
 
       {(view === "all" || view === "active") && (

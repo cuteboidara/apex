@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { calculateSniperStats, listActiveSniperSignals, listRecentClosedSniperSignals } from "@/src/sniper/api/sniperSignals";
 import { getCurrentSession } from "@/src/sniper/data/fetchers/sessionDetector";
 
+const SNIPER_ENGINE_VERSION = "SNIPER_V2_SWEEP_BOS";
+
 export const dynamic = "force-dynamic";
 
 export async function GET() {
@@ -18,6 +20,7 @@ export async function GET() {
       recent,
       stats: {
         ...stats,
+        engine: SNIPER_ENGINE_VERSION,
         currentSession: getCurrentSession(),
       },
     });
@@ -28,4 +31,3 @@ export async function GET() {
     );
   }
 }
-

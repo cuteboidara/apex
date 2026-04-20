@@ -15,6 +15,8 @@ export const scalpAssetConfig = {
 
   NAS100: { symbol: "NQ=F", pipSize: 0.25, category: "INDEX", preferredSessions: ["ny", "overlap"] },
   SPX500: { symbol: "ES=F", pipSize: 0.25, category: "INDEX", preferredSessions: ["ny", "overlap"] },
+  US30: { symbol: "^DJI", pipSize: 1, category: "INDEX", preferredSessions: ["ny", "overlap"] },
+  UK100: { symbol: "^FTSE", pipSize: 0.5, category: "INDEX", preferredSessions: ["london", "overlap"] },
   DAX: { symbol: "^GDAXI", pipSize: 0.5, category: "INDEX", preferredSessions: ["london", "overlap"] },
 
   BTCUSD: { symbol: "BTC-USD", pipSize: 1, category: "CRYPTO", preferredSessions: ["london", "ny", "overlap", "tokyo"] },

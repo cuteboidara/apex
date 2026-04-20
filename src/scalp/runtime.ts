@@ -24,6 +24,7 @@ import type { Session } from "@/src/scalp/types/scalpTypes";
 
 const DIAGNOSTIC_MODE = process.env.SCALP_DIAGNOSTIC_MODE === "true";
 const MIN_SCORE = DIAGNOSTIC_MODE ? 40 : 60;
+export const SCALP_ENGINE_VERSION = "SCALP_V3_5GATE";
 
 type GateStatus = {
   pass: boolean;
@@ -50,6 +51,9 @@ type ScalpCycleResult = {
   skipped: boolean;
   session: Session;
   cycleId: string;
+  engine: string;
+  assetsScanned: number;
+  assetsWithData: number;
   signals: Array<{ id: string; assetId: string; direction: string; score: number }>;
   gateResults: GateResult[];
   errors: string[];
@@ -331,6 +335,9 @@ export async function runScalpCycle(): Promise<ScalpCycleResult> {
       skipped: true,
       session: currentSession,
       cycleId,
+      engine: SCALP_ENGINE_VERSION,
+      assetsScanned: 0,
+      assetsWithData: 0,
       signals: [],
       gateResults: [],
       errors: [],
@@ -342,15 +349,18 @@ export async function runScalpCycle(): Promise<ScalpCycleResult> {
   const signals: Array<{ id: string; assetId: string; direction: string; score: number }> = [];
   const gateResults: GateResult[] = [];
   const errors: string[] = [];
+  let assetsScanned = 0;
+  let assetsWithData = 0;
 
   for (const assetId of SCALP_ASSETS) {
+    assetsScanned += 1;
     const config = scalpAssetConfig[assetId];
 
     try {
       const data = await fetchMultiTimeframe(config.symbol);
       const { candles15m, candles1h, candles4h, candlesDaily } = data;
 
-      if (!data || candles15m.length < 50 || candles1h.length < 50 || candles4h.length < 220 || candlesDaily.length < 20) {
+      if (!data || candles15m.length < 50 || candles1h.length < 50 || candlesDaily.length < 20) {
         console.log(`[scalp] ${assetId}: insufficient data, skipping`);
         await updateScalpAssetState({
           assetId,
@@ -364,6 +374,7 @@ export async function runScalpCycle(): Promise<ScalpCycleResult> {
         });
         continue;
       }
+      assetsWithData += 1;
 
       const currentPrice = candles15m[candles15m.length - 1].close;
       const trendGate = checkTrendAlignment(candles1h, candles4h);
@@ -541,6 +552,16 @@ export async function runScalpCycle(): Promise<ScalpCycleResult> {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[scalp] ${assetId} error:`, error);
       errors.push(`${assetId}: ${message}`);
+      await updateScalpAssetState({
+        assetId,
+        lastScanned: new Date(),
+        lastPrice: 0,
+        hasActiveSignal: false,
+        trend1h: null,
+        trend4h: null,
+        currentSession,
+        atrPct: null,
+      });
     }
   }
 
@@ -551,6 +572,9 @@ export async function runScalpCycle(): Promise<ScalpCycleResult> {
   return {
     skipped: false,
     cycleId,
+    engine: SCALP_ENGINE_VERSION,
+    assetsScanned,
+    assetsWithData,
     signals,
     gateResults,
     errors,

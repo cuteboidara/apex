@@ -47,6 +47,18 @@ export const sniperAssetConfig = {
     category: "INDEX",
     preferredSessions: ["ny"] as const,
   },
+  US30: {
+    symbol: "^DJI",
+    pipSize: 1,
+    category: "INDEX",
+    preferredSessions: ["ny", "overlap"] as const,
+  },
+  UK100: {
+    symbol: "^FTSE",
+    pipSize: 0.5,
+    category: "INDEX",
+    preferredSessions: ["london", "overlap"] as const,
+  },
   DAX: {
     symbol: "^GDAXI",
     pipSize: 0.5,
@@ -64,4 +76,3 @@ export const sniperAssetConfig = {
 export type SniperAssetId = keyof typeof sniperAssetConfig;
 export type SniperAssetConfig = (typeof sniperAssetConfig)[SniperAssetId];
 export const SNIPER_ASSETS = Object.keys(sniperAssetConfig) as SniperAssetId[];
-

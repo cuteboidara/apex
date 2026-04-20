@@ -164,8 +164,9 @@ async function fetchUpcomingNews(): Promise<UpcomingNewsEvent[]> {
 
 export async function fetchMultiTimeframe(symbol: string): Promise<MultiTimeframeData> {
   const end = new Date();
-  const start15m = new Date(end.getTime() - 2 * 24 * 60 * 60 * 1000);
-  const start1h = new Date(end.getTime() - 21 * 24 * 60 * 60 * 1000);
+  // Use wider windows so weekends/market closures do not starve gate evaluation.
+  const start15m = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const start1h = new Date(end.getTime() - 60 * 24 * 60 * 60 * 1000);
   const start1d = new Date(end.getTime() - 250 * 24 * 60 * 60 * 1000);
 
   const [candles15m, candles1h, candlesDaily, upcomingNews] = await Promise.all([

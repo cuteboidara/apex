@@ -18,8 +18,11 @@ async function handleCron(req: Request) {
     const result = await runScalpCycle();
     return NextResponse.json({
       success: true,
+      engine: result.engine,
       cycleId: result.cycleId,
       signalsGenerated: result.signals.length,
+      assetsScanned: result.assetsScanned,
+      assetsWithData: result.assetsWithData,
       session: result.session,
       latency: result.latency,
       timestamp: new Date().toISOString(),
