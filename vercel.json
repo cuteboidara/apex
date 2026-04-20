@@ -1,11 +1,5 @@
 {
   "buildCommand": "prisma generate && next build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "crons": [
-    {
-      "path": "/api/indices/amt/cron",
-      "schedule": "0 */4 * * *"
-    }
-  ]
+  "framework": "nextjs"
 }
